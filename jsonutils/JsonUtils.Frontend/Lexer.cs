@@ -57,14 +57,13 @@ namespace JsonUtils.Frontend
                         case 't':
                             {
                                 var startLoc = source.Location.Column;
+                                if (string.CompareOrdinal(currentLine, startLoc - 1, Token.TrueLiteral, 0, Token.TrueLiteral.Length) != 0)
+                                {
+                                    throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
+                                }
                                 for (int i = 0; i < Token.TrueLiteral.Length - 1; ++i)
                                 {
                                     source.NextCharacter();
-                                }
-                                if (source.TopCharacter is null
-                                    || currentLine.Substring(startLoc - 1, Token.TrueLiteral.Length) != Token.TrueLiteral)
-                                {
-                                    throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
                                 }
                                 tokens.Add(new BooleanLiteral(true));
                             }
@@ -72,14 +71,13 @@ namespace JsonUtils.Frontend
                         case 'f':
                             {
                                 var startLoc = source.Location.Column;
+                                if (string.CompareOrdinal(currentLine, startLoc - 1, Token.FalseLiteral, 0, Token.FalseLiteral.Length) != 0)
+                                {
+                                    throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
+                                }
                                 for (int i = 0; i < Token.FalseLiteral.Length - 1; ++i)
                                 {
                                     source.NextCharacter();
-                                }
-                                if (source.TopCharacter is null
-                                    || currentLine.Substring(startLoc - 1, Token.FalseLiteral.Length) != Token.FalseLiteral)
-                                {
-                                    throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
                                 }
                                 tokens.Add(new BooleanLiteral(false));
                             }

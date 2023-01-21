@@ -52,7 +52,7 @@ try
 {
     string badIdentifier =
 @"{
-    ""key"": tuesh
+    ""key"": tr
 }";
     new FrontEnd(new StringReader(badIdentifier)).Lex();
 }
