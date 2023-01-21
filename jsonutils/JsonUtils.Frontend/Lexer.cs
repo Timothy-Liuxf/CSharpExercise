@@ -7,33 +7,38 @@ namespace JsonUtils.Frontend
         public IList<Token> Lex(SourceManager source)
         {
             var tokens = new List<Token>();
+            var totalEndLocation = new SourceLocation(0, 0);
             while (source.NextLine())
             {
                 var currentLine = source.CurrentLine!;
+                totalEndLocation.Line = source.Location.Line;
+                totalEndLocation.Column = 0;
                 source.NextCharacter();
                 for (var chn = source.TopCharacter; chn is not null; chn = source.TopCharacter)
                 {
                     bool nextChar = true;
                     var ch = chn.Value;
+                    var orgLocation = source.Location;
+                    totalEndLocation.Column = orgLocation.Column;
                     switch (ch)
                     {
                         case '{':
-                            tokens.Add(new Token(TokenType.LBrace));
+                            tokens.Add(new Token(TokenType.LBrace, orgLocation));
                             break;
                         case '}':
-                            tokens.Add(new Token(TokenType.RBrace));
+                            tokens.Add(new Token(TokenType.RBrace, orgLocation));
                             break;
                         case '[':
-                            tokens.Add(new Token(TokenType.LBracket));
+                            tokens.Add(new Token(TokenType.LBracket, orgLocation));
                             break;
                         case ']':
-                            tokens.Add(new Token(TokenType.RBracket));
+                            tokens.Add(new Token(TokenType.RBracket, orgLocation));
                             break;
                         case ',':
-                            tokens.Add(new Token(TokenType.Comma));
+                            tokens.Add(new Token(TokenType.Comma, orgLocation));
                             break;
                         case ':':
-                            tokens.Add(new Token(TokenType.Colon));
+                            tokens.Add(new Token(TokenType.Colon, orgLocation));
                             break;
                         case '"':
                             {
@@ -51,7 +56,7 @@ namespace JsonUtils.Frontend
                                 {
                                     throw new SyntaxErrorException(source.Location, "Missing '\"'.");
                                 }
-                                tokens.Add(new StringLiteral(currentLine.Substring(startLoc, endLoc - startLoc - 1)));
+                                tokens.Add(new StringLiteral(currentLine.Substring(startLoc, endLoc - startLoc - 1), orgLocation));
                             }
                             break;
                         case 't':
@@ -65,7 +70,7 @@ namespace JsonUtils.Frontend
                                 {
                                     source.NextCharacter();
                                 }
-                                tokens.Add(new BooleanLiteral(true));
+                                tokens.Add(new BooleanLiteral(true, orgLocation));
                             }
                             break;
                         case 'f':
@@ -79,7 +84,7 @@ namespace JsonUtils.Frontend
                                 {
                                     source.NextCharacter();
                                 }
-                                tokens.Add(new BooleanLiteral(false));
+                                tokens.Add(new BooleanLiteral(false, orgLocation));
                             }
                             break;
                         default:
@@ -93,7 +98,7 @@ namespace JsonUtils.Frontend
                                     {
                                         if (startLoc + 1 == endLoc)
                                         {
-                                            tokens.Add(new IntegralLiteral(0));
+                                            tokens.Add(new IntegralLiteral(0, orgLocation));
                                         }
                                         else
                                         {
@@ -112,7 +117,7 @@ namespace JsonUtils.Frontend
                                                     value = value * 10 + (currentLine[i] - '0');
                                                 }
                                             }
-                                            tokens.Add(new IntegralLiteral(value));
+                                            tokens.Add(new IntegralLiteral(value, orgLocation));
                                         }
                                         catch (OverflowException)
                                         {
@@ -135,17 +140,10 @@ namespace JsonUtils.Frontend
                     }
                 }
             }
+            EndLocation = totalEndLocation;
             return tokens;
         }
-    }
 
-    public class SyntaxErrorException : Exception
-    {
-        public SyntaxErrorException(SourceLocation location, string message) : base($"Syntax error at ({location.Line}, {location.Column}): {message}") { }
-    }
-
-    public class IntegerOverflowException : OverflowException
-    {
-        public IntegerOverflowException(SourceLocation location, string message) : base($"Integer overlow at ({location.Line}, {location.Column}): {message}") { }
+        public SourceLocation EndLocation { get; private set; }
     }
 }

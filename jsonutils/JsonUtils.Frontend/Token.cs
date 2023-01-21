@@ -20,15 +20,17 @@
         public const string FalseLiteral = "false";
 
         public TokenType Type { get; set; }
+        public SourceLocation Location { get; init; }
 
         public override string ToString()
         {
             return Type.ToString();
         }
 
-        public Token(TokenType type)
+        public Token(TokenType type, SourceLocation location)
         {
             Type = type;
+            Location = location;
         }
     }
 
@@ -41,7 +43,7 @@
             return '\"' + Value + "\"";
         }
 
-        public StringLiteral(string value) : base(TokenType.StringLiteral)
+        public StringLiteral(string value, SourceLocation location) : base(TokenType.StringLiteral, location)
         {
             Value = value;
         }
@@ -56,7 +58,7 @@
             return Value ? "true" : "false";
         }
 
-        public BooleanLiteral(bool value) : base(TokenType.BooleanLiteral)
+        public BooleanLiteral(bool value, SourceLocation location) : base(TokenType.BooleanLiteral, location)
         {
             Value = value;
         }
@@ -71,7 +73,7 @@
             return Value.ToString();
         }
 
-        public IntegralLiteral(int value) : base(TokenType.IntegralLiteral)
+        public IntegralLiteral(int value, SourceLocation location) : base(TokenType.IntegralLiteral, location)
         {
             Value = value;
         }
