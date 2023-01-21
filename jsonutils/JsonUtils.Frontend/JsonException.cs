@@ -7,7 +7,7 @@
 
     public class IntegerOverflowException : OverflowException
     {
-        public IntegerOverflowException(SourceLocation location, string message) : base($"Integer overlow at ({location.Line}, {location.Column}): {message}") { }
+        public IntegerOverflowException(SourceLocation location, string message) : base($"Integer overflow at ({location.Line}, {location.Column}): {message}") { }
     }
 
     public class DuplicatedKeyException : Exception
