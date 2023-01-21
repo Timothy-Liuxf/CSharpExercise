@@ -17,6 +17,6 @@ namespace JsonUtils.Frontend
         public DuplicatedKeyException(SourceLocation location, string key, SourceLocation previousKeyLocation)
             : base($"Duplicated key \"{key}\" at ({location.Line}, {location.Column}): "
                   + $"Already defined at ({previousKeyLocation.Line}, {previousKeyLocation.Column})")
-        { } 
+        { }
     }
 }
