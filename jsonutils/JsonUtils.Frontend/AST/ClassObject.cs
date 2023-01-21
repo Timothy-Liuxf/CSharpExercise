@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace JsonUtils.Frontend.AST
+﻿namespace JsonUtils.Frontend.AST
 {
     public class ClassObject : JsonObject
     {

@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace JsonUtils.Frontend
+﻿namespace JsonUtils.Frontend
 {
     public class SyntaxErrorException : Exception
     {

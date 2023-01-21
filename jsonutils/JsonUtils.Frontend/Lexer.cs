@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace JsonUtils.Frontend
+﻿namespace JsonUtils.Frontend
 {
     internal class Lexer
     {
