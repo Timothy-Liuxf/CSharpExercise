@@ -11,7 +11,7 @@ namespace JsonUtils.Frontend
             {
                 var currentLine = source.CurrentLine!;
                 source.NextCharacter();
-                for (var chn = source.TopCharacter;  chn is not null; chn = source.TopCharacter)
+                for (var chn = source.TopCharacter; chn is not null; chn = source.TopCharacter)
                 {
                     bool nextChar = true;
                     var ch = chn.Value;

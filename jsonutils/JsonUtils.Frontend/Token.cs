@@ -53,7 +53,7 @@
 
         public override string ToString()
         {
-            return Value? "true" : "false";
+            return Value ? "true" : "false";
         }
 
         public BooleanLiteral(bool value) : base(TokenType.BooleanLiteral)
