@@ -1,6 +1,6 @@
 ﻿namespace JsonUtils.Frontend.AST
 {
-    public class NumberValue : JsonObject
+    public sealed class NumberValue : JsonObject
     {
         public int Value { get; init; }
         public SourceLocation Location { get; init; }
@@ -8,6 +8,11 @@
         public override string ToString()
         {
             return Value.ToString();
+        }
+
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
         }
 
         public NumberValue(int value, SourceLocation location)

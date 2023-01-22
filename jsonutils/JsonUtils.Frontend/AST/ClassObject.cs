@@ -1,6 +1,6 @@
 ﻿namespace JsonUtils.Frontend.AST
 {
-    public class ClassObject : JsonObject
+    public sealed class ClassObject : JsonObject
     {
         private IDictionary<string, (SourceLocation, JsonObject)> properties;
 
@@ -12,6 +12,11 @@
                 ret += $"\"{key}\": {val.ToString()}, ";
             }
             return ret + "}";
+        }
+
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
         }
 
         public ClassObject(IDictionary<string, (SourceLocation, JsonObject)> properties)

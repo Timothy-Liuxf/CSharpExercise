@@ -1,6 +1,6 @@
 ﻿namespace JsonUtils.Frontend.AST
 {
-    public class ArrayObject : JsonObject
+    public sealed class ArrayObject : JsonObject
     {
         private IList<JsonObject> objects;
 
@@ -12,6 +12,11 @@
                 ret += obj.ToString() + ", ";
             }
             return ret + "]";
+        }
+
+        public override void Accept(IVisitor visitor)
+        {
+            visitor.Visit(this);
         }
 
         public ArrayObject(IList<JsonObject> objects)
