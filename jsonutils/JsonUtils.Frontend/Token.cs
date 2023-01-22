@@ -19,7 +19,7 @@
         public const string TrueLiteral = "true";
         public const string FalseLiteral = "false";
 
-        public TokenType Type { get; set; }
+        public TokenType Type { get; init; }
         public SourceLocation Location { get; init; }
 
         public override string ToString()
