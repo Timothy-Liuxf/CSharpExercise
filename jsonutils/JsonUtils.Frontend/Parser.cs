@@ -4,6 +4,24 @@ namespace JsonUtils.Frontend
 {
     internal class Parser
     {
+        public ASTNode Parse()
+        {
+            return this.ast ?? ParseOnce();
+        }
+
+        private ASTNode ParseOnce()
+        {
+            tokens.NextToken();
+            var ast = ParseJsonObject();
+            var currToken = tokens.CurrentToken;
+            if (currToken is not null)
+            {
+                throw new SyntaxErrorException(currToken.Location, "Extra content.");
+            }
+            this.ast = ast;
+            return ast;
+        }
+
         private JsonObject ParseJsonObject()
         {
             AssertCurrentTokenNotNull("Missing json value.");
@@ -122,18 +140,6 @@ namespace JsonUtils.Frontend
             return res;
         }
 
-        public ASTNode Parse()
-        {
-            tokens.NextToken();
-            var res = ParseJsonObject();
-            var currToken = tokens.CurrentToken;
-            if (currToken is not null)
-            {
-                throw new SyntaxErrorException(currToken.Location, "Extra content.");
-            }
-            return res;
-        }
-
         private void AssertCurrentTokenNotNull(string message)
         {
             if (tokens.CurrentToken is null)
@@ -153,6 +159,7 @@ namespace JsonUtils.Frontend
 
         private TokenReader tokens;
         private SourceLocation endLocation;
+        private ASTNode? ast;
 
         public Parser(TokenReader tokens, SourceLocation endLocation)
         {

@@ -74,7 +74,7 @@ Console.WriteLine("===== Parser =====");
 
     var frontend = new FrontEnd(new StringReader(json));
     var tokens = frontend.Lex();
-    var ast = frontend.Parse(tokens);
+    var ast = frontend.Parse();
     Console.WriteLine(ast.ToString());
 }
 Console.WriteLine();

@@ -2,7 +2,12 @@
 {
     internal class Lexer
     {
-        public IList<Token> Lex(SourceManager source)
+        public IList<Token> Lex()
+        {
+            return this.tokens ?? LexOnce();
+        }
+
+        private IList<Token> LexOnce()
         {
             var tokens = new List<Token>();
             var totalEndLocation = new SourceLocation(0, 0);
@@ -139,9 +144,17 @@
                 }
             }
             EndLocation = totalEndLocation;
+            this.tokens = tokens;
             return tokens;
         }
 
         public SourceLocation EndLocation { get; private set; }
+        private IList<Token>? tokens;
+        private SourceManager source;
+
+        public Lexer(SourceManager source)
+        {
+            this.source = source;
+        }
     }
 }

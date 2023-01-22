@@ -4,23 +4,21 @@ namespace JsonUtils.Frontend
 {
     public class FrontEnd
     {
-        private SourceManager sourceManager;
         private Lexer lexer;
 
-        public IList<Token> Lex()
+        public IEnumerable<Token> Lex()
         {
-            return lexer.Lex(sourceManager);
+            return lexer.Lex();
         }
 
-        public ASTNode Parse(IList<Token> tokens)
+        public ASTNode Parse()
         {
-            return new Parser(new TokenReader(tokens), lexer.EndLocation).Parse();
+            return new Parser(new TokenReader(lexer.Lex()), lexer.EndLocation).Parse();
         }
 
         public FrontEnd(TextReader reader)
         {
-            sourceManager = new SourceManager(reader);
-            lexer = new Lexer();
+            lexer = new Lexer(new SourceManager(reader));
         }
     }
 }
