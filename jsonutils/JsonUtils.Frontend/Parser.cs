@@ -32,8 +32,8 @@ namespace JsonUtils.Frontend
                     return ParseClassObject();
                 case TokenType.LBracket:
                     return ParseArrayObject();
-                case TokenType.IntegralLiteral:
-                    return ParseIntegerValue();
+                case TokenType.NumericLiteral:
+                    return ParseNumberValue();
                 case TokenType.BooleanLiteral:
                     return ParseBooleanValue();
                 case TokenType.StringLiteral:
@@ -119,9 +119,9 @@ namespace JsonUtils.Frontend
             return new ArrayObject(objects);
         }
 
-        private IntegerValue ParseIntegerValue()
+        private NumberValue ParseNumberValue()
         {
-            var res = new IntegerValue((tokens.CurrentToken as IntegralLiteral)!.Value, tokens.CurrentToken!.Location);
+            var res = new NumberValue((tokens.CurrentToken as NumericLiteral)!.Value, tokens.CurrentToken!.Location);
             tokens.NextToken();
             return res;
         }

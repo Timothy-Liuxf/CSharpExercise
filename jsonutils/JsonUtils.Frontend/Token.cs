@@ -11,7 +11,7 @@
         Colon,              // :
         StringLiteral,      // "string"
         BooleanLiteral,     // Bool
-        IntegralLiteral,    // int
+        NumericLiteral,    // int
     }
 
     public class Token
@@ -64,7 +64,7 @@
         }
     }
 
-    internal class IntegralLiteral : Token
+    internal class NumericLiteral : Token
     {
         public int Value { get; init; }
 
@@ -73,7 +73,7 @@
             return Value.ToString();
         }
 
-        public IntegralLiteral(int value, SourceLocation location) : base(TokenType.IntegralLiteral, location)
+        public NumericLiteral(int value, SourceLocation location) : base(TokenType.NumericLiteral, location)
         {
             Value = value;
         }

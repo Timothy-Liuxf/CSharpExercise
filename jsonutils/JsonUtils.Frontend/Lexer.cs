@@ -101,7 +101,7 @@
                                     {
                                         if (startLoc + 1 == endLoc)
                                         {
-                                            tokens.Add(new IntegralLiteral(0, orgLocation));
+                                            tokens.Add(new NumericLiteral(0, orgLocation));
                                         }
                                         else
                                         {
@@ -120,7 +120,7 @@
                                                     value = value * 10 + (currentLine[i] - '0');
                                                 }
                                             }
-                                            tokens.Add(new IntegralLiteral(value, orgLocation));
+                                            tokens.Add(new NumericLiteral(value, orgLocation));
                                         }
                                         catch (OverflowException)
                                         {

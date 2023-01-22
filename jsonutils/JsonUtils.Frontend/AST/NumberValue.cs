@@ -1,6 +1,6 @@
 ﻿namespace JsonUtils.Frontend.AST
 {
-    public class IntegerValue : JsonObject
+    public class NumberValue : JsonObject
     {
         public int Value { get; init; }
         public SourceLocation Location { get; init; }
@@ -10,7 +10,7 @@
             return Value.ToString();
         }
 
-        public IntegerValue(int value, SourceLocation location)
+        public NumberValue(int value, SourceLocation location)
         {
             Value = value;
             Location = location;
