@@ -68,14 +68,14 @@
 
     internal class NumericLiteral : Token
     {
-        public int Value { get; init; }
+        public string Value { get; init; }
 
         public override string ToString()
         {
             return Value.ToString();
         }
 
-        public NumericLiteral(int value, SourceLocation location) : base(TokenType.NumericLiteral, location)
+        public NumericLiteral(string value, SourceLocation location) : base(TokenType.NumericLiteral, location)
         {
             Value = value;
         }

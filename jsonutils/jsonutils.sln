@@ -7,7 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonUtils.Frontend", "JsonU
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{BFE744F4-4DF2-4595-A3A7-2AAE2B4F45DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonUtils.Formatter", "JsonUtils.Formatter\JsonUtils.Formatter.csproj", "{A89BEF71-C871-46DF-A623-6635D5D3E4BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonUtils.Formatter", "JsonUtils.Formatter\JsonUtils.Formatter.csproj", "{A89BEF71-C871-46DF-A623-6635D5D3E4BA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{F0768C9A-55B4-4AD0-83E7-BF2A7FD43D19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestFrontend", "UnitTest\TestFrontend\TestFrontend.csproj", "{E4EC4BE1-E4E6-459D-8444-3873DA52BFBF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,9 +31,16 @@ Global
 		{A89BEF71-C871-46DF-A623-6635D5D3E4BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A89BEF71-C871-46DF-A623-6635D5D3E4BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A89BEF71-C871-46DF-A623-6635D5D3E4BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4EC4BE1-E4E6-459D-8444-3873DA52BFBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4EC4BE1-E4E6-459D-8444-3873DA52BFBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4EC4BE1-E4E6-459D-8444-3873DA52BFBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4EC4BE1-E4E6-459D-8444-3873DA52BFBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E4EC4BE1-E4E6-459D-8444-3873DA52BFBF} = {F0768C9A-55B4-4AD0-83E7-BF2A7FD43D19}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F819E16-9A18-49F9-B368-28646505E9BD}

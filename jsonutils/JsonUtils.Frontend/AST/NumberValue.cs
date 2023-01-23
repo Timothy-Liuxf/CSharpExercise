@@ -2,7 +2,7 @@
 {
     public sealed class NumberValue : JsonObject
     {
-        public int Value { get; init; }
+        public string Value { get; init; }
         public SourceLocation Location { get; init; }
 
         public override string ToString()
@@ -15,7 +15,7 @@
             visitor.Visit(this);
         }
 
-        public NumberValue(int value, SourceLocation location)
+        public NumberValue(string value, SourceLocation location)
         {
             Value = value;
             Location = location;

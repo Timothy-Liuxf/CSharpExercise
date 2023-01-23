@@ -1,4 +1,6 @@
-﻿namespace JsonUtils.Frontend
+﻿using System.Text.RegularExpressions;
+
+namespace JsonUtils.Frontend
 {
     internal class Lexer
     {
@@ -106,46 +108,17 @@
                             break;
                         default:
                             {
-                                if (char.IsDigit(ch))
+                                if (!char.IsWhiteSpace(ch))
                                 {
-                                    var startLoc = source.Location.Column;
-                                    while (source.NextCharacter() && char.IsDigit(source.TopCharacter!.Value)) { }
-                                    var endLoc = source.Location.Column;
-                                    if (ch == '0')
+                                    if (MatchNumbers(out var value))
                                     {
-                                        if (startLoc + 1 == endLoc)
-                                        {
-                                            tokens.Add(new NumericLiteral(0, orgLocation));
-                                        }
-                                        else
-                                        {
-                                            throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error number!");
-                                        }
+                                        nextChar = false;
+                                        tokens.Add(new NumericLiteral(value, orgLocation));
                                     }
                                     else
                                     {
-                                        int value = 0;
-                                        try
-                                        {
-                                            checked
-                                            {
-                                                for (int i = startLoc - 1; i < endLoc - 1; ++i)
-                                                {
-                                                    value = value * 10 + (currentLine[i] - '0');
-                                                }
-                                            }
-                                            tokens.Add(new NumericLiteral(value, orgLocation));
-                                        }
-                                        catch (OverflowException)
-                                        {
-                                            throw new IntegerOverflowException(new SourceLocation(source.Location.Line, startLoc), source.CurrentLine!.Substring(startLoc - 1, endLoc - startLoc));
-                                        }
+                                        throw new SyntaxErrorException(source.Location, "Error token.");
                                     }
-                                    nextChar = false;
-                                }
-                                else if (!char.IsWhiteSpace(ch))
-                                {
-                                    throw new SyntaxErrorException(source.Location, "Error token.");
                                 }
                             }
                             break;
@@ -160,6 +133,36 @@
             EndLocation = totalEndLocation;
             this.tokens = tokens;
             return tokens;
+        }
+
+        private bool MatchNumbers(out string value)
+        {
+            var orgLocation = source.Location!;
+            var numberRegex = new Regex(@"[-+]?(([1-9][0-9]*|0)?\.[0-9]+|([1-9][0-9]*|0))");
+            var scienceRegex = new Regex(@"[-+]?[1-9](\.[0-9]+)?[Ee][+-]?[0-9]+");
+            var hexRegex = new Regex(@"[-+]?0[Xx][0-9A-Fa-f]+");     // Heximal numbers support in JSON5
+            var regex = new Regex($"\\G({hexRegex}|{scienceRegex}|{numberRegex})");
+
+            // Match numbers
+            var match = regex.Match(source.CurrentLine!, orgLocation.Column - 1);
+            if (match.Success)
+            {
+                value = match.Value;
+                for (int i = 0; i < value.Length; ++i)
+                {
+                    source.NextCharacter();
+                }
+                if (source.TopCharacter is not null
+                    && (char.IsDigit(source.TopCharacter.Value) || source.TopCharacter.Value == '.'))
+                {
+                    // 00...0...
+                    throw new SyntaxErrorException(orgLocation, "Error token.");
+                }
+                return true;
+            }
+
+            value = "";
+            return false;
         }
 
         public SourceLocation EndLocation { get; private set; }
