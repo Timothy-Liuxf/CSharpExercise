@@ -1,4 +1,5 @@
 ﻿using JsonUtils.Frontend;
+using JsonUtils.Formatter;
 
 string json =
 @"{
@@ -76,5 +77,16 @@ Console.WriteLine("===== Parser =====");
     var tokens = frontend.Lex();
     var ast = frontend.Parse();
     Console.WriteLine(ast.ToString());
+}
+Console.WriteLine();
+
+Console.WriteLine("===== Formatter =====");
+{
+
+    var frontend = new FrontEnd(new StringReader(json));
+    var tokens = frontend.Lex();
+    var ast = frontend.Parse();
+    var formatter = new Formatter(ast);
+    Console.WriteLine(formatter.Format());
 }
 Console.WriteLine();

@@ -3,6 +3,7 @@
     public sealed class ArrayObject : JsonObject
     {
         private IList<JsonObject> objects;
+        public IEnumerable<JsonObject> Objects => objects;
 
         public override string ToString()
         {

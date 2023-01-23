@@ -3,6 +3,7 @@
     public sealed class ClassObject : JsonObject
     {
         private IDictionary<string, (SourceLocation, JsonObject)> properties;
+        public IEnumerable<KeyValuePair<string, (SourceLocation, JsonObject)>> Properties => properties;
 
         public override string ToString()
         {
