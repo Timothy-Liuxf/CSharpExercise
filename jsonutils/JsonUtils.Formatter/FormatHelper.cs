@@ -99,6 +99,14 @@ namespace JsonUtils.Formatter
             };
         }
 
+        public void Visit(NullValue nullValue)
+        {
+            nullValue.StringAttribute = new[]
+            {
+                Token.NullLiteral,
+            };
+        }
+
         private string DumpString(string str)
         {
             return "\"" + str + "\"";

@@ -7,6 +7,7 @@ string json =
     ""key2"": false,
     ""key3"": 512,
     ""key4"": ""strVal"",
+    ""key5"": null,
     ""arr"": [
         {
             ""key11""   :59,""key12"" :  666 ,""key13"":""""

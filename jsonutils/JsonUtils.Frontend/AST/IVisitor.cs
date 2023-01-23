@@ -7,5 +7,6 @@
         void Visit(BooleanValue booleanValue);
         void Visit(NumberValue numberValue);
         void Visit(StringValue stringValue);
+        void Visit(NullValue nullValue);
     }
 }

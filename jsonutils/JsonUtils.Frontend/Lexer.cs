@@ -90,6 +90,20 @@
                                 tokens.Add(new BooleanLiteral(false, orgLocation));
                             }
                             break;
+                        case 'n':
+                            {
+                                var startLoc = source.Location.Column;
+                                if (string.CompareOrdinal(currentLine, startLoc - 1, Token.NullLiteral, 0, Token.NullLiteral.Length) != 0)
+                                {
+                                    throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
+                                }
+                                for (int i = 0; i < Token.NullLiteral.Length - 1; ++i)
+                                {
+                                    source.NextCharacter();
+                                }
+                                tokens.Add(new Token(TokenType.NullLiteral, orgLocation));
+                            }
+                            break;
                         default:
                             {
                                 if (char.IsDigit(ch))

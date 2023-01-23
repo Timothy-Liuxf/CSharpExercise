@@ -38,6 +38,8 @@ namespace JsonUtils.Frontend
                     return ParseBooleanValue();
                 case TokenType.StringLiteral:
                     return ParseStringValue();
+                case TokenType.NullLiteral:
+                    return ParseNullValue();
                 default:
                     throw new SyntaxErrorException(tokens.CurrentToken.Location, $"Unexpected token: {tokens.CurrentToken}.");
             }
@@ -136,6 +138,13 @@ namespace JsonUtils.Frontend
         private StringValue ParseStringValue()
         {
             var res = new StringValue((tokens.CurrentToken as StringLiteral)!.Value, tokens.CurrentToken!.Location);
+            tokens.NextToken();
+            return res;
+        }
+
+        private NullValue ParseNullValue()
+        {
+            var res = new NullValue(tokens.CurrentToken!.Location);
             tokens.NextToken();
             return res;
         }

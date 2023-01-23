@@ -11,13 +11,15 @@
         Colon,              // :
         StringLiteral,      // "string"
         BooleanLiteral,     // Bool
-        NumericLiteral,    // int
+        NumericLiteral,     // int
+        NullLiteral,        // null
     }
 
     public class Token
     {
         public const string TrueLiteral = "true";
         public const string FalseLiteral = "false";
+        public const string NullLiteral = "null";
 
         public TokenType Type { get; init; }
         public SourceLocation Location { get; init; }
