@@ -1,4 +1,5 @@
-﻿using JsonUtils.Frontend.AST;
+﻿using JsonUtils.Frontend;
+using JsonUtils.Frontend.AST;
 
 namespace JsonUtils.Formatter
 {
@@ -94,7 +95,7 @@ namespace JsonUtils.Formatter
         {
             booleanValue.StringAttribute = new[]
             {
-                booleanValue.Value ? "true" : "false",
+                booleanValue.Value ? Token.TrueLiteral : Token.FalseLiteral,
             };
         }
 
