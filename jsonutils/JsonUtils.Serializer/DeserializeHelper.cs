@@ -33,6 +33,7 @@ namespace JsonUtils.Serializer
             {
                 throw new TypeErrorException($"Expect object type at ({obj.Location.Line}, {obj.Location.Column}), found {type.FullName}.");
             }
+
             var deserialized = Tools.CreateInstance(type);
             var properties = type.GetProperties();
             foreach (var property in properties)
@@ -44,6 +45,7 @@ namespace JsonUtils.Serializer
                 {
                     throw new DuplicateAttributeException($"Duplicate attribute {nameof(JsonSerializeOptionAttribute)} on property {property.Name}.");
                 }
+
                 var jsonProperties = obj.Properties;
                 if (!jsonProperties.ContainsKey(attr.Key))
                 {
@@ -165,7 +167,7 @@ namespace JsonUtils.Serializer
                             throw new TypeErrorException($"Expected floating point type at ({number.Location.Line}, {number.Location.Column}) when parsing {numberFormat}, found type {type.FullName}.");
                         }
                         var parseMethod = type.GetMethod("Parse", BindingFlags.Public | BindingFlags.Static,
-                        isHex ? new Type[] { typeof(string), typeof(NumberStyles) } : new Type[] { typeof(string) })!;
+                            isHex ? new Type[] { typeof(string), typeof(NumberStyles) } : new Type[] { typeof(string) })!;
                         this.deserialized = parseMethod.Invoke(null,
                             isHex ? new object[] { numberFormat, NumberStyles.HexNumber } : new object[] { numberFormat })!;
                     }
