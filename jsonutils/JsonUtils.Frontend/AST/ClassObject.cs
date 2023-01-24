@@ -2,8 +2,9 @@
 {
     public sealed class ClassObject : JsonObject
     {
-        private IDictionary<string, (SourceLocation, JsonObject)> properties;
-        public IEnumerable<KeyValuePair<string, (SourceLocation, JsonObject)>> Properties => properties;
+        private IReadOnlyDictionary<string, (SourceLocation, JsonObject)> properties;
+        public IReadOnlyDictionary<string, (SourceLocation, JsonObject)> Properties => properties;
+        public SourceLocation Location { get; init; }
 
         public override string ToString()
         {
@@ -20,9 +21,10 @@
             visitor.Visit(this);
         }
 
-        public ClassObject(IDictionary<string, (SourceLocation, JsonObject)> properties)
+        public ClassObject(IReadOnlyDictionary<string, (SourceLocation, JsonObject)> properties, SourceLocation location)
         {
             this.properties = properties;
+            Location = location;
         }
     }
 }

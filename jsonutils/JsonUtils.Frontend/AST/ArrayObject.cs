@@ -4,6 +4,7 @@
     {
         private IList<JsonObject> objects;
         public IEnumerable<JsonObject> Objects => objects;
+        public SourceLocation Location { get; init; }
 
         public override string ToString()
         {
@@ -20,9 +21,10 @@
             visitor.Visit(this);
         }
 
-        public ArrayObject(IList<JsonObject> objects)
+        public ArrayObject(IList<JsonObject> objects, SourceLocation location)
         {
             this.objects = objects;
+            Location = location;
         }
     }
 }

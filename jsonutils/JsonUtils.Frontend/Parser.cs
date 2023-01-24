@@ -47,6 +47,7 @@ namespace JsonUtils.Frontend
 
         private ClassObject ParseClassObject()
         {
+            var orgLocation = tokens.CurrentToken!.Location;
             tokens.NextToken(); // Pass token '{'
             var properties = new Dictionary<string, (SourceLocation, JsonObject)>();
             while (true)
@@ -86,11 +87,12 @@ namespace JsonUtils.Frontend
                     break;
                 }
             }
-            return new ClassObject(properties);
+            return new ClassObject(properties, orgLocation);
         }
 
         private ArrayObject ParseArrayObject()
         {
+            var orgLocation = tokens.CurrentToken!.Location;
             tokens.NextToken(); // Pass token '['
             var objects = new List<JsonObject>();
             while (true)
@@ -118,7 +120,7 @@ namespace JsonUtils.Frontend
                     break;
                 }
             }
-            return new ArrayObject(objects);
+            return new ArrayObject(objects, orgLocation);
         }
 
         private NumberValue ParseNumberValue()
