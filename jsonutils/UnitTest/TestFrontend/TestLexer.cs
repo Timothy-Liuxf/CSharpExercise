@@ -13,68 +13,33 @@ namespace TestFrontend
         [TestMethod]
         public void TestEmptyObject()
         {
-            try
-            {
-                LexJsonString(@"{}");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(@"{}");
         }
 
         [TestMethod]
         public void TestEmptyArray()
         {
-            try
-            {
-                LexJsonString(@"[]");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(@"[]");
         }
 
         [TestMethod]
         public void TestString()
         {
-            try
-            {
-                LexJsonString(@"""""");
-                LexJsonString(@"""string""");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(@"""""");
+            LexJsonString(@"""string""");
         }
 
         [TestMethod]
         public void TestNull()
         {
-            try
-            {
-                LexJsonString(@"null");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(@"null");
         }
 
         [TestMethod]
         public void TestBoolean()
         {
-            try
-            {
-                LexJsonString(@"true");
-                LexJsonString(@"false");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(@"true");
+            LexJsonString(@"false");
         }
 
         [TestMethod]
@@ -213,52 +178,31 @@ namespace TestFrontend
         [TestMethod]
         public void TestClassObject()
         {
-            try
-            {
-                var json =
+            var json =
 @"{
     ""key"": ""value""
 }";
-                LexJsonString(json);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(json);
         }
 
         [TestMethod]
         public void TestArrayObject()
         {
-            try
-            {
-                var json =
+            var json =
 @"[
     { ""key"": ""value"" }
 ]";
-                LexJsonString(json);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(json);
         }
 
         [TestMethod]
         public void TestTrailingComma()
         {
-            try
-            {
-                var json =
+            var json =
 @"{
     ""key"": [ ""value"", ],
 }";
-                LexJsonString(json);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(json);
         }
 
         [TestMethod]
@@ -285,9 +229,7 @@ namespace TestFrontend
         [TestMethod]
         public void TestAll()
         {
-            try
-            {
-                var json =
+            var json =
 @"{
     ""key1"": true,
     ""key2"": false,
@@ -304,12 +246,7 @@ namespace TestFrontend
         }
     ]
 }";
-                LexJsonString(json);
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail(ex.ToString());
-            }
+            LexJsonString(json);
         }
     }
 }
