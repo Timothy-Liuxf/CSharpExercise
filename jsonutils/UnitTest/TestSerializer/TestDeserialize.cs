@@ -125,5 +125,54 @@ namespace TestSerializer
             Assert.IsNull(DeserializeJson<int?>(@"null", null));
             Assert.IsNull(DeserializeJson<string?>(@"null", null));
         }
+
+        [TestMethod]
+        public void TestFailedNull()
+        {
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson<int>(@"null", 0);
+            });
+        }
+
+        [TestMethod]
+        public void TestFailedBoolean()
+        {
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson<int>(@"true", 0);
+                DeserializeJson<int>(@"false", 0);
+            });
+        }
+
+        [TestMethod]
+        public void TestFailedString()
+        {
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson<int>(@"""string""", 0);
+            });
+        }
+
+        [TestMethod]
+        public void TestFailedNumber()
+        {
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson(@"""123""", false);
+            });
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson(@"""-123.63""", false);
+            });
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson(@"""+1.3e3""", false);
+            });
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson(@"""0xffff""", false);
+            });
+        }
     }
 }
