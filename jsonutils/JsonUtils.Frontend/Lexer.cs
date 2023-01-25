@@ -117,7 +117,7 @@ namespace JsonUtils.Frontend
                                     }
                                     else
                                     {
-                                        throw new SyntaxErrorException(source.Location, "Error token.");
+                                        throw new SyntaxErrorException(source.Location, $"Error token \'{ch}\'.");
                                     }
                                 }
                             }
