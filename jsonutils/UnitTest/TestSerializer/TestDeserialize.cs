@@ -211,6 +211,42 @@ namespace TestSerializer
             Assert.IsTrue(arr[2].SequenceEqual(new[] { 5 }));
         }
 
+        [TestMethod]
+        public void TestNullableValueTypesArray()
+        {
+            {
+                var arr = DeserializeJson<int?[]>(@"[0, null, 2]");
+                Assert.AreEqual(arr.Length, 3);
+                Assert.AreEqual(arr[0], 0);
+                Assert.AreEqual(arr[1], null);
+                Assert.AreEqual(arr[2], 2);
+            }
+            {
+                var arr = DeserializeJson<bool?[]>(@"[ true, null, false, ]");
+                Assert.AreEqual(arr.Length, 3);
+                Assert.AreEqual(arr[0], true);
+                Assert.AreEqual(arr[1], null);
+                Assert.AreEqual(arr[2], false);
+            }
+        }
+
+        class TestNullableValueTypesType
+        {
+            [JsonSerializeOption(key: "key1", required: true)]
+            public bool? Key1 { get; set; } = false;
+
+            [JsonSerializeOption(key: "key2", required: true)]
+            public bool? Key2 { get; set; } = false;
+        }
+
+        [TestMethod]
+        public void TestNullableValueTypes()
+        {
+            var obj = DeserializeJson<TestNullableValueTypesType>(@"{""key1"": true, ""key2"": null}");
+            Assert.AreEqual(obj.Key1, true);
+            Assert.AreEqual(obj.Key2, null);
+        }
+
         private class TestClassObjectType
         {
             public enum JobType
@@ -243,6 +279,9 @@ namespace TestSerializer
             [JsonSerializeOption(key: "assets", required: true)]
             public decimal Assets { get; set; } = 0.0m;
 
+            [JsonSerializeOption(key: "expenditures", required: true)]
+            public decimal?[] Expenditures { get; set; } = { };
+
             [JsonSerializeOption(key: "bmi", required: true)]
             public double BMI { get; set; } = 0.0d;
 
@@ -256,7 +295,7 @@ namespace TestSerializer
             }
 
             [JsonSerializeOption(key: "children", required: true)]
-            public ChildType[] Children { get; set; } = { };
+            public ChildType?[] Children { get; set; } = { };
         }
 
         [TestMethod]
@@ -272,6 +311,7 @@ namespace TestSerializer
     ""salary"": 3728.28,
     ""assets"": 1.3e5,
     ""bmi"": 21.05,
+    ""expenditures"": [20.34, 16, null, 0.00, 35.39],
     ""children"": [
         {
             ""name"": ""Mary"",
@@ -281,7 +321,8 @@ namespace TestSerializer
             ""name"": ""Jack"",
             ""age"": 2
         },
-    ]
+        null,
+    ],
 }");
             Assert.AreEqual(deserialized.Name, "Tom");
             Assert.AreEqual(deserialized.Age, 34);
@@ -291,19 +332,22 @@ namespace TestSerializer
             Assert.AreEqual(deserialized.HairCount, -1);
             Assert.AreEqual(deserialized.Salary, 3728.28m);
             Assert.AreEqual(deserialized.Assets, 1.3e5m);
+            Assert.IsTrue(deserialized.Expenditures.SequenceEqual(new decimal?[] { 20.34m, 16m, null, 0.00m, 35.39m }));
             Assert.AreEqual(deserialized.BMI, 21.05d);
 
             var children = deserialized.Children;
-            Assert.AreEqual(children.Length, 2);
+            Assert.AreEqual(children.Length, 3);
 
-            var mary = children[0];
-            var jack = children[1];
+            var mary = children[0]!;
+            var jack = children[1]!;
 
             Assert.AreEqual(mary.Name, "Mary");
             Assert.AreEqual(mary.Age, 5);
 
             Assert.AreEqual(jack.Name, "Jack");
             Assert.AreEqual(jack.Age, 2);
+
+            Assert.IsNull(children[2]);
         }
 
         class TestMissingRequiredType
