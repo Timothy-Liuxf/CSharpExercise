@@ -209,34 +209,43 @@ namespace TestSerializer
                 Programmer = 1,
             }
 
-            [JsonSerializeOption("name", true)]
+            [JsonSerializeOption(key: "name", required: true)]
             public string Name { get; set; } = "";
 
-            [JsonSerializeOption("age", true)]
+            [JsonSerializeOption(key: "age", required: true)]
             public int Age { get; set; } = 0;
 
-            [JsonSerializeOption("married", true)]
+            [JsonSerializeOption(key: "married", required: true)]
             public bool Married { get; set; } = false;
 
-            [JsonSerializeOption("lucky-number", true)]
+            [JsonSerializeOption(key: "lucky-number", required: true)]
             public int? LuckyNumber { get; set; } = 0;
 
-            [JsonSerializeOption("job", true)]
+            [JsonSerializeOption(key: "job", required: true)]
             public JobType Job { get; set; } = JobType.None;
 
-            [JsonSerializeOption("hair-count", false, -1)]
+            [JsonSerializeOption(key: "hair-count", required: false, defaultValue: -1)]
             public long HairCount { get; set; } = 0;
+
+            [JsonSerializeOption(key: "salary", required: true)]
+            public decimal Salary { get; set; } = 0.0m;
+
+            [JsonSerializeOption(key: "assets", required: true)]
+            public decimal Assets { get; set; } = 0.0m;
+
+            [JsonSerializeOption(key: "bmi", required: true)]
+            public double BMI { get; set; } = 0.0d;
 
             public class ChildType
             {
-                [JsonSerializeOption("name", true)]
+                [JsonSerializeOption(key: "name", required: true)]
                 public string Name { get; set; } = "";
 
-                [JsonSerializeOption("age", true)]
+                [JsonSerializeOption(key: "age", required: true)]
                 public int Age { get; set; } = 0;
             }
 
-            [JsonSerializeOption("children", true)]
+            [JsonSerializeOption(key: "children", required: true)]
             public ChildType[] Children { get; set; } = { };
         }
 
@@ -250,6 +259,9 @@ namespace TestSerializer
     ""married"": true,
     ""lucky-number"": null,
     ""job"": 1,
+    ""salary"": 3728.28,
+    ""assets"": 1.3e5,
+    ""bmi"": 21.05,
     ""children"": [
         {
             ""name"": ""Mary"",
@@ -267,6 +279,9 @@ namespace TestSerializer
             Assert.IsNull(deserialized.LuckyNumber);
             Assert.AreEqual(deserialized.Job, TestClassObjectType.JobType.Programmer);
             Assert.AreEqual(deserialized.HairCount, -1);
+            Assert.AreEqual(deserialized.Salary, 3728.28m);
+            Assert.AreEqual(deserialized.Assets, 1.3e5m);
+            Assert.AreEqual(deserialized.BMI, 21.05d);
 
             var children = deserialized.Children;
             Assert.AreEqual(children.Length, 2);
