@@ -140,7 +140,7 @@ namespace JsonUtils.Frontend
             var orgLocation = source.Location!;
             var numberRegex = new Regex(@"[-+]?(([1-9][0-9]*|0)?\.[0-9]+|([1-9][0-9]*|0))");
             var scienceRegex = new Regex(@"[-+]?[1-9](\.[0-9]+)?[Ee][+-]?[0-9]+");
-            var hexRegex = new Regex(@"[-+]?0[Xx][0-9A-Fa-f]+");     // Heximal numbers support in JSON5
+            var hexRegex = new Regex(@"0[Xx][0-9A-Fa-f]+");     // Heximal numbers support in JSON5
             var regex = new Regex($"\\G({hexRegex}|{scienceRegex}|{numberRegex})");
 
             // Match numbers

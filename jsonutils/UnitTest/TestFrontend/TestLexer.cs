@@ -1,5 +1,3 @@
-using JsonUtils.Frontend;
-
 namespace TestFrontend
 {
     [TestClass]
@@ -168,6 +166,7 @@ namespace TestFrontend
                 TestOnce(@"3e.6");
                 TestOnce(@"0e1");
                 TestOnce(@"18e3");
+                TestOnce(@"-0x1234");
             }
             catch (Exception ex)
             {

@@ -37,6 +37,10 @@
                 case TypeCode.Single:
                     return true;
             }
+            if (type == typeof(nint) || type == typeof(nuint))
+            {
+                return true;
+            }
             return false;
         }
 

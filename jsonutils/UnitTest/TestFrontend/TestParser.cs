@@ -1,6 +1,4 @@
-﻿using JsonUtils.Frontend;
-
-namespace TestFrontend
+﻿namespace TestFrontend
 {
     [TestClass]
     public class TestParser

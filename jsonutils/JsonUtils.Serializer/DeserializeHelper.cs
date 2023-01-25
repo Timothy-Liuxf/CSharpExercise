@@ -7,9 +7,7 @@ using System.Reflection;
 namespace JsonUtils.Serializer
 {
     internal class DeserializeHelper<T> : IVisitor
-        where T : notnull
     {
-
         private object deserialized;
         private ASTNode ast;
         private bool finished = false;
@@ -125,6 +123,7 @@ namespace JsonUtils.Serializer
             _ = isInteger;
             if (numberFormat.StartsWith("0x") || numberFormat.StartsWith("0X"))
             {
+                numberFormat = numberFormat.Substring(2);
                 isHex = true;
             }
             else if (numberFormat.IndexOfAny("eE".ToCharArray()) != -1)
@@ -177,12 +176,20 @@ namespace JsonUtils.Serializer
                             BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(string) })!;
                         if (isHex)
                         {
-                            var decString = long.Parse(numberFormat, NumberStyles.HexNumber);
+                            var decString = long.Parse(numberFormat, NumberStyles.HexNumber).ToString();
                             this.deserialized = parseMethod.Invoke(null, new object[] { decString })!;
                         }
                         else
                         {
-                            this.deserialized = parseMethod.Invoke(null, new object[] { numberFormat })!;
+                            if (isScience && type.IsDecimal())
+                            {
+                                parseMethod = type.GetMethod("Parse", BindingFlags.Public | BindingFlags.Static, new Type[] { typeof(string), typeof(NumberStyles) })!;
+                                this.deserialized = parseMethod.Invoke(null, new object[] { numberFormat, NumberStyles.Float })!;
+                            }
+                            else
+                            {
+                                this.deserialized = parseMethod.Invoke(null, new object[] { numberFormat })!;
+                            }
                         }
                     }
                 }
