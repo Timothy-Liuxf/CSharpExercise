@@ -201,6 +201,16 @@ namespace TestSerializer
             Assert.IsTrue(ans.SequenceEqual(arr), $"Expect [1, 2, 3], got [{arr[0]}, {arr[1]}, {arr[2]}]");
         }
 
+        [TestMethod]
+        public void TestArrayOfArray()
+        {
+            var arr = DeserializeJson<int[][]>(@"[[0, 1, 2], [3, 4], [5]]");
+            Assert.AreEqual(arr.Length, 3);
+            Assert.IsTrue(arr[0].SequenceEqual(new[] { 0, 1, 2 }));
+            Assert.IsTrue(arr[1].SequenceEqual(new[] { 3, 4 }));
+            Assert.IsTrue(arr[2].SequenceEqual(new[] { 5 }));
+        }
+
         private class TestClassObjectType
         {
             public enum JobType
