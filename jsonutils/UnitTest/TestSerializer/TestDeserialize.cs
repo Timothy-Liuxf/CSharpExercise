@@ -305,5 +305,57 @@ namespace TestSerializer
             Assert.AreEqual(jack.Name, "Jack");
             Assert.AreEqual(jack.Age, 2);
         }
+
+        class TestMissingRequiredType
+        {
+            [JsonSerializeOption(key: "key", required: true)]
+            public string Key { get; set; } = "";
+        }
+
+        [TestMethod]
+        public void TestMissingRequired()
+        {
+            Assert.ThrowsException<JsonKeyNotExistException>(() =>
+            {
+                DeserializeJson<TestMissingRequiredType>(@"{}");
+            });
+        }
+
+        [TestMethod]
+        public void TestArrayTypeError()
+        {
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson<object>(@"[]");
+            });
+        }
+
+        [TestMethod]
+        public void TestArrayElementTypeError()
+        {
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson<object[]>(@"[1, 2, 3]");
+            });
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson<int[]>(@"[1, 2, {}]");
+            });
+        }
+
+        class TestPropertiesTypeErrorType
+        {
+            [JsonSerializeOption(key: "key", required: true)]
+            public string Key { get; set; } = "";
+        }
+
+        [TestMethod]
+        public void TestPropertiesTypeError()
+        {
+            Assert.ThrowsException<TypeErrorException>(() =>
+            {
+                DeserializeJson<TestPropertiesTypeErrorType>(@"{""key"": 5}");
+            });
+        }
     }
 }
