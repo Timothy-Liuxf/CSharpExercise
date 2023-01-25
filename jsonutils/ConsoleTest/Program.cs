@@ -1,5 +1,6 @@
 ﻿using JsonUtils.Frontend;
 using JsonUtils.Formatter;
+using JsonUtils.Serializer;
 
 string json =
 @"{
@@ -89,5 +90,17 @@ Console.WriteLine("===== Formatter =====");
     var ast = frontend.Parse();
     var formatter = new Formatter(ast);
     Console.WriteLine(formatter.Format());
+}
+Console.WriteLine();
+
+Console.WriteLine("===== Deserializer =====");
+{
+    var arr = Serializer.Deserialize<int?[]>(new StringReader(@"[1, null, 3]"));
+    Console.Write("[ ");
+    foreach (var elem in arr)
+    {
+        Console.Write($"{elem?.ToString() ?? "null"}, ");
+    }
+    Console.WriteLine("]");
 }
 Console.WriteLine();

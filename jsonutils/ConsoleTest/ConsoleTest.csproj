@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\JsonUtils.Formatter\JsonUtils.Formatter.csproj" />
     <ProjectReference Include="..\JsonUtils.Frontend\JsonUtils.Frontend.csproj" />
+    <ProjectReference Include="..\JsonUtils.Serializer\JsonUtils.Serializer.csproj" />
   </ItemGroup>
 
 </Project>

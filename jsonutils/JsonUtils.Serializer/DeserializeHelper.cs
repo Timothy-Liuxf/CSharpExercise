@@ -88,6 +88,8 @@ namespace JsonUtils.Serializer
         public void Visit(BooleanValue boolean)
         {
             var type = (Type)this.deserialized;
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
             if (!type.IsBoolean())
             {
                 throw new TypeErrorException($"Expected boolean type at ({boolean.Location.Line}, {boolean.Location.Column}), found type {type.FullName}.");
@@ -141,6 +143,8 @@ namespace JsonUtils.Serializer
 
             try
             {
+                type = Nullable.GetUnderlyingType(type) ?? type;
+
                 if (type.IsEnum)
                 {
                     if (isScience || isFloatingPoint)

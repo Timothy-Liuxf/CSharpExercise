@@ -14,6 +14,12 @@
                 ?? throw new SystemException($"Failed to create an instance of type {type.FullName}.");
         }
 
+        public static object CreateInstance(Type type, object?[]? @params)
+        {
+            return Activator.CreateInstance(type, @params)
+                ?? throw new SystemException($"Failed to create an instance of type {type.FullName}.");
+        }
+
         public static Array CreateArrayInstance(Type elementType, int length)
         {
             return Array.CreateInstance(elementType, length)
