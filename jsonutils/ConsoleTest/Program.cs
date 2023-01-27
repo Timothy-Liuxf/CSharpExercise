@@ -104,3 +104,106 @@ Console.WriteLine("===== Deserializer =====");
     Console.WriteLine("]");
 }
 Console.WriteLine();
+
+Console.WriteLine("===== Serializer =====");
+{
+    string jsons;
+
+    jsons = Serializer.Serialize("string");
+    Console.WriteLine(jsons);
+
+    jsons = Serializer.Serialize(null);
+    Console.WriteLine(jsons);
+
+    int? nullInt = null;
+    jsons = Serializer.Serialize(nullInt);
+    Console.WriteLine(jsons);
+
+    jsons = Serializer.Serialize(4.3m);
+    Console.WriteLine(jsons);
+
+    jsons = Serializer.Serialize(true);
+    Console.WriteLine(jsons);
+
+    var obj = new TestSerializeObjectType()
+    {
+        Name = "Tom",
+        Age = 18,
+        Married = true,
+        LuckyNumber = null,
+        Job = TestSerializeObjectType.JobType.Programmer,
+        HairCount = -1,
+        Salary = 3555.98m,
+        Assets = 1e6m,
+        Expenditures = new decimal?[] { 1.00m, null, 23.9m },
+        BMI = 21.65,
+        Children = new TestSerializeObjectType.ChildType[]
+        {
+            new TestSerializeObjectType.ChildType()
+            {
+                Name = "Mary",
+                Age = 5,
+            },
+            new TestSerializeObjectType.ChildType()
+            {
+                Name = "Jack",
+                Age = 3,
+            },
+        },
+    };
+    jsons = Serializer.Serialize(obj);
+    Console.WriteLine(jsons);
+    Console.WriteLine(new Formatter(new FrontEnd(new StringReader(jsons)).Parse()).Format());
+}
+Console.WriteLine();
+
+class TestSerializeObjectType
+{
+    public enum JobType
+    {
+        None = 0,
+        Programmer = 1,
+    }
+
+    [JsonSerializeOption(key: "name", required: true)]
+    public string Name { get; set; } = "";
+
+    [JsonSerializeOption(key: "age", required: true)]
+    public int Age { get; set; } = 0;
+
+    [JsonSerializeOption(key: "married", required: true)]
+    public bool Married { get; set; } = false;
+
+    [JsonSerializeOption(key: "lucky-number", required: true)]
+    public int? LuckyNumber { get; set; } = 0;
+
+    [JsonSerializeOption(key: "job", required: true)]
+    public JobType Job { get; set; } = JobType.None;
+
+    [JsonSerializeOption(key: "hair-count", required: false, defaultValue: -1)]
+    public long HairCount { get; set; } = 0;
+
+    [JsonSerializeOption(key: "salary", required: true)]
+    public decimal Salary { get; set; } = 0.0m;
+
+    [JsonSerializeOption(key: "assets", required: true)]
+    public decimal Assets { get; set; } = 0.0m;
+
+    [JsonSerializeOption(key: "expenditures", required: true)]
+    public decimal?[] Expenditures { get; set; } = { };
+
+    [JsonSerializeOption(key: "bmi", required: true)]
+    public double BMI { get; set; } = 0.0d;
+
+    public class ChildType
+    {
+        [JsonSerializeOption(key: "name", required: true)]
+        public string Name { get; set; } = "";
+
+        [JsonSerializeOption(key: "age", required: true)]
+        public int Age { get; set; } = 0;
+    }
+
+    [JsonSerializeOption(key: "children", required: true)]
+    public ChildType?[] Children { get; set; } = { };
+}

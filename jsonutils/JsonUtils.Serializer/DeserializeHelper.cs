@@ -36,13 +36,14 @@ namespace JsonUtils.Serializer
             var properties = type.GetProperties();
             foreach (var property in properties)
             {
-                var attrs = property.GetCustomAttributes<JsonSerializeOptionAttribute>().GetEnumerator();
-                if (!attrs.MoveNext()) continue;
-                var attr = attrs.Current;
-                if (attrs.MoveNext())
+                var attrs = property.GetCustomAttributes<JsonSerializeOptionAttribute>();
+                var attrCount = attrs.Count();
+                if (attrCount == 0) continue;
+                if (attrCount > 1)
                 {
                     throw new DuplicateAttributeException($"Duplicate attribute {nameof(JsonSerializeOptionAttribute)} on property {property.Name}.");
                 }
+                var attr = attrs.First();
 
                 var jsonProperties = obj.Properties;
                 if (!jsonProperties.ContainsKey(attr.Key))
