@@ -51,10 +51,21 @@ namespace JsonUtils.Frontend
                                 var endLoc = -1;
                                 while (source.NextCharacter())
                                 {
-                                    if (source.TopCharacter! == '"')
+                                    var curCh = source.TopCharacter!.Value;
+                                    if (curCh == '\\' || curCh == '\"')
                                     {
-                                        endLoc = source.Location.Column;
-                                        break;
+                                        if (curCh == '\\')
+                                        {
+                                            if (!source.NextCharacter())
+                                            {
+                                                throw new SyntaxErrorException(source.Location, @"Neither JSON nor JSON5 supports multiline strings.");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            endLoc = source.Location.Column;
+                                            break;
+                                        }
                                     }
                                 }
                                 if (endLoc == -1)

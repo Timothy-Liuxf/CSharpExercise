@@ -3,9 +3,9 @@ namespace TestFrontend
     [TestClass]
     public class TestLexer
     {
-        private static void LexJsonString(string json)
+        private static IEnumerable<Token> LexJsonString(string json)
         {
-            new FrontEnd(new StringReader(json)).Lex();
+            return new FrontEnd(new StringReader(json)).Lex();
         }
 
         [TestMethod]
@@ -202,6 +202,15 @@ namespace TestFrontend
     ""key"": [ ""value"", ],
 }";
             LexJsonString(json);
+        }
+
+        [TestMethod]
+        public void TestEscapeQuotes()
+        {
+            var tokens = LexJsonString("\"string\\\"string\"");
+            Assert.AreEqual(1, tokens.Count());
+            var strToken = tokens.First();
+            Assert.AreEqual("string\\\"string", (string)strToken.GetType().GetProperty("Value")!.GetValue(strToken)!);
         }
 
         [TestMethod]
