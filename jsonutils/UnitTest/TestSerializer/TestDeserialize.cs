@@ -31,28 +31,28 @@ namespace TestSerializer
             {
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<int>(@"123"), 123);
-                    Assert.AreEqual(DeserializeJson<uint>(@"123"), 123u);
+                    Assert.AreEqual(123, DeserializeJson<int>(@"123"));
+                    Assert.AreEqual(123u, DeserializeJson<uint>(@"123"));
                 });
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<long>(@"-123"), -123L);
-                    Assert.AreEqual(DeserializeJson<ulong>(@"+123"), +123UL);
+                    Assert.AreEqual(-123L, DeserializeJson<long>(@"-123"));
+                    Assert.AreEqual(+123UL, DeserializeJson<ulong>(@"+123"));
                 });
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<nint>(@"123"), (nint)123);
-                    Assert.AreEqual(DeserializeJson<nuint>(@"123"), (nuint)123U);
+                    Assert.AreEqual((nint)123, DeserializeJson<nint>(@"123"));
+                    Assert.AreEqual((nuint)123U, DeserializeJson<nuint>(@"123"));
                 });
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<byte>(@"+123"), (byte)+123U);
-                    Assert.AreEqual(DeserializeJson<sbyte>(@"-123"), (sbyte)-123);
+                    Assert.AreEqual((byte)+123U, DeserializeJson<byte>(@"+123"));
+                    Assert.AreEqual((sbyte)-123, DeserializeJson<sbyte>(@"-123"));
                 });
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<int>(@"0x789a"), 0x789a);
-                    Assert.AreEqual(DeserializeJson<int>(@"0X789A"), 0X789A);
+                    Assert.AreEqual(0x789a, DeserializeJson<int>(@"0x789a"));
+                    Assert.AreEqual(0X789A, DeserializeJson<int>(@"0X789A"));
                 });
             }
             catch (Exception ex)
@@ -64,8 +64,8 @@ namespace TestSerializer
         [TestMethod]
         public void TestSingleEnum()
         {
-            Assert.AreEqual(DeserializeJson<TypeCode>(((int)TypeCode.Double).ToString()), TypeCode.Double);
-            Assert.AreEqual(DeserializeJson<TypeCode>($"0x{(int)TypeCode.Double:x}"), TypeCode.Double);
+            Assert.AreEqual(TypeCode.Double, DeserializeJson<TypeCode>(((int)TypeCode.Double).ToString()));
+            Assert.AreEqual(TypeCode.Double, DeserializeJson<TypeCode>($"0x{(int)TypeCode.Double:x}"));
         }
 
         [TestMethod]
@@ -82,27 +82,27 @@ namespace TestSerializer
             {
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<double>(@"1.234"), 1.234d);
-                    Assert.AreEqual(DeserializeJson<float>(@"1.234"), 1.234f);
-                    Assert.AreEqual(DeserializeJson<decimal>(@"1.234"), 1.234m);
+                    Assert.AreEqual(1.234d, DeserializeJson<double>(@"1.234"));
+                    Assert.AreEqual(1.234f, DeserializeJson<float>(@"1.234"));
+                    Assert.AreEqual(1.234m, DeserializeJson<decimal>(@"1.234"));
                 });
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<double>(@"+.234"), +.234d);
-                    Assert.AreEqual(DeserializeJson<float>(@"-.234"), -.234f);
-                    Assert.AreEqual(DeserializeJson<decimal>(@"+.234"), +.234m);
+                    Assert.AreEqual(+.234d, DeserializeJson<double>(@"+.234"));
+                    Assert.AreEqual(-.234f, DeserializeJson<float>(@"-.234"));
+                    Assert.AreEqual(+.234m, DeserializeJson<decimal>(@"+.234"));
                 });
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<double>(@"1.3e-3"), 1.3e-3d);
-                    Assert.AreEqual(DeserializeJson<float>(@"-1.3e3"), -1.3e3f);
-                    Assert.AreEqual(DeserializeJson<decimal>(@"+1.3e+3"), +1.3e+3m);
+                    Assert.AreEqual(1.3e-3d, DeserializeJson<double>(@"1.3e-3"));
+                    Assert.AreEqual(-1.3e3f, DeserializeJson<float>(@"-1.3e3"));
+                    Assert.AreEqual(+1.3e+3m, DeserializeJson<decimal>(@"+1.3e+3"));
                 });
                 TestOnce(() =>
                 {
-                    Assert.AreEqual(DeserializeJson<double>(@"0XFFFF"), (double)0XFFFF);
-                    Assert.AreEqual(DeserializeJson<float>(@"0xffff"), (float)0xffff);
-                    Assert.AreEqual(DeserializeJson<decimal>(@"0xffff"), (decimal)0xffff);
+                    Assert.AreEqual((double)0XFFFF, DeserializeJson<double>(@"0XFFFF"));
+                    Assert.AreEqual((float)0xffff, DeserializeJson<float>(@"0xffff"));
+                    Assert.AreEqual((decimal)0xffff, DeserializeJson<decimal>(@"0xffff"));
                 });
             }
             catch (Exception ex)
@@ -114,15 +114,15 @@ namespace TestSerializer
         [TestMethod]
         public void TestSingleString()
         {
-            Assert.AreEqual(DeserializeJson<string>(@""""""), "");
-            Assert.AreEqual(DeserializeJson<string>(@"""hello"""), "hello");
+            Assert.AreEqual("", DeserializeJson<string>(@""""""));
+            Assert.AreEqual("hello", DeserializeJson<string>(@"""hello"""));
         }
 
         [TestMethod]
         public void TestSingleBoolean()
         {
-            Assert.AreEqual(DeserializeJson<bool>(@"true"), true);
-            Assert.AreEqual(DeserializeJson<bool>(@"false"), false);
+            Assert.AreEqual(true, DeserializeJson<bool>(@"true"));
+            Assert.AreEqual(false, DeserializeJson<bool>(@"false"));
         }
 
         [TestMethod]
@@ -205,7 +205,7 @@ namespace TestSerializer
         public void TestArrayOfArray()
         {
             var arr = DeserializeJson<int[][]>(@"[[0, 1, 2], [3, 4], [5]]");
-            Assert.AreEqual(arr.Length, 3);
+            Assert.AreEqual(3, arr.Length);
             Assert.IsTrue(arr[0].SequenceEqual(new[] { 0, 1, 2 }));
             Assert.IsTrue(arr[1].SequenceEqual(new[] { 3, 4 }));
             Assert.IsTrue(arr[2].SequenceEqual(new[] { 5 }));
@@ -216,17 +216,17 @@ namespace TestSerializer
         {
             {
                 var arr = DeserializeJson<int?[]>(@"[0, null, 2]");
-                Assert.AreEqual(arr.Length, 3);
-                Assert.AreEqual(arr[0], 0);
-                Assert.AreEqual(arr[1], null);
-                Assert.AreEqual(arr[2], 2);
+                Assert.AreEqual(3, arr.Length);
+                Assert.AreEqual(0, arr[0]);
+                Assert.AreEqual(null, arr[1]);
+                Assert.AreEqual(2, arr[2]);
             }
             {
                 var arr = DeserializeJson<bool?[]>(@"[ true, null, false, ]");
-                Assert.AreEqual(arr.Length, 3);
-                Assert.AreEqual(arr[0], true);
-                Assert.AreEqual(arr[1], null);
-                Assert.AreEqual(arr[2], false);
+                Assert.AreEqual(3, arr.Length);
+                Assert.AreEqual(true, arr[0]);
+                Assert.AreEqual(null, arr[1]);
+                Assert.AreEqual(false, arr[2]);
             }
         }
 
@@ -243,8 +243,8 @@ namespace TestSerializer
         public void TestNullableValueTypes()
         {
             var obj = DeserializeJson<TestNullableValueTypesType>(@"{""key1"": true, ""key2"": null}");
-            Assert.AreEqual(obj.Key1, true);
-            Assert.AreEqual(obj.Key2, null);
+            Assert.AreEqual(true, obj.Key1);
+            Assert.AreEqual(null, obj.Key2);
         }
 
         private class TestClassObjectType
@@ -324,28 +324,28 @@ namespace TestSerializer
         null,
     ],
 }");
-            Assert.AreEqual(deserialized.Name, "Tom");
-            Assert.AreEqual(deserialized.Age, 34);
-            Assert.AreEqual(deserialized.Married, true);
+            Assert.AreEqual("Tom", deserialized.Name);
+            Assert.AreEqual(34, deserialized.Age);
+            Assert.AreEqual(true, deserialized.Married);
             Assert.IsNull(deserialized.LuckyNumber);
-            Assert.AreEqual(deserialized.Job, TestClassObjectType.JobType.Programmer);
-            Assert.AreEqual(deserialized.HairCount, -1);
-            Assert.AreEqual(deserialized.Salary, 3728.28m);
-            Assert.AreEqual(deserialized.Assets, 1.3e5m);
+            Assert.AreEqual(TestClassObjectType.JobType.Programmer, deserialized.Job);
+            Assert.AreEqual(-1, deserialized.HairCount);
+            Assert.AreEqual(3728.28m, deserialized.Salary);
+            Assert.AreEqual(1.3e5m, deserialized.Assets);
             Assert.IsTrue(deserialized.Expenditures.SequenceEqual(new decimal?[] { 20.34m, 16m, null, 0.00m, 35.39m }));
-            Assert.AreEqual(deserialized.BMI, 21.05d);
+            Assert.AreEqual(21.05d, deserialized.BMI);
 
             var children = deserialized.Children;
-            Assert.AreEqual(children.Length, 3);
+            Assert.AreEqual(3, children.Length);
 
             var mary = children[0]!;
             var jack = children[1]!;
 
-            Assert.AreEqual(mary.Name, "Mary");
-            Assert.AreEqual(mary.Age, 5);
+            Assert.AreEqual("Mary", mary.Name);
+            Assert.AreEqual(5, mary.Age);
 
-            Assert.AreEqual(jack.Name, "Jack");
-            Assert.AreEqual(jack.Age, 2);
+            Assert.AreEqual("Jack", jack.Name);
+            Assert.AreEqual(2, jack.Age);
 
             Assert.IsNull(children[2]);
         }
