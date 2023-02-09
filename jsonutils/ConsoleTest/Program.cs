@@ -157,6 +157,53 @@ Console.WriteLine("===== Serializer =====");
 }
 Console.WriteLine();
 
+Console.WriteLine("===== Deserializer with Escaping =====");
+{
+    var str = Serializer.Deserialize<string>(new StringReader(@"""01234\b\b5\n\t0123\u007B"""));
+    Console.WriteLine(str);
+
+    try
+    {
+        Serializer.Deserialize<string>(new StringReader(@"""01234\d"""));
+    }
+    catch (SyntaxErrorException ex)
+    {
+        Console.WriteLine($"{ex.ToString()}");
+    }
+    Console.WriteLine();
+
+    try
+    {
+        Serializer.Deserialize<string>(new StringReader(@"""01234\dsss"""));
+    }
+    catch (SyntaxErrorException ex)
+    {
+        Console.WriteLine($"{ex.ToString()}");
+    }
+    Console.WriteLine();
+
+    try
+    {
+        Serializer.Deserialize<string>(new StringReader(@"""01234\u889"""));
+    }
+    catch (SyntaxErrorException ex)
+    {
+        Console.WriteLine($"{ex.ToString()}");
+    }
+    Console.WriteLine();
+
+    try
+    {
+        Serializer.Deserialize<string>(new StringReader(@"""01234\u88RB"""));
+    }
+    catch (SyntaxErrorException ex)
+    {
+        Console.WriteLine($"{ex.ToString()}");
+    }
+    Console.WriteLine();
+}
+Console.WriteLine();
+
 class TestSerializeObjectType
 {
     public enum JobType

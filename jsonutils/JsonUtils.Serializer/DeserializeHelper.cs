@@ -105,7 +105,17 @@ namespace JsonUtils.Serializer
             {
                 throw new TypeErrorException($"Expected string type at ({@string.Location.Line}, {@string.Location.Column}), found type {type.FullName}.");
             }
-            this.deserialized = @string.Value;
+            var (str, errPos) = JsonTools.ParseEscapingString(@string.Value);
+            if (str is null)
+            {
+                var lineStr = @string.Value;
+                var ch = lineStr[errPos!.Value];
+                var errLen = Math.Min(5, lineStr.Length - errPos.Value);
+                var errStr = ch != 'u' ? $"{ch}" : $"{lineStr.Substring(errPos.Value, errLen)}";
+                throw new SyntaxErrorException(new SourceLocation(@string.Location.Line, errPos.Value + 1),
+                        $"Error escaping character: \\{errStr}.");
+            }
+            this.deserialized = str;
         }
 
         public void Visit(NullValue @null)
