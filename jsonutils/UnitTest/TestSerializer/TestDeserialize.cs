@@ -247,6 +247,30 @@ namespace TestSerializer
             Assert.AreEqual(null, obj.Key2);
         }
 
+        [TestMethod]
+        public void TestEscapingCharacter()
+        {
+            var str = DeserializeJson<string>(@"""0123\""0123\/\\\b\f\n\r\t\u007B\u7A23""");
+            Assert.AreEqual("0123\"0123/\\\b\f\n\r\t\u007B\u7A23", str);
+        }
+
+        [TestMethod]
+        public void TestFailedscapingCharacter()
+        {
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                DeserializeJson<string>(@"""0123\d""");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                DeserializeJson<string>(@"""\u62RA""");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                DeserializeJson<string>(@"""\u6B2""");
+            });
+        }
+
         private class TestClassObjectType
         {
             public enum JobType
