@@ -11,6 +11,7 @@ namespace JsonUtils.Serializer
         private StringBuilder stringBuilder = new();
         private bool finish = false;
         private object? obj;
+        private bool ensureASCII;
 
         public string Serialize()
         {
@@ -85,12 +86,13 @@ namespace JsonUtils.Serializer
 
         private void SerializeImpl(string @string)
         {
-            stringBuilder.Append($"\"{@string}\"");
+            stringBuilder.Append($"\"{JsonUtils.Utils.JsonTools.GenerateEscapingString(@string, ensureASCII)}\"");
         }
 
-        public SerializeHelper(object? obj)
+        public SerializeHelper(object? obj, bool ensureASCII)
         {
             this.obj = obj;
+            this.ensureASCII = ensureASCII;
         }
     }
 }

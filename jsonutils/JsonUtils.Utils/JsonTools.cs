@@ -72,5 +72,70 @@
             }
             return (new string(buf, 0, pos), null);
         }
+
+        public static string GenerateEscapingString(string str, bool ensureAscii)
+        {
+            var buf = new ExtendedBuffer<char>(str.Length);
+            int pos = 0;
+            foreach (var ch in str)
+            {
+                switch (ch)
+                {
+                    case '\b':
+                        buf[pos++] = '\\';
+                        buf[pos++] = 'b';
+                        break;
+                    case '\f':
+                        buf[pos++] = '\\';
+                        buf[pos++] = 'f';
+                        break;
+                    case '\n':
+                        buf[pos++] = '\\';
+                        buf[pos++] = 'n';
+                        break;
+                    case '\r':
+                        buf[pos++] = '\\';
+                        buf[pos++] = 'r';
+                        break;
+                    case '\t':
+                        buf[pos++] = '\\';
+                        buf[pos++] = 't';
+                        break;
+                    case '\"':
+                        buf[pos++] = '\\';
+                        buf[pos++] = '\"';
+                        break;
+                    case '/':
+                        break;
+                    case '\\':
+                        buf[pos++] = '\\';
+                        buf[pos++] = '\\';
+                        break;
+                    default:
+                        if (
+                                char.IsControl(ch)
+                                || (ensureAscii && (uint)ch > 127)
+                            )
+                        {
+                            buf[pos++] = '\\';
+                            buf[pos++] = 'u';
+                            uint val = (uint)ch;
+                            for (int i = 0; i < 4; ++i)
+                            {
+                                var res = val % 16u;
+                                val = val / 16u;
+                                buf[pos + (3 - i)] = (char)(res < 10u ? res + '0' : res - 10u +'A');
+                            }
+                            pos += 4;
+                        }
+                        else
+                        {
+                            buf[pos++] = ch;
+                        }
+                        break;
+                }
+            }
+            return new string(buf.Buffer, 0, pos);
+        }
     }
 }

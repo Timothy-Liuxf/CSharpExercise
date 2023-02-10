@@ -8,9 +8,9 @@
             return new DeserializeHelper<T>(ast).Deserialize();
         }
 
-        public static string Serialize(object? obj)
+        public static string Serialize(object? obj, bool ensureASCII = true)
         {
-            return new SerializeHelper(obj).Serialize();
+            return new SerializeHelper(obj, ensureASCII).Serialize();
         }
     }
 }

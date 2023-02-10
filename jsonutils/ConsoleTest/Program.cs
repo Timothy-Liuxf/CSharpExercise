@@ -204,6 +204,18 @@ Console.WriteLine("===== Deserializer with Escaping =====");
 }
 Console.WriteLine();
 
+Console.WriteLine("===== Serializer with Escaping =====");
+{
+    string jsons;
+
+    var str = "string\b\f\\\"\t哈哈嘻嘻" + (char)30;
+    jsons = Serializer.Serialize(str, true);
+    Console.WriteLine(jsons);
+    jsons = Serializer.Serialize(str, false);
+    Console.WriteLine(jsons);
+}
+Console.WriteLine();
+
 class TestSerializeObjectType
 {
     public enum JobType
