@@ -112,27 +112,77 @@
         }
 
         [TestMethod]
+        public void TestExtraContent()
+        {
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                ParseJsonString(@"{},");
+            });
+        }
+
+        [TestMethod]
+        public void TestLineComment()
+        {
+            ParseJsonString(@"{}// hahaha");
+        }
+
+        [TestMethod]
+        public void TestExtraLineComment()
+        {
+            ParseJsonString(@"{}//");
+        }
+
+        [TestMethod]
+        public void TestEmptyContent()
+        {
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                ParseJsonString(@"");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                ParseJsonString(@"  ");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                ParseJsonString(@"//{}");
+            });
+        }
+
+        [TestMethod]
         public void TestAll()
         {
             try
             {
                 var json =
-@"{
-    ""key1"": true,
-    ""key2"": false,
+    @" // Head comment
+{
+    // comment
+    ""key1"": true,    // key1
+    ""key2"": false,   // key2
     ""key3"": -1.6e+103,
     ""key4"": ""strVal"",
     ""key5"": null,
-    ""arr"": [
+    ""key6"":          // comment after colon
+        null,
+    ""key7""           // comment after key
+            :
+        null           // comment before comma
+        ,
+    ""arr"": [         // arr
         {
-            ""key11""   :59,""key12"" :  666 ,""key13"":""""
+            ""key11""   :59,""key12"" :  666 ,""key13"":""""    // arr key1
             ,""key14"":0    ,    ""key15"":[],""key16"" : {}  ,
             ""key17"":{""key21"":{} ,},""key18"":[11,0x99ff,22,0X000,]
         },
+        {   // empty object
+        },
         {
-        }
+        },
     ]
-}";
+}
+// tailing comment
+";
                 ParseJsonString(json);
             }
             catch (Exception ex)

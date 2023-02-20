@@ -124,7 +124,7 @@
                             {
                                 var res = val % 16u;
                                 val = val / 16u;
-                                buf[pos + (3 - i)] = (char)(res < 10u ? res + '0' : res - 10u +'A');
+                                buf[pos + (3 - i)] = (char)(res < 10u ? res + '0' : res - 10u + 'A');
                             }
                             pos += 4;
                         }

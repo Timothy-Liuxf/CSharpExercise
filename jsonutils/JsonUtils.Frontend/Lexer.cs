@@ -47,7 +47,7 @@ namespace JsonUtils.Frontend
                             break;
                         case '"':
                             {
-                                var startLoc = source.Location.Column;
+                                var startLoc = orgLocation.Column;
                                 var endLoc = -1;
                                 while (source.NextCharacter())
                                 {
@@ -77,7 +77,7 @@ namespace JsonUtils.Frontend
                             break;
                         case 't':
                             {
-                                var startLoc = source.Location.Column;
+                                var startLoc = orgLocation.Column;
                                 if (string.CompareOrdinal(currentLine, startLoc - 1, Token.TrueLiteral, 0, Token.TrueLiteral.Length) != 0)
                                 {
                                     throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
@@ -91,7 +91,7 @@ namespace JsonUtils.Frontend
                             break;
                         case 'f':
                             {
-                                var startLoc = source.Location.Column;
+                                var startLoc = orgLocation.Column;
                                 if (string.CompareOrdinal(currentLine, startLoc - 1, Token.FalseLiteral, 0, Token.FalseLiteral.Length) != 0)
                                 {
                                     throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
@@ -105,7 +105,7 @@ namespace JsonUtils.Frontend
                             break;
                         case 'n':
                             {
-                                var startLoc = source.Location.Column;
+                                var startLoc = orgLocation.Column;
                                 if (string.CompareOrdinal(currentLine, startLoc - 1, Token.NullLiteral, 0, Token.NullLiteral.Length) != 0)
                                 {
                                     throw new SyntaxErrorException(new SourceLocation(source.Location.Line, startLoc), "Error token.");
@@ -117,6 +117,15 @@ namespace JsonUtils.Frontend
                                 tokens.Add(new Token(TokenType.NullLiteral, orgLocation));
                             }
                             break;
+                        case '/':
+                            {
+                                if (!source.NextCharacter() || source.TopCharacter! != '/')
+                                {
+                                    throw new SyntaxErrorException(orgLocation, $"Error token \'{ch}\'.");
+                                }
+                                tokens.Add(new LineComment(source.CurrentLine!.Substring(orgLocation.Column + 1), orgLocation));
+                                goto nextLine;
+                            }
                         default:
                             {
                                 if (!char.IsWhiteSpace(ch))
@@ -140,6 +149,7 @@ namespace JsonUtils.Frontend
                         source.NextCharacter();
                     }
                 }
+            nextLine:;
             }
             EndLocation = totalEndLocation;
             this.tokens = tokens;

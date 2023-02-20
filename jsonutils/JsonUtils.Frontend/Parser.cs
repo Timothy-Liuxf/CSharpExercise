@@ -11,22 +11,17 @@ namespace JsonUtils.Frontend
 
         private ASTNode ParseOnce()
         {
-            tokens.NextToken();
             var ast = ParseJsonObject();
-            var currToken = tokens.CurrentToken;
-            if (currToken is not null)
-            {
-                throw new SyntaxErrorException(currToken.Location, "Extra content.");
-            }
+            tokens.AssertNullToken("Extra content.");
             this.ast = ast;
             return ast;
         }
 
         private JsonObject ParseJsonObject()
         {
-            AssertCurrentTokenNotNull("Missing json value.");
+            var currToken = tokens.AssertCurrentTokenNotNull("Missing json value.");
 
-            switch (tokens.CurrentToken!.Type)
+            switch (currToken.Type)
             {
                 case TokenType.LBrace:
                     return ParseClassObject();
@@ -41,32 +36,29 @@ namespace JsonUtils.Frontend
                 case TokenType.NullLiteral:
                     return ParseNullValue();
                 default:
-                    throw new SyntaxErrorException(tokens.CurrentToken.Location, $"Unexpected token: {tokens.CurrentToken}.");
+                    throw new SyntaxErrorException(currToken.Location, $"Unexpected token: {currToken}.");
             }
         }
 
         private ClassObject ParseClassObject()
         {
             var orgLocation = tokens.CurrentToken!.Location;
-            tokens.NextToken(); // Pass token '{'
+            tokens.MatchToken(false); // Pass token '{'
             var properties = new Dictionary<string, (SourceLocation, JsonObject)>();
             while (true)
             {
-                AssertCurrentTokenNotNull("Missing \'}\' token.");
+                var currToken = tokens.AssertCurrentTokenNotNull("Missing \'}\' token.");
 
-                if (tokens.CurrentToken!.Type == TokenType.RBrace)
+                if (currToken.Type == TokenType.RBrace)
                 {
-                    tokens.NextToken();
+                    tokens.MatchToken(false);
                     break;
                 }
 
-                MatchToken(TokenType.StringLiteral, $"Expect string literal, found {tokens.CurrentToken!}.");
-                var keyToken = (tokens.CurrentToken! as StringLiteral)!;
+                var keyToken = (StringLiteral)tokens.MatchToken(TokenType.StringLiteral, "string literal");
                 string key = keyToken.Value;
-                tokens.NextToken();
 
-                MatchToken(TokenType.Colon, $"Expect \':\' token, found {tokens.CurrentToken!}.");
-                tokens.NextToken();
+                tokens.MatchToken(TokenType.Colon, "\':\'");
 
                 var val = ParseJsonObject();
                 if (properties.ContainsKey(key))
@@ -75,15 +67,14 @@ namespace JsonUtils.Frontend
                 }
                 properties.Add(key, (keyToken.Location, val));
 
-                AssertCurrentTokenNotNull("Missing \'}\' token.");
-                if (tokens.CurrentToken!.Type == TokenType.Comma)
+                currToken = tokens.AssertCurrentTokenNotNull("Missing \'}\' token.");
+                if (currToken.Type == TokenType.Comma)
                 {
-                    tokens.NextToken();
+                    tokens.MatchToken(false);
                 }
                 else
                 {
-                    MatchToken(TokenType.RBrace, $"Expect \'}}\' token, found {tokens.CurrentToken!}.");
-                    tokens.NextToken();
+                    tokens.MatchToken(TokenType.RBrace, "\'}\'");
                     break;
                 }
             }
@@ -93,30 +84,29 @@ namespace JsonUtils.Frontend
         private ArrayObject ParseArrayObject()
         {
             var orgLocation = tokens.CurrentToken!.Location;
-            tokens.NextToken(); // Pass token '['
+            tokens.MatchToken(false); // Pass token '['
             var objects = new List<JsonObject>();
             while (true)
             {
-                AssertCurrentTokenNotNull("Missing \']\' token.");
+                var currToken = tokens.AssertCurrentTokenNotNull("Missing \']\' token.");
 
-                if (tokens.CurrentToken!.Type == TokenType.RBracket)
+                if (currToken.Type == TokenType.RBracket)
                 {
-                    tokens.NextToken();
+                    tokens.MatchToken(false);
                     break;
                 }
 
                 var obj = ParseJsonObject();
                 objects.Add(obj);
 
-                AssertCurrentTokenNotNull("Missing \']\' token.");
-                if (tokens.CurrentToken!.Type == TokenType.Comma)
+                currToken = tokens.AssertCurrentTokenNotNull("Missing \']\' token.");
+                if (currToken.Type == TokenType.Comma)
                 {
-                    tokens.NextToken();
+                    tokens.MatchToken(false);
                 }
                 else
                 {
-                    MatchToken(TokenType.RBracket, $"Expect \']\' token, found {tokens.CurrentToken!}.");
-                    tokens.NextToken();
+                    tokens.MatchToken(TokenType.RBracket, "\']\'");
                     break;
                 }
             }
@@ -126,56 +116,37 @@ namespace JsonUtils.Frontend
         private NumberValue ParseNumberValue()
         {
             var res = new NumberValue((tokens.CurrentToken as NumericLiteral)!.Value, tokens.CurrentToken!.Location);
-            tokens.NextToken();
+            tokens.MatchToken(false);
             return res;
         }
 
         private BooleanValue ParseBooleanValue()
         {
             var res = new BooleanValue((tokens.CurrentToken as BooleanLiteral)!.Value, tokens.CurrentToken!.Location);
-            tokens.NextToken();
+            tokens.MatchToken(false);
             return res;
         }
 
         private StringValue ParseStringValue()
         {
             var res = new StringValue((tokens.CurrentToken as StringLiteral)!.Value, tokens.CurrentToken!.Location);
-            tokens.NextToken();
+            tokens.MatchToken(false);
             return res;
         }
 
         private NullValue ParseNullValue()
         {
             var res = new NullValue(tokens.CurrentToken!.Location);
-            tokens.NextToken();
+            tokens.MatchToken(false);
             return res;
         }
 
-        private void AssertCurrentTokenNotNull(string message)
-        {
-            if (tokens.CurrentToken is null)
-            {
-                throw new SyntaxErrorException(endLocation, message);
-            }
-        }
-
-        private void MatchToken(TokenType token, string message)
-        {
-            var currToken = tokens.CurrentToken!;
-            if (currToken.Type != token)
-            {
-                throw new SyntaxErrorException(currToken.Location, message);
-            }
-        }
-
         private TokenReader tokens;
-        private SourceLocation endLocation;
         private ASTNode? ast;
 
-        public Parser(TokenReader tokens, SourceLocation endLocation)
+        public Parser(TokenReader tokens)
         {
             this.tokens = tokens;
-            this.endLocation = endLocation;
         }
     }
 }

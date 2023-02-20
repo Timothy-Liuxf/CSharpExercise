@@ -13,7 +13,7 @@ namespace JsonUtils.Frontend
 
         public ASTNode Parse()
         {
-            return new Parser(new TokenReader(lexer.Lex()), lexer.EndLocation).Parse();
+            return new Parser(new TokenReader(lexer.Lex(), lexer.EndLocation)).Parse();
         }
 
         public FrontEnd(TextReader reader)

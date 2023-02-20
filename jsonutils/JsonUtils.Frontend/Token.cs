@@ -13,6 +13,7 @@
         BooleanLiteral,     // Bool
         NumericLiteral,     // int
         NullLiteral,        // null
+        LineComment,        // // comment
     }
 
     public class Token
@@ -78,6 +79,21 @@
         public NumericLiteral(string value, SourceLocation location) : base(TokenType.NumericLiteral, location)
         {
             Value = value;
+        }
+    }
+
+    internal class LineComment : Token
+    {
+        public string Content { get; init; }
+
+        public override string ToString()
+        {
+            return "//" + Content;
+        }
+
+        public LineComment(string content, SourceLocation location) : base(TokenType.LineComment, location)
+        {
+            Content = content;
         }
     }
 }

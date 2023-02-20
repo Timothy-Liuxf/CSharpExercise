@@ -374,6 +374,68 @@ namespace TestSerializer
             Assert.IsNull(children[2]);
         }
 
+        [TestMethod]
+        public void TestClassObjectWithComment()
+        {
+            var deserialized = DeserializeJson<TestClassObjectType>(
+@"
+// Json file
+{
+    // Information of Tom
+
+    ""name"": ""Tom"",      // Name
+    ""age"": 34,            // Age
+    ""married""             // Married Key
+                :           // Colon
+            true            // Value
+            ,               // Comma
+    ""lucky-number"": null, // Lucky number
+    ""job"": 1,
+    ""salary"": 3728.28,
+    ""assets"": 1.3e5,
+    ""bmi"": 21.05,
+    ""expenditures"": [20.34, 16, null, 0.00, 35.39],
+    ""children"":           // Children
+    [                       // Begin children array
+        {
+            ""name"": ""Mary"",
+            ""age"": 5
+        },                  // Mary children information
+        {
+            ""name"": ""Jack"",
+            ""age"": 2
+        },                  // Jack children information
+        null,               // End children array
+    ],
+}                           // End object
+// Trailing comment
+");
+            Assert.AreEqual("Tom", deserialized.Name);
+            Assert.AreEqual(34, deserialized.Age);
+            Assert.AreEqual(true, deserialized.Married);
+            Assert.IsNull(deserialized.LuckyNumber);
+            Assert.AreEqual(TestClassObjectType.JobType.Programmer, deserialized.Job);
+            Assert.AreEqual(-1, deserialized.HairCount);
+            Assert.AreEqual(3728.28m, deserialized.Salary);
+            Assert.AreEqual(1.3e5m, deserialized.Assets);
+            Assert.IsTrue(deserialized.Expenditures.SequenceEqual(new decimal?[] { 20.34m, 16m, null, 0.00m, 35.39m }));
+            Assert.AreEqual(21.05d, deserialized.BMI);
+
+            var children = deserialized.Children;
+            Assert.AreEqual(3, children.Length);
+
+            var mary = children[0]!;
+            var jack = children[1]!;
+
+            Assert.AreEqual("Mary", mary.Name);
+            Assert.AreEqual(5, mary.Age);
+
+            Assert.AreEqual("Jack", jack.Name);
+            Assert.AreEqual(2, jack.Age);
+
+            Assert.IsNull(children[2]);
+        }
+
         class TestMissingRequiredType
         {
             [JsonSerializeOption(key: "key", required: true)]

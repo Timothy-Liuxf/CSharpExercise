@@ -2,23 +2,35 @@
 using JsonUtils.Formatter;
 using JsonUtils.Serializer;
 
-string json =
-@"{
-    ""key1"": true,
-    ""key2"": false,
+var json =
+@" // Head comment
+{
+    // comment
+    ""key1"": true,    // key1
+    ""key2"": false,   // key2
     ""key3"": -1.6e+103,
     ""key4"": ""strVal"",
     ""key5"": null,
-    ""arr"": [
+    ""key6"":          // comment after colon
+        null,
+    ""key7""           // comment after key
+            :
+        null           // comment before comma
+        ,
+    ""arr"": [         // arr
         {
-            ""key11""   :59,""key12"" :  666 ,""key13"":""""
+            ""key11""   :59,""key12"" :  666 ,""key13"":""""    // arr key1
             ,""key14"":0    ,    ""key15"":[],""key16"" : {}  ,
             ""key17"":{""key21"":{} ,},""key18"":[11,0x99ff,22,0X000,]
         },
+        {   // empty object
+        },
         {
-        }
+        },
     ]
-}";
+}
+// tailing comment
+";
 
 Console.WriteLine("===== Lexer =====");
 {
@@ -84,7 +96,6 @@ Console.WriteLine();
 
 Console.WriteLine("===== Formatter =====");
 {
-
     var frontend = new FrontEnd(new StringReader(json));
     var tokens = frontend.Lex();
     var ast = frontend.Parse();

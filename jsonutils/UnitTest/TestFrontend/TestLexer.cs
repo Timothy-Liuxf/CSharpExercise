@@ -235,25 +235,53 @@ namespace TestFrontend
         }
 
         [TestMethod]
+        public void TestLineComment()
+        {
+            {
+                var comment = LexJsonString(@"// hahaha");
+                var commentToken = comment.First();
+                Assert.AreEqual(@" hahaha", (string)commentToken.GetType().GetProperty("Content")!.GetValue(commentToken)!);
+            }
+            {
+                Assert.ThrowsException<SyntaxErrorException>(() =>
+                {
+                    LexJsonString(@"/ / hahaha");
+                });
+            }
+        }
+
+        [TestMethod]
         public void TestAll()
         {
             var json =
-@"{
-    ""key1"": true,
-    ""key2"": false,
+@" // Head comment
+{
+    // comment
+    ""key1"": true,    // key1
+    ""key2"": false,   // key2
     ""key3"": -1.6e+103,
     ""key4"": ""strVal"",
     ""key5"": null,
-    ""arr"": [
+    ""key6"":          // comment after colon
+        null,
+    ""key7""           // comment after key
+            :
+        null           // comment before comma
+        ,
+    ""arr"": [         // arr
         {
-            ""key11""   :59,""key12"" :  666 ,""key13"":""""
+            ""key11""   :59,""key12"" :  666 ,""key13"":""""    // arr key1
             ,""key14"":0    ,    ""key15"":[],""key16"" : {}  ,
             ""key17"":{""key21"":{} ,},""key18"":[11,0x99ff,22,0X000,]
         },
+        {   // empty object
+        },
         {
-        }
+        },
     ]
-}";
+}
+// tailing comment
+";
             LexJsonString(json);
         }
     }
