@@ -390,12 +390,12 @@ namespace TestSerializer
             true            // Value
             ,               // Comma
     ""lucky-number"": null, // Lucky number
-    ""job"": 1,
-    ""salary"": 3728.28,
-    ""assets"": 1.3e5,
-    ""bmi"": 21.05,
-    ""expenditures"": [20.34, 16, null, 0.00, 35.39],
-    ""children"":           // Children
+    'job': 1,
+    'salary': 3728.28,
+    'assets': 1.3e5,
+    'bmi': 21.05,
+    'expenditures': [20.34, 16, null, 0.00, 35.39],
+    'children':           // Children
     [                       // Begin children array
         {
             ""name"": ""Mary"",

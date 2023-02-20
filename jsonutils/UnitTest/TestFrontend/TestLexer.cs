@@ -25,6 +25,8 @@ namespace TestFrontend
         {
             LexJsonString(@"""""");
             LexJsonString(@"""string""");
+            LexJsonString(@"''");
+            LexJsonString(@"'string'");
         }
 
         [TestMethod]
@@ -278,7 +280,8 @@ namespace TestFrontend
         },
         {
         },
-    ]
+    ],
+    'single': true,     // single quote string
 }
 // tailing comment
 ";

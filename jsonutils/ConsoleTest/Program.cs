@@ -27,7 +27,8 @@ var json =
         },
         {
         },
-    ]
+    ],
+    'single': true,     // single quote string
 }
 // tailing comment
 ";

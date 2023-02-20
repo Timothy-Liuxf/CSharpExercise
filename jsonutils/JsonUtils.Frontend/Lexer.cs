@@ -45,20 +45,21 @@ namespace JsonUtils.Frontend
                         case ':':
                             tokens.Add(new Token(TokenType.Colon, orgLocation));
                             break;
-                        case '"':
+                        case '\"':
+                        case '\'':
                             {
                                 var startLoc = orgLocation.Column;
                                 var endLoc = -1;
                                 while (source.NextCharacter())
                                 {
                                     var curCh = source.TopCharacter!.Value;
-                                    if (curCh == '\\' || curCh == '\"')
+                                    if (curCh == '\\' || curCh == ch)
                                     {
                                         if (curCh == '\\')
                                         {
                                             if (!source.NextCharacter())
                                             {
-                                                throw new SyntaxErrorException(source.Location, @"Neither JSON nor JSON5 supports multiline strings.");
+                                                throw new NotImplementedException(@"Multiline strings have not been supported yet.");
                                             }
                                         }
                                         else
