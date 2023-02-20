@@ -25,8 +25,39 @@ namespace TestFrontend
         {
             LexJsonString(@"""""");
             LexJsonString(@"""string""");
+            LexJsonString(@"""'""");
             LexJsonString(@"''");
             LexJsonString(@"'string'");
+            LexJsonString(@"'""'");
+        }
+
+        [TestMethod]
+        public void TestFailedString()
+        {
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                LexJsonString(@"""");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                LexJsonString(@"""string");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                LexJsonString(@"""string'");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                LexJsonString(@"'");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                LexJsonString(@"'string");
+            });
+            Assert.ThrowsException<SyntaxErrorException>(() =>
+            {
+                LexJsonString(@"'string""");
+            });
         }
 
         [TestMethod]

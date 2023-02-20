@@ -116,6 +116,10 @@ namespace TestSerializer
         {
             Assert.AreEqual("", DeserializeJson<string>(@""""""));
             Assert.AreEqual("hello", DeserializeJson<string>(@"""hello"""));
+            Assert.AreEqual("hel\'lo", DeserializeJson<string>(@"""hel'lo"""));
+            Assert.AreEqual("", DeserializeJson<string>(@"''"));
+            Assert.AreEqual("hello", DeserializeJson<string>(@"'hello'"));
+            Assert.AreEqual("hel\"lo", DeserializeJson<string>(@"'hel""lo'"));
         }
 
         [TestMethod]
