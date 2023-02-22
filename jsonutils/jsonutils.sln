@@ -18,11 +18,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FADADF10-2448-49D3-94FB-135FDB4E2410}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonUtils.Utils", "JsonUtils.Utils\JsonUtils.Utils.csproj", "{E1BB11A5-DC3B-4975-9FE7-73A4755D584D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSerializer", "UnitTest\TestSerializer\TestSerializer.csproj", "{38194801-D3A9-4A93-B434-AF49DD55434B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSerializer", "UnitTest\TestSerializer\TestSerializer.csproj", "{38194801-D3A9-4A93-B434-AF49DD55434B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
