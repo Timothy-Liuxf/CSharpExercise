@@ -4,13 +4,18 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace GoScript.Frontend
 {
-    public class Lexer
+    internal class Lexer
     {
-        private IReadOnlyList<Token>? tokens;
+        private bool lexed = false;
 
-        private IReadOnlyList<Token> LexOnce()
+        public IEnumerable<Token> Lex()
         {
-            var tokens = new List<Token>();
+            if (lexed)
+            {
+                throw new InternalErrorException("Already lexed.");
+            }
+
+            lexed = true;
             while (this.file.NextLine())
             {
                 var currentLine = this.file.CurrentLine!;
@@ -23,20 +28,20 @@ namespace GoScript.Frontend
                     switch (ch)
                     {
                         case ':':
-                            tokens.Add(new Punctuator(PunctuatorType.Colon, orgLocation));
+                            yield return new Punctuator(PunctuatorType.Colon, orgLocation);
                             break;
                         case ',':
-                            tokens.Add(new Punctuator(PunctuatorType.Comma, orgLocation));
+                            yield return new Punctuator(PunctuatorType.Comma, orgLocation);
                             break;
                         case ';':
-                            tokens.Add(new Punctuator(PunctuatorType.Semicolon, orgLocation));
+                            yield return new Punctuator(PunctuatorType.Semicolon, orgLocation);
                             break;
                         case '.':
                             if (file.NextCharacter() && file.TopCharacter!.Value == '.')
                             {
                                 if (file.NextCharacter() && file.TopCharacter!.Value == '.')
                                 {
-                                    tokens.Add(new Punctuator(PunctuatorType.Omit, orgLocation));
+                                    yield return new Punctuator(PunctuatorType.Omit, orgLocation);
                                 }
                                 else
                                 {
@@ -45,58 +50,58 @@ namespace GoScript.Frontend
                             }
                             else
                             {
-                                tokens.Add(new Punctuator(PunctuatorType.Dot, orgLocation));
+                                yield return new Punctuator(PunctuatorType.Dot, orgLocation);
                             }
                             nextChar = false;
                             break;
                         case '{':
-                            tokens.Add(new Punctuator(PunctuatorType.LBrace, orgLocation));
+                            yield return new Punctuator(PunctuatorType.LBrace, orgLocation);
                             break;
                         case '}':
-                            tokens.Add(new Punctuator(PunctuatorType.RBrace, orgLocation));
+                            yield return new Punctuator(PunctuatorType.RBrace, orgLocation);
                             break;
                         case '[':
-                            tokens.Add(new Punctuator(PunctuatorType.LBracket, orgLocation));
+                            yield return new Punctuator(PunctuatorType.LBracket, orgLocation);
                             break;
                         case ']':
-                            tokens.Add(new Punctuator(PunctuatorType.RBracket, orgLocation));
+                            yield return new Punctuator(PunctuatorType.RBracket, orgLocation);
                             break;
                         case '(':
-                            tokens.Add(new Punctuator(PunctuatorType.LParen, orgLocation));
+                            yield return new Punctuator(PunctuatorType.LParen, orgLocation);
                             break;
                         case ')':
-                            tokens.Add(new Punctuator(PunctuatorType.RParan, orgLocation));
+                            yield return new Punctuator(PunctuatorType.RParan, orgLocation);
                             break;
                         case '+':
                             if (file.NextCharacter() && file.TopCharacter!.Value == '+')
                             {
-                                tokens.Add(new Punctuator(PunctuatorType.Increment, orgLocation));
+                                yield return new Punctuator(PunctuatorType.Increment, orgLocation);
                             }
                             else
                             {
                                 nextChar = false;
-                                tokens.Add(new Punctuator(PunctuatorType.Add, orgLocation));
+                                yield return new Punctuator(PunctuatorType.Add, orgLocation);
                             }
                             break;
                         case '-':
                             if (file.NextCharacter() && file.TopCharacter!.Value == '-')
                             {
-                                tokens.Add(new Punctuator(PunctuatorType.Decrement, orgLocation));
+                                yield return new Punctuator(PunctuatorType.Decrement, orgLocation);
                             }
                             else
                             {
                                 nextChar = false;
-                                tokens.Add(new Punctuator(PunctuatorType.Sub, orgLocation));
+                                yield return new Punctuator(PunctuatorType.Sub, orgLocation);
                             }
                             break;
                         case '*':
-                            tokens.Add(new Punctuator(PunctuatorType.Star, orgLocation));
+                            yield return new Punctuator(PunctuatorType.Star, orgLocation);
                             break;
                         case '/':
-                            tokens.Add(new Punctuator(PunctuatorType.Div, orgLocation));
+                            yield return new Punctuator(PunctuatorType.Div, orgLocation);
                             break;
                         case '%':
-                            tokens.Add(new Punctuator(PunctuatorType.Mod, orgLocation));
+                            yield return new Punctuator(PunctuatorType.Mod, orgLocation);
                             break;
                         case '>':
                         case '<':
@@ -143,7 +148,7 @@ namespace GoScript.Frontend
                                 _ => throw new InternalErrorException("Internal compiler error."),
                             };
                             var type = ParseDoubleCharPunctuator(ch, singlePunctuator, doublePunctuators, orgLocation);
-                            tokens.Add(new Punctuator(type, orgLocation));
+                            yield return new Punctuator(type, orgLocation);
                             nextChar = false;
                             break;
                         default:
@@ -159,7 +164,6 @@ namespace GoScript.Frontend
                     }
                 }
             }
-            return tokens;
         }
 
         private PunctuatorType ParseDoubleCharPunctuator(char firstChar, PunctuatorType singlePunctrator, (char, PunctuatorType)[] doublePunctrators, SourceLocation orgLocation)
@@ -187,11 +191,6 @@ namespace GoScript.Frontend
                 }
             }
             return singlePunctrator;
-        }
-
-        public IReadOnlyList<Token> Lex()
-        {
-            return this.tokens ??= LexOnce();
         }
 
         private SourceFile file;

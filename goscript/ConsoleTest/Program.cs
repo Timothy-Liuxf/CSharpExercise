@@ -7,5 +7,5 @@ var prog = """
     }
     """;
 
-var tokens = new Lexer(new SourceFile(new StringReader(prog))).Lex();
+var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
 Console.WriteLine(string.Join(' ', tokens));
