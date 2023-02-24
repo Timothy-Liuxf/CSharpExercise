@@ -2,8 +2,8 @@
 {
     public record struct SourceLocation
     {
-        public /* required */ int Line { get; init; }
-        public /* required */ int Column { get; init; }
+        public /* required */ int Line { get; set; }
+        public /* required */ int Column { get; set; }
 
         public override string ToString()
         {

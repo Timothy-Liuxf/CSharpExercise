@@ -58,6 +58,7 @@ namespace GoScript.Frontend
         BitAnd,     // &
         BitOr,      // |
         BitNot,     // ~
+        BitXor,     // ^
         LShift,     // <<
         RShift,     // >>
         Assign,     // =
@@ -104,6 +105,7 @@ namespace GoScript.Frontend
                 PunctuatorType.BitAnd => "&",
                 PunctuatorType.BitOr => "|",
                 PunctuatorType.BitNot => "~",
+                PunctuatorType.BitXor => "^",
                 PunctuatorType.LShift => "<<",
                 PunctuatorType.RShift => ">>",
                 PunctuatorType.Assign => "=",

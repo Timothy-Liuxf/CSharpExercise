@@ -1,14 +1,15 @@
-﻿namespace GoScript.Frontend
+﻿using GoScript.Utils;
+
+namespace GoScript.Frontend
 {
     public class InternalErrorException : Exception
     {
-        private string message;
+        public InternalErrorException(string message) : base($"Internal Error: {message}") { }
+    }
 
-        public override string Message => $"Internal Error: {this.message}";
-
-        public InternalErrorException(string message)
-        {
-            this.message = message;
-        }
+    public class SyntaxErrorException : Exception
+    {
+        public SyntaxErrorException(SourceLocation location, string message)
+            : base($"Syntax error at: {location}: {message}") { }
     }
 }

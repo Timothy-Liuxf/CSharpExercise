@@ -1,2 +1,11 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using GoScript.Frontend;
+
+var prog = """
+    {
+        >= <= >> << == != && || & =
+        [+-*/()%~] =
+    }
+    """;
+
+var tokens = new Lexer(new SourceFile(new StringReader(prog))).Lex();
+Console.WriteLine(string.Join(' ', tokens));
