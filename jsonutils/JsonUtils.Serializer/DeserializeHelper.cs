@@ -112,7 +112,7 @@ namespace JsonUtils.Serializer
                 var ch = lineStr[errPos!.Value];
                 var errLen = Math.Min(5, lineStr.Length - errPos.Value);
                 var errStr = ch != 'u' ? $"{ch}" : $"{lineStr.Substring(errPos.Value, errLen)}";
-                throw new SyntaxErrorException(new SourceLocation(@string.Location.Line, errPos.Value + 1),
+                throw new SyntaxErrorException(new SourceLocation(@string.Location.Line, @string.Location.Column + errPos.Value),
                         $"Error escaping character: \\{errStr}.");
             }
             this.deserialized = str;

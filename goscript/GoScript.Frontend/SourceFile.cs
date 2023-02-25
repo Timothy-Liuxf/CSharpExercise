@@ -31,10 +31,10 @@ namespace GoScript.Frontend
             }
         }
 
-        public bool NextCharacter()
+        public char? NextCharacter()
         {
             ++this.location.Column;
-            return CurrentLine is not null && location.Column <= CurrentLine.Length;
+            return this.TopCharacter;
         }
 
         public SourceFile(TextReader reader)

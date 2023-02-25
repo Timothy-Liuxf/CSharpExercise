@@ -1,6 +1,4 @@
 ﻿using GoScript.Utils;
-using System;
-using System.Diagnostics;
 
 namespace GoScript.Frontend
 {
@@ -70,11 +68,11 @@ namespace GoScript.Frontend
 
         public PunctuatorType Type;
 
-        public override string ToString()
+        public static string? GetPunctuator(PunctuatorType type)
         {
-            return this.Type switch
+            return type switch
             {
-                PunctuatorType.None => "None",
+                PunctuatorType.None => null,
                 PunctuatorType.Colon => ":",
                 PunctuatorType.Comma => ",",
                 PunctuatorType.Semicolon => ";",
@@ -83,7 +81,7 @@ namespace GoScript.Frontend
                 PunctuatorType.RBrace => "}",
                 PunctuatorType.LBracket => "[",
                 PunctuatorType.RBracket => "]",
-                PunctuatorType.LParen => "",
+                PunctuatorType.LParen => "(",
                 PunctuatorType.RParan => ")",
                 PunctuatorType.Omit => "...",
                 PunctuatorType.Add => "+",
@@ -109,8 +107,35 @@ namespace GoScript.Frontend
                 PunctuatorType.LShift => "<<",
                 PunctuatorType.RShift => ">>",
                 PunctuatorType.Assign => "=",
-                _ => throw new InternalErrorException($"Bad punctuator token {this.Type} at {this.Location}.")
+                _ => null,
             };
+        }
+
+        private static IEnumerable<string> GetAllPunctuatorsImpl()
+        {
+            foreach (var val in Enum.GetValues(typeof(PunctuatorType)).Cast<PunctuatorType>())
+            {
+                var punctuator = GetPunctuator(val);
+                if (punctuator is not null)
+                {
+                    yield return punctuator;
+                }
+            }
+        }
+
+        private static IReadOnlySet<string>? allPunctuators;
+        public static IEnumerable<string> AllPunctuators
+            => allPunctuators ?? (allPunctuators = GetAllPunctuatorsImpl().ToHashSet());
+
+        public static bool IsPunctuator(string str)
+        {
+            return AllPunctuators.Contains(str);
+        }
+
+        public override string ToString()
+        {
+            return this.Type == PunctuatorType.None ? "None" : GetPunctuator(this.Type)
+                ?? throw new InternalErrorException($"Bad punctuator token {this.Type} at {this.Location}.");
         }
 
         public Punctuator(PunctuatorType type, SourceLocation location) : base(location)
@@ -126,10 +151,11 @@ namespace GoScript.Frontend
         Import,     // import
         Func,       // func
         Var,        // var
-        If,         // If
+        If,         // if
         For,        // for
         Break,      // break
         Continue,   // continue
+        Return,     // return
         Type,       // type
         Struct,     // struct
         Interface,  // interface
@@ -155,19 +181,20 @@ namespace GoScript.Frontend
 
         public KeywordType Type;
 
-        public override string ToString()
+        public static string? GetKeywordString(KeywordType type)
         {
-            return this.Type switch
+            return type switch
             {
-                KeywordType.None => "None",
+                KeywordType.None => null,
                 KeywordType.Package => "package",
                 KeywordType.Import => "import",
                 KeywordType.Func => "func",
                 KeywordType.Var => "var",
-                KeywordType.If => "If",
+                KeywordType.If => "if",
                 KeywordType.For => "for",
                 KeywordType.Break => "break",
                 KeywordType.Continue => "continue",
+                KeywordType.Return => "return",
                 KeywordType.Type => "type",
                 KeywordType.Struct => "struct",
                 KeywordType.Interface => "interface",
@@ -176,8 +203,8 @@ namespace GoScript.Frontend
                 KeywordType.UInt8 => "uint8",
                 KeywordType.Int16 => "int16",
                 KeywordType.UInt16 => "uint16",
-                KeywordType.Int32 => "int16",
-                KeywordType.UInt32 => "uint16",
+                KeywordType.Int32 => "int32",
+                KeywordType.UInt32 => "uint32",
                 KeywordType.Int64 => "int64",
                 KeywordType.UInt64 => "uint64",
                 KeywordType.Float32 => "float32",
@@ -185,8 +212,29 @@ namespace GoScript.Frontend
                 KeywordType.Bool => "bool",
                 KeywordType.True => "true",
                 KeywordType.False => "false",
-                _ => throw new InternalErrorException($"Bad keyword token {this.Type} at {this.Location}.")
+                _ => null,
             };
+        }
+
+        private static IEnumerable<KeywordType> GetAllKeywordsImpl()
+        {
+            foreach (var val in Enum.GetValues(typeof(KeywordType)).Cast<KeywordType>())
+            {
+                if (val != KeywordType.None)
+                {
+                    yield return val;
+                }
+            }
+        }
+
+        private static IReadOnlyDictionary<string, KeywordType>? allKeywords;
+        public static IReadOnlyDictionary<string, KeywordType> AllKeywords
+            => allKeywords ?? (allKeywords = GetAllKeywordsImpl().ToDictionary(type => GetKeywordString(type)
+                    ?? throw new InternalErrorException($"Keyword type: {type} does not have its string.")));
+
+        public override string ToString()
+        {
+            return this.Type == KeywordType.None ? "None" : GetKeywordString(this.Type) ?? throw new InternalErrorException($"Bad keyword token {this.Type} at {this.Location}.");
         }
 
         public Keyword(KeywordType type, SourceLocation location) : base(location)
@@ -251,7 +299,7 @@ namespace GoScript.Frontend
 
         public override string ToString()
         {
-            return "\"" + Value + "\"";
+            return "\"" + Escaping.GenerateEscapingString(Value, false) + "\"";
         }
 
         public StringLiteral(string value, SourceLocation location) : base(location)
@@ -280,7 +328,7 @@ namespace GoScript.Frontend
 
         public override string ToString()
         {
-            return $"<Id: {Name}>";
+            return $"<Id:{Name}>";
         }
 
         public Identifier(string name, SourceLocation location) : base(location)
