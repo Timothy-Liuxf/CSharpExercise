@@ -1,4 +1,4 @@
-    # Grammar
+# Grammar
 
 ```ANTLR
 Program         : Statement*
