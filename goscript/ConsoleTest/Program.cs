@@ -1,19 +1,21 @@
 ﻿using GoScript.Frontend;
 
 {
-    var prog = """
+    Console.WriteLine("===== Test Lexer =====\n\n");
     {
-        >= <= >> << == != && || & =
-        [+-*/()%~] =
+        var prog = """
+        {
+            >= <= >> << == != && || & =
+            [+-*/()%~] =
+        }
+        """;
+
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(string.Join(' ', tokens));
     }
-    """;
 
-    var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-    Console.WriteLine(string.Join(' ', tokens));
-}
-
-{
-    var prog = """
+    {
+        var prog = """
         package main
 
         import "fmt"
@@ -39,6 +41,33 @@
         }
         """;
 
-    var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-    Console.WriteLine(string.Join(' ', tokens));
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(string.Join(' ', tokens));
+    }
+}
+
+{
+    Console.WriteLine("===== Test Parser =====\n\n");
+    {
+        var prog = """
+            var x int32
+            var y int32 = 6
+            var z int32;
+            var w int32 = 6;
+            var a = x + y
+            var b = a + z + w;
+            a + b
+            x + y + a + b;
+            ;
+
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(string.Join(' ', tokens));
+
+        var asts = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine($"<---\n{ast.ToString()}-->");
+        }
+    }
 }

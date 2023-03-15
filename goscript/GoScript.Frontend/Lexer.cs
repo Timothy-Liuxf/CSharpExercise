@@ -1,8 +1,5 @@
 ﻿using GoScript.Utils;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 namespace GoScript.Frontend
@@ -329,6 +326,7 @@ namespace GoScript.Frontend
                         file.NextCharacter();
                     }
                 }
+                yield return new Newline(file.Location);
             }
         }
 

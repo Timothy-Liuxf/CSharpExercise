@@ -9,6 +9,7 @@ namespace GoScript.Frontend
         Keyword,
         Literal,
         Identifier,
+        Newline,
     }
 
     public abstract class Token
@@ -66,7 +67,7 @@ namespace GoScript.Frontend
     {
         public override TokenType TokenCatagory => TokenType.Punctuator;
 
-        public PunctuatorType Type;
+        public PunctuatorType Type { get; private init; }
 
         public static string? GetPunctuator(PunctuatorType type)
         {
@@ -173,13 +174,32 @@ namespace GoScript.Frontend
         Bool,       // bool
         True,       // true
         False,      // false
+        Nil,        // nil
     }
 
     public class Keyword : Token
     {
         public override TokenType TokenCatagory => TokenType.Keyword;
 
-        public KeywordType Type;
+        public KeywordType Type { get; private init; }
+
+        public bool IsTypeKeyword()
+        {
+            return Type switch
+            {
+                KeywordType.Int8 or
+                KeywordType.UInt8 or
+                KeywordType.Int16 or
+                KeywordType.UInt16 or
+                KeywordType.Int32 or
+                KeywordType.UInt32 or
+                KeywordType.Int64 or
+                KeywordType.UInt64 or
+                KeywordType.Float32 or
+                KeywordType.Float64 => true,
+                _ => false,
+            };
+        }
 
         public static string? GetKeywordString(KeywordType type)
         {
@@ -212,6 +232,7 @@ namespace GoScript.Frontend
                 KeywordType.Bool => "bool",
                 KeywordType.True => "true",
                 KeywordType.False => "false",
+                KeywordType.Nil => "nil",
                 _ => null,
             };
         }
@@ -335,5 +356,17 @@ namespace GoScript.Frontend
         {
             this.Name = name;
         }
+    }
+
+    public class Newline : Token
+    {
+        public override TokenType TokenCatagory => TokenType.Newline;
+
+        public override string ToString()
+        {
+            return "Newline\n";
+        }
+
+        public Newline(SourceLocation location) : base(location) { }
     }
 }

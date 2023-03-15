@@ -11,5 +11,7 @@ namespace GoScript.Frontend
     {
         public SyntaxErrorException(SourceLocation location, string message)
             : base($"Syntax error at: {location}: {message}") { }
+
+        public SyntaxErrorException(string message) : base($"Syntax error: {message}") { }
     }
 }
