@@ -1,4 +1,5 @@
 ﻿using GoScript.Frontend;
+using GoScript.Frontend.Lexer;
 
 {
     Console.WriteLine("===== Test Lexer =====\n\n");

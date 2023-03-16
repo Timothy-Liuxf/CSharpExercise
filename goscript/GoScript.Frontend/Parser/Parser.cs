@@ -1,6 +1,7 @@
 ﻿using GoScript.Frontend.AST;
+using GoScript.Frontend.Lexer;
 
-namespace GoScript.Frontend
+namespace GoScript.Frontend.Parser
 {
     internal class Parser
     {

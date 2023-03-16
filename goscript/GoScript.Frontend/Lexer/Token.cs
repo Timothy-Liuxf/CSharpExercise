@@ -1,6 +1,6 @@
 ﻿using GoScript.Utils;
 
-namespace GoScript.Frontend
+namespace GoScript.Frontend.Lexer
 {
     public enum TokenType
     {
@@ -20,7 +20,7 @@ namespace GoScript.Frontend
 
         public Token(SourceLocation location)
         {
-            this.Location = location;
+            Location = location;
         }
     }
 
@@ -135,13 +135,13 @@ namespace GoScript.Frontend
 
         public override string ToString()
         {
-            return this.Type == PunctuatorType.None ? "None" : GetPunctuator(this.Type)
-                ?? throw new InternalErrorException($"Bad punctuator token {this.Type} at {this.Location}.");
+            return Type == PunctuatorType.None ? "None" : GetPunctuator(Type)
+                ?? throw new InternalErrorException($"Bad punctuator token {Type} at {Location}.");
         }
 
         public Punctuator(PunctuatorType type, SourceLocation location) : base(location)
         {
-            this.Type = type;
+            Type = type;
         }
     }
 
@@ -255,12 +255,12 @@ namespace GoScript.Frontend
 
         public override string ToString()
         {
-            return this.Type == KeywordType.None ? "None" : GetKeywordString(this.Type) ?? throw new InternalErrorException($"Bad keyword token {this.Type} at {this.Location}.");
+            return Type == KeywordType.None ? "None" : GetKeywordString(Type) ?? throw new InternalErrorException($"Bad keyword token {Type} at {Location}.");
         }
 
         public Keyword(KeywordType type, SourceLocation location) : base(location)
         {
-            this.Type = type;
+            Type = type;
         }
     }
 
@@ -281,8 +281,8 @@ namespace GoScript.Frontend
 
         public override string ToString()
         {
-            return this.GetType().GetProperty("Value")!.GetValue(this)!.ToString()
-                ?? throw new InternalErrorException($"Fail to get the string of token {this.GetType().Name}.");
+            return GetType().GetProperty("Value")!.GetValue(this)!.ToString()
+                ?? throw new InternalErrorException($"Fail to get the string of token {GetType().Name}.");
         }
 
         public Literal(SourceLocation location) : base(location) { }
@@ -296,7 +296,7 @@ namespace GoScript.Frontend
 
         public IntegerLiteral(ulong value, SourceLocation location) : base(location)
         {
-            this.Value = value;
+            Value = value;
         }
     }
 
@@ -308,7 +308,7 @@ namespace GoScript.Frontend
 
         public FloatLiteral(double value, SourceLocation location) : base(location)
         {
-            this.Value = value;
+            Value = value;
         }
     }
 
@@ -325,7 +325,7 @@ namespace GoScript.Frontend
 
         public StringLiteral(string value, SourceLocation location) : base(location)
         {
-            this.Value = value;
+            Value = value;
         }
     }
 
@@ -337,7 +337,7 @@ namespace GoScript.Frontend
 
         public BoolLiteral(bool value, SourceLocation location) : base(location)
         {
-            this.Value = value;
+            Value = value;
         }
     }
 
@@ -354,7 +354,7 @@ namespace GoScript.Frontend
 
         public Identifier(string name, SourceLocation location) : base(location)
         {
-            this.Name = name;
+            Name = name;
         }
     }
 

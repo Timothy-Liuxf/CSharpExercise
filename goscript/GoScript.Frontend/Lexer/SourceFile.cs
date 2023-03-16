@@ -1,6 +1,6 @@
 ﻿using GoScript.Utils;
 
-namespace GoScript.Frontend
+namespace GoScript.Frontend.Lexer
 {
     public class SourceFile
     {
@@ -14,8 +14,8 @@ namespace GoScript.Frontend
         public bool NextLine()
         {
             CurrentLine = reader.ReadLine();
-            ++this.location.Line;
-            this.location.Column = 0;
+            ++location.Line;
+            location.Column = 0;
             return CurrentLine is not null;
         }
 
@@ -33,8 +33,8 @@ namespace GoScript.Frontend
 
         public char? NextCharacter()
         {
-            ++this.location.Column;
-            return this.TopCharacter;
+            ++location.Column;
+            return TopCharacter;
         }
 
         public SourceFile(TextReader reader)

@@ -1,6 +1,6 @@
 ﻿using GoScript.Utils;
 
-namespace GoScript.Frontend
+namespace GoScript.Frontend.Lexer
 {
     internal class Escaping
     {
@@ -45,12 +45,12 @@ namespace GoScript.Frontend
                         buf[pos++] = '\\';
                         break;
                     case 'u':
-                        if (str.Length - i < 5 || !(str.Substring(i + 1, 4).All(ch =>
+                        if (str.Length - i < 5 || !str.Substring(i + 1, 4).All(ch =>
                                     char.IsDigit(ch)
-                                    || (ch >= 'a' && ch <= 'f')
-                                    || (ch >= 'A' && ch <= 'F')
+                                    || ch >= 'a' && ch <= 'f'
+                                    || ch >= 'A' && ch <= 'F'
                                 )
-                            )
+
                            )
                         {
                             return (null, i);
@@ -116,12 +116,12 @@ namespace GoScript.Frontend
                     default:
                         if (
                                 char.IsControl(ch)
-                                || (ensureAscii && (uint)ch > 127)
+                                || ensureAscii && (uint)ch > 127
                             )
                         {
                             buf[pos++] = '\\';
                             buf[pos++] = 'u';
-                            uint val = (uint)ch;
+                            uint val = ch;
                             for (int i = 0; i < 4; ++i)
                             {
                                 var res = val % 16u;

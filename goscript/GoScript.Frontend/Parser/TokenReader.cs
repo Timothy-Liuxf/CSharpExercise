@@ -1,4 +1,6 @@
-﻿namespace GoScript.Frontend
+﻿using GoScript.Frontend.Lexer;
+
+namespace GoScript.Frontend.Parser
 {
     internal class TokenReader
     {
@@ -8,24 +10,24 @@
         {
             if (tokenItr.MoveNext())
             {
-                this.CurrentToken = tokenItr.Current;
+                CurrentToken = tokenItr.Current;
                 return true;
             }
             else
             {
-                this.CurrentToken = null;
+                CurrentToken = null;
                 return false;
             }
         }
 
         public Token AssertCurrentTokenNotNull(string message)
         {
-            return this.CurrentToken ?? throw new SyntaxErrorException(message);
+            return CurrentToken ?? throw new SyntaxErrorException(message);
         }
 
         public Token AssertCurrentTokenNotNull()
         {
-            return this.CurrentToken ?? throw new SyntaxErrorException("Missing token.");
+            return CurrentToken ?? throw new SyntaxErrorException("Missing token.");
         }
 
         public Punctuator MatchPunctuator(PunctuatorType type)
@@ -36,7 +38,7 @@
                 var punctuator = (Punctuator)token;
                 if (punctuator.Type == type)
                 {
-                    this.NextToken();
+                    NextToken();
                     return punctuator;
                 }
             }
@@ -45,7 +47,7 @@
 
         public bool TryPeekPunctuator(PunctuatorType type, out Punctuator? punctuator)
         {
-            var token = this.PeekToken();
+            var token = PeekToken();
             if (token.TokenCatagory == TokenType.Punctuator
                 && ((Punctuator)token).Type == type)
             {
@@ -60,7 +62,7 @@
         {
             if (TryPeekPunctuator(type, out punctuator))
             {
-                this.MatchToken();
+                MatchToken();
                 return true;
             }
             return false;
@@ -74,7 +76,7 @@
                 var keyword = (Keyword)token;
                 if (keyword.Type == type)
                 {
-                    this.NextToken();
+                    NextToken();
                     return keyword;
                 }
             }
@@ -83,7 +85,7 @@
 
         public bool TryPeekKeyword(KeywordType type, out Keyword? keyword)
         {
-            var token = this.PeekToken();
+            var token = PeekToken();
             if (token.TokenCatagory == TokenType.Keyword
                 && ((Keyword)token).Type == type)
             {
@@ -105,7 +107,7 @@
 
         public bool TryPeekTypeKeyword(out Keyword? keyword)
         {
-            var token = this.PeekToken();
+            var token = PeekToken();
             if (token.TokenCatagory == TokenType.Keyword
                 && ((Keyword)token).IsTypeKeyword())
             {
@@ -120,7 +122,7 @@
         {
             if (TryPeekTypeKeyword(out keyword))
             {
-                this.NextToken();
+                NextToken();
                 return true;
             }
             return false;
@@ -134,7 +136,7 @@
                 var literal = (Literal)token;
                 if (literal.Type == type)
                 {
-                    this.NextToken();
+                    NextToken();
                     return literal;
                 }
             }
@@ -143,7 +145,7 @@
 
         public bool TryPeekLiteral(LiteralType type, out Literal? literal)
         {
-            var token = this.PeekToken();
+            var token = PeekToken();
             if (token.TokenCatagory == TokenType.Literal
                 && ((Literal)token).Type == type)
             {
@@ -158,7 +160,7 @@
         {
             if (TryPeekLiteral(type, out literal))
             {
-                this.MatchToken();
+                MatchToken();
                 return true;
             }
             return false;
@@ -169,7 +171,7 @@
             var token = AssertCurrentTokenNotNull($"Expect identifier.");
             if (token.TokenCatagory == TokenType.Identifier)
             {
-                this.NextToken();
+                NextToken();
                 return (Identifier)token;
             }
             throw new SyntaxErrorException(token.Location, $"Expect identifier, found \'{token.ToString()}\'.");
@@ -177,7 +179,7 @@
 
         public bool TryPeekIdentifier(out Identifier? identifier)
         {
-            var token = this.PeekToken();
+            var token = PeekToken();
             if (token.TokenCatagory == TokenType.Identifier)
             {
                 identifier = (Identifier)token;
@@ -191,7 +193,7 @@
         {
             if (TryPeekIdentifier(out identifier))
             {
-                this.MatchToken();
+                MatchToken();
                 return true;
             }
             return false;
@@ -202,7 +204,7 @@
             var token = AssertCurrentTokenNotNull($"Expect newline character.");
             if (token.TokenCatagory == TokenType.Newline)
             {
-                this.NextToken();
+                NextToken();
                 return (Newline)token;
             }
             throw new SyntaxErrorException(token.Location, $"Expect newline character, found \'{token.ToString()}\'.");
@@ -210,7 +212,7 @@
 
         public bool TryPeekNewline(out Newline? newline)
         {
-            var token = this.PeekToken();
+            var token = PeekToken();
             if (token.TokenCatagory == TokenType.Newline)
             {
                 newline = (Newline)token;
@@ -224,7 +226,7 @@
         {
             if (TryPeekNewline(out newline))
             {
-                this.MatchToken();
+                MatchToken();
                 return true;
             }
             return false;
@@ -233,7 +235,7 @@
         public Token MatchToken(string? message = null)
         {
             var token = AssertCurrentTokenNotNull(message ?? $"Missing token.");
-            this.NextToken();
+            NextToken();
             return token;
         }
 
@@ -246,8 +248,8 @@
 
         public TokenReader(IEnumerable<Token> tokens)
         {
-            this.tokenItr = tokens.GetEnumerator();
-            this.NextToken();
+            tokenItr = tokens.GetEnumerator();
+            NextToken();
         }
     }
 }

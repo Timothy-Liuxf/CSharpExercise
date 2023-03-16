@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace GoScript.Frontend
+namespace GoScript.Frontend.Lexer
 {
     internal class Lexer
     {
@@ -17,14 +17,14 @@ namespace GoScript.Frontend
 
             lexed = true;
             var keywords = Keyword.AllKeywords;
-            while (this.file.NextLine())
+            while (file.NextLine())
             {
-                var currentLine = this.file.CurrentLine!;
+                var currentLine = file.CurrentLine!;
                 file.NextCharacter();
                 while (file.TopCharacter is not null)
                 {
                     var ch = file.TopCharacter!.Value;
-                    var orgLocation = this.file.Location;
+                    var orgLocation = file.Location;
                     var nextChar = true;
                     switch (ch)
                     {
@@ -251,7 +251,7 @@ namespace GoScript.Frontend
                                     {
                                         var nextCh = file.TopCharacter.Value;
                                         if (!(char.IsWhiteSpace(nextCh)
-                                            || (Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.')))
+                                            || Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.'))
                                         {
                                             throw new SyntaxErrorException(orgLocation, $"Error number literal at {orgLocation}.");
 
@@ -270,7 +270,7 @@ namespace GoScript.Frontend
                                     {
                                         var nextCh = file.TopCharacter.Value;
                                         if (!(char.IsWhiteSpace(nextCh)
-                                            || (Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.')))
+                                            || Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.'))
                                         {
                                             throw new SyntaxErrorException(orgLocation, $"Error number literal at {orgLocation}.");
                                         }
@@ -288,7 +288,7 @@ namespace GoScript.Frontend
                                     {
                                         var nextCh = file.TopCharacter.Value;
                                         if (!(char.IsWhiteSpace(nextCh)
-                                            || (Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.')))
+                                            || Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.'))
                                         {
                                             throw new SyntaxErrorException(orgLocation, $"Error number literal at {orgLocation}.");
                                         }
@@ -306,7 +306,7 @@ namespace GoScript.Frontend
                                     {
                                         var nextCh = file.TopCharacter.Value;
                                         if (!(char.IsWhiteSpace(nextCh)
-                                            || (Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.')))
+                                            || Punctuator.IsPunctuator(nextCh.ToString()) && nextCh != '.'))
                                         {
                                             throw new SyntaxErrorException(orgLocation, $"Error number literal at {orgLocation}.");
                                         }
