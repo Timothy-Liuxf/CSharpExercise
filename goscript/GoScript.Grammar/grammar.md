@@ -8,14 +8,14 @@ Statement       : VarDecl ';'? NEWLINE
                 | Expression? ';'? NEWLINE
                 ;
 
-Expression      : AddExpr
-                ;
-
 VarDecl         : 'var' IDENTIFIER Type ('=' Expression)?
                 | 'var' IDENTIFIER '=' Expression
                 ;
 
 Type            : TYPE_KEYWORD
+                ;
+
+Expression      : AddExpr
                 ;
 
 AddExpr         : AddExpr '+' PrimaryExpr
@@ -24,5 +24,6 @@ AddExpr         : AddExpr '+' PrimaryExpr
 
 PrimaryExpr     : IDENTIFIER
                 | INTEGER_LITERAL
+                | '(' Expression ')'
                 ;
 ```

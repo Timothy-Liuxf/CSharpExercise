@@ -82,6 +82,12 @@ namespace GoScript.Frontend.Parse
                 var integerLiteral = (literal as IntegerLiteral)!;
                 return new IntegerRValueExpr(integerLiteral.Value);
             }
+            if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
+            {
+                var expr = ParseExpression();
+                tokens.MatchPunctuator(PunctuatorType.RParen);
+                return expr;
+            }
             throw new NotImplementedException("ParsePrimaryExpr");
         }
 

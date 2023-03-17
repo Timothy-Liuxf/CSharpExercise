@@ -85,12 +85,13 @@ using GoScript.Frontend.Lex;
             var b = a + z + w;
             a + b
             x + y + a + b
+            x + (y + a) + (b)
             x + y + a + b;
             ;
 
 
             x
-            y
+            (y)
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(string.Join(' ', tokens));

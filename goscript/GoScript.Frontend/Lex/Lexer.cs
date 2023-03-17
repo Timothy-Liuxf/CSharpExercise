@@ -71,7 +71,7 @@ namespace GoScript.Frontend.Lex
                             yield return new Punctuator(PunctuatorType.LParen, orgLocation);
                             break;
                         case ')':
-                            yield return new Punctuator(PunctuatorType.RParan, orgLocation);
+                            yield return new Punctuator(PunctuatorType.RParen, orgLocation);
                             break;
                         case '+':
                             if (file.NextCharacter() != null && file.TopCharacter!.Value == '+')

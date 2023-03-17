@@ -36,7 +36,7 @@ namespace GoScript.Frontend.Lex
         LBracket,   // [
         RBracket,   // ]
         LParen,     // (
-        RParan,     // )
+        RParen,     // )
         Omit,       // ...
         Add,        // +
         Sub,        // -
@@ -83,7 +83,7 @@ namespace GoScript.Frontend.Lex
                 PunctuatorType.LBracket => "[",
                 PunctuatorType.RBracket => "]",
                 PunctuatorType.LParen => "(",
-                PunctuatorType.RParan => ")",
+                PunctuatorType.RParen => ")",
                 PunctuatorType.Omit => "...",
                 PunctuatorType.Add => "+",
                 PunctuatorType.Sub => "-",
