@@ -1,33 +1,33 @@
 # Grammar
 
 ```ANTLR
-Program         : Statement*
-                ;
+Program                 : Statement*
+                        ;
 
-Statement       : VarDecl ';'? NEWLINE
-                | Expression? ';'? NEWLINE
-                ;
+Statement               : VarDecl ';'? NEWLINE
+                        | Expression? ';'? NEWLINE
+                        ;
 
-VarDecl         : 'var' IDENTIFIER Type ('=' Expression)?
-                | 'var' IDENTIFIER '=' Expression
-                ;
+VarDecl                 : 'var' IDENTIFIER Type ('=' Expression)?
+                        | 'var' IDENTIFIER '=' Expression
+                        ;
 
-Type            : TYPE_KEYWORD
-                ;
+Type                    : TYPE_KEYWORD
+                        ;
 
-Expression      : AdditiveExpr
-                ;
+Expression              : AdditiveExpr
+                        ;
 
-AdditiveExpr    : AdditiveExpr ('+'|'-') Multiplicative
-                | Multiplicative
-                ;
+AdditiveExpr            : AdditiveExpr ('+'|'-') MultiplicativeExpr
+                        | MultiplicativeExpr
+                        ;
 
-Multiplicative  : Multiplicative ('*'|'/'|'%') PrimaryExpr
-                | PrimaryExpr
-                ;
+MultiplicativeExpr      : MultiplicativeExpr ('*'|'/'|'%') PrimaryExpr
+                        | PrimaryExpr
+                        ;
 
-PrimaryExpr     : IDENTIFIER
-                | INTEGER_LITERAL
-                | '(' Expression ')'
-                ;
+PrimaryExpr             : IDENTIFIER
+                        | INTEGER_LITERAL
+                        | '(' Expression ')'
+                        ;
 ```
