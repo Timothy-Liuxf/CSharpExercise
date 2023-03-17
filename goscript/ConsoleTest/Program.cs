@@ -58,7 +58,7 @@ using GoScript.Frontend.Lex;
             var a = x + y
             var b = a + z + w;
             a + b
-            x + y + a + b;
+            x + y % 4 + -a * (b - w) / z;
             ;
 
             """;
@@ -78,7 +78,7 @@ using GoScript.Frontend.Lex;
     {
         var prog = """
             var x int32
-            var y int32 = 6
+            var y int32 = -6
             var z int32;
             var w int32 = 6;
             var a = x + y
@@ -89,10 +89,10 @@ using GoScript.Frontend.Lex;
             y
             a + b
             a + b;
-            1 + b + 3 * y * (a + b) / 3
+            1 + b + -3 * y * (a + b) / 3
             a % 5
             x
-            (y)
+            - -(- -y)
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(string.Join(' ', tokens));

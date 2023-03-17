@@ -4,6 +4,7 @@
     {
         void Visit(AdditiveExpr additiveExpr);
         void Visit(MultiplicativeExpr multiplicativeExpr);
+        void Visit(UnaryExpr unaryExpr);
         void Visit(IdExpr idExpr);
         void Visit(IntegerRValueExpr integerRValueExpr);
         void Visit(SingleStmt singleStmt);

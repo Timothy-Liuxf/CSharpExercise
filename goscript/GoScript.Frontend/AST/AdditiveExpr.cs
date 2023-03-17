@@ -1,5 +1,4 @@
-﻿using GoScript.Frontend.Types;
-using GoScript.Utils;
+﻿using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
@@ -26,7 +25,13 @@ namespace GoScript.Frontend.AST
 
         public override string ToString()
         {
-            return $"{this.LExpr} + {this.RExpr}";
+            var ch = this.Operator switch
+            {
+                OperatorType.Add => '+',
+                OperatorType.Sub => '-',
+                _ => throw new InternalErrorException("Unknown operator type."),
+            };
+            return $"{this.LExpr} {ch} {this.RExpr}";
         }
 
         internal override void Accept(IVisitor visitor) => visitor.Visit(this);

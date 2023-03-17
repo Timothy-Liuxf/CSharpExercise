@@ -80,12 +80,12 @@ namespace GoScript.Frontend.Parse
 
         private Expression ParseMultiplicativeExpr()
         {
-            var expr = ParsePrimaryExpr();
+            var expr = ParseUnaryExpr();
             while (tokens.TryMatchPunctuator(PunctuatorType.Star, out var op)
                 || tokens.TryMatchPunctuator(PunctuatorType.Div, out op)
                 || tokens.TryMatchPunctuator(PunctuatorType.Mod, out op))
             {
-                var rExpr = ParsePrimaryExpr();
+                var rExpr = ParseUnaryExpr();
                 expr = new MultiplicativeExpr(expr, rExpr, op!.Type switch
                 {
                     PunctuatorType.Star => MultiplicativeExpr.OperatorType.Mul,
@@ -96,6 +96,18 @@ namespace GoScript.Frontend.Parse
                 op.Location);
             }
             return expr;
+        }
+
+        private Expression ParseUnaryExpr()
+        {
+            if (tokens.TryMatchPunctuator(PunctuatorType.Sub, out var op))
+            {
+                var expr = ParseUnaryExpr();
+                return new UnaryExpr(expr, op!.Location);
+                // return new UnaryExpr(expr, UnaryExpr.OperatorType.Neg, op!.Location);
+                // return new UnaryExpr(expr, UnaryExpr.OperatorType.Not, op!.Location);
+            }
+            return ParsePrimaryExpr();
         }
 
         private Expression ParsePrimaryExpr()

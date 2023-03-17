@@ -119,6 +119,18 @@ namespace GoScript.Frontend.Translation
             };
         }
 
+        void IVisitor.Visit(UnaryExpr unaryExpr)
+        {
+            var operand = unaryExpr.Operand;
+            operand.Accept(this);
+            if (operand.Attributes.ExprType is not GSInt32)
+            {
+                throw new InvalidOperationException($"At {unaryExpr.Location}: Invalid unary operator \'-\'.");
+            }
+            unaryExpr.Attributes.ExprType = new GSInt32();
+            unaryExpr.Attributes.Value = -(int)operand.Attributes.Value!;
+        }
+
         void IVisitor.Visit(EmptyStmt emptyStmt)
         {
             emptyStmt.Attributes.StmtType = new GSNilType();

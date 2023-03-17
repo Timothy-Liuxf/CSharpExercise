@@ -22,8 +22,12 @@ AdditiveExpr            : AdditiveExpr ('+'|'-') MultiplicativeExpr
                         | MultiplicativeExpr
                         ;
 
-MultiplicativeExpr      : MultiplicativeExpr ('*'|'/'|'%') PrimaryExpr
-                        | PrimaryExpr
+MultiplicativeExpr      : MultiplicativeExpr ('*'|'/'|'%') UnaryExpr
+                        | UnaryExpr
+                        ;
+
+UnaryExpr               : '-' UnaryExpr
+                        : PrimaryExpr
                         ;
 
 PrimaryExpr             : IDENTIFIER
