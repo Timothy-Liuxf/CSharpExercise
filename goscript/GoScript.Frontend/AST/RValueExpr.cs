@@ -4,21 +4,10 @@ namespace GoScript.Frontend.AST
 {
     public abstract class RValueExpr : Expression
     {
-        public override object? Value
-        {
-            internal set => throw new InternalErrorException("RValueExpr cannot set type.");
-        }
     }
 
     public sealed class IntegerRValueExpr : RValueExpr
     {
-        public override object? Value
-        {
-            get => this.IntegerValue;
-        }
-
-        public override GSType? ExprType { get; internal set; }
-
         public ulong IntegerValue { get; private init; }
         public IntegerRValueExpr(ulong integerValue)
         {
@@ -29,5 +18,7 @@ namespace GoScript.Frontend.AST
         {
             return this.IntegerValue.ToString();
         }
+
+        internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
 }

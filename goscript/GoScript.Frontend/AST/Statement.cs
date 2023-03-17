@@ -4,36 +4,42 @@ namespace GoScript.Frontend.AST
 {
     public abstract class Statement : ASTNode
     {
-        public abstract GSType? StmtType { get; }
+        public struct AttributesList
+        {
+            public GSType? StmtType { get; internal set; }
+            public object? Value { get; internal set; }
+        }
+
+        public AttributesList Attributes = new();
     }
 
     public sealed class SingleStmt : Statement
     {
         public Expression Expr { get; private init; }
 
-        public override GSType? StmtType => nilType ? new GSNilType() : Expr.ExprType;
+        public bool Echo { get; private init; }
 
-        private readonly bool nilType;
-
-        public SingleStmt(Expression expr, bool nilType)
+        public SingleStmt(Expression expr, bool echo)
         {
             Expr = expr;
-            this.nilType = nilType;
+            this.Echo = echo;
         }
 
         public override string ToString()
         {
-            return this.Expr.ToString() + (this.nilType ? "" : ";") + Environment.NewLine;
+            return this.Expr.ToString() + (this.Echo ? "" : ";") + Environment.NewLine;
         }
+
+        internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
 
-    public class EmptyStmt : Statement
+    public sealed class EmptyStmt : Statement
     {
-        public override GSType? StmtType => new GSNilType();
-
         public override string ToString()
         {
             return Environment.NewLine;
         }
+
+        internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
 }

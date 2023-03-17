@@ -7,11 +7,31 @@ namespace GoScript.Frontend
         public InternalErrorException(string message) : base($"Internal Error: {message}") { }
     }
 
-    public class SyntaxErrorException : Exception
+    public abstract class CodeErrorException : Exception
+    {
+        public CodeErrorException(string message) : base(message) { }
+    }
+
+    public class SyntaxErrorException : CodeErrorException
     {
         public SyntaxErrorException(SourceLocation location, string message)
             : base($"Syntax error at: {location}: {message}") { }
 
         public SyntaxErrorException(string message) : base($"Syntax error: {message}") { }
+    }
+
+    public class ConflictException : CodeErrorException
+    {
+        public ConflictException(string message) : base(message) { }
+    }
+
+    public class SymbolNotFoundException : CodeErrorException
+    {
+        public SymbolNotFoundException(string message) : base(message) { }
+    }
+
+    public class InvalidOperationException : CodeErrorException
+    {
+        public InvalidOperationException(string message) : base(message) { }
     }
 }

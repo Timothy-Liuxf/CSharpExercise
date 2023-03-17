@@ -46,12 +46,12 @@ namespace GoScript.Frontend.Parser
             if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
             {
                 tokens.MatchNewline();
-                return new SingleStmt(expr, true);
+                return new SingleStmt(expr, false);
             }
             else
             {
                 tokens.MatchNewline();
-                return new SingleStmt(expr, false);
+                return new SingleStmt(expr, true);
             }
         }
 
@@ -63,10 +63,10 @@ namespace GoScript.Frontend.Parser
         private Expression ParseAddExpr()
         {
             var expr = ParsePrimaryExpr();
-            while (tokens.TryMatchPunctuator(PunctuatorType.Add, out _))
+            while (tokens.TryMatchPunctuator(PunctuatorType.Add, out var addOp))
             {
                 var rExpr = ParsePrimaryExpr();
-                expr = new AddExpr(expr, rExpr);
+                expr = new AddExpr(expr, rExpr, addOp!.Location);
             }
             return expr;
         }
@@ -75,7 +75,7 @@ namespace GoScript.Frontend.Parser
         {
             if (tokens.TryMatchIdentifier(out var identifier))
             {
-                return new IdExpr(identifier!.Name);
+                return new IdExpr(identifier!.Name, identifier.Location);
             }
             if (tokens.TryMatchLiteral(LiteralType.IntegerLiteral, out var literal))
             {
@@ -87,21 +87,21 @@ namespace GoScript.Frontend.Parser
 
         private VarDecl ParseVarDecl()
         {
-            tokens.MatchKeyword(KeywordType.Var);
+            var location = tokens.MatchKeyword(KeywordType.Var).Location;
             var name = tokens.MatchIdentifier();
             if (tokens.TryMatchTypeKeyword(out var typeKeyword))
             {
                 if (tokens.TryMatchPunctuator(PunctuatorType.Assign, out _))
                 {
                     var initExpr = ParseExpression();
-                    return new VarDecl(name.Name, Keyword.GetKeywordString(typeKeyword!.Type)!, initExpr);
+                    return new VarDecl(name.Name, Keyword.GetKeywordString(typeKeyword!.Type)!, initExpr, location);
                 }
-                return new VarDecl(name.Name, Keyword.GetKeywordString(typeKeyword!.Type)!);
+                return new VarDecl(name.Name, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
             }
             {
                 tokens.MatchPunctuator(PunctuatorType.Assign);
                 var initExpr = ParseExpression();
-                return new VarDecl(name.Name, initExpr);
+                return new VarDecl(name.Name, initExpr, location);
             }
         }
 
