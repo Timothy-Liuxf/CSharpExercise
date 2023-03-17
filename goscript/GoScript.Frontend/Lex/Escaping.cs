@@ -1,6 +1,6 @@
 ﻿using GoScript.Utils;
 
-namespace GoScript.Frontend.Lexer
+namespace GoScript.Frontend.Lex
 {
     internal class Escaping
     {

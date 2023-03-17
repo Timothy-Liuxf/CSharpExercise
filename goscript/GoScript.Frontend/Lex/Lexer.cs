@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace GoScript.Frontend.Lexer
+namespace GoScript.Frontend.Lex
 {
     internal class Lexer
     {
