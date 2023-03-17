@@ -57,20 +57,40 @@ namespace GoScript.Frontend.Parse
 
         private Expression ParseExpression()
         {
-            return ParseAddExpr();
+            return ParseAdditiveExpr();
         }
 
-        private Expression ParseAddExpr()
+        private Expression ParseAdditiveExpr()
         {
-            var expr = ParsePrimaryExpr();
+            var expr = ParseMultiplicativeExpr();
             while (tokens.TryMatchPunctuator(PunctuatorType.Add, out var op)
                 || tokens.TryMatchPunctuator(PunctuatorType.Sub, out op))
             {
-                var rExpr = ParsePrimaryExpr();
+                var rExpr = ParseMultiplicativeExpr();
                 expr = new AdditiveExpr(expr, rExpr, op!.Type switch
                 {
                     PunctuatorType.Add => AdditiveExpr.OperatorType.Add,
                     PunctuatorType.Sub => AdditiveExpr.OperatorType.Sub,
+                    _ => throw new InternalErrorException("Unexpected operator type."),
+                },
+                op.Location);
+            }
+            return expr;
+        }
+
+        private Expression ParseMultiplicativeExpr()
+        {
+            var expr = ParsePrimaryExpr();
+            while (tokens.TryMatchPunctuator(PunctuatorType.Star, out var op)
+                || tokens.TryMatchPunctuator(PunctuatorType.Div, out op)
+                || tokens.TryMatchPunctuator(PunctuatorType.Mod, out op))
+            {
+                var rExpr = ParsePrimaryExpr();
+                expr = new MultiplicativeExpr(expr, rExpr, op!.Type switch
+                {
+                    PunctuatorType.Star => MultiplicativeExpr.OperatorType.Mul,
+                    PunctuatorType.Div => MultiplicativeExpr.OperatorType.Div,
+                    PunctuatorType.Mod => MultiplicativeExpr.OperatorType.Mod,
                     _ => throw new InternalErrorException("Unexpected operator type."),
                 },
                 op.Location);

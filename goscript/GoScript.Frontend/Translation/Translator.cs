@@ -91,6 +91,34 @@ namespace GoScript.Frontend.Translation
                 : (int)lExpr.Attributes.Value! - (int)rExpr.Attributes.Value!;
         }
 
+        void IVisitor.Visit(MultiplicativeExpr multiplicativeExpr)
+        {
+            char op = multiplicativeExpr.Operator switch
+            {
+                MultiplicativeExpr.OperatorType.Mul => '*',
+                MultiplicativeExpr.OperatorType.Div => '/',
+                MultiplicativeExpr.OperatorType.Mod => '%',
+                _ => throw new InternalErrorException($"At {multiplicativeExpr.Location}: Invalid operator type."),
+            };
+
+            var lExpr = multiplicativeExpr.LExpr;
+            var rExpr = multiplicativeExpr.RExpr;
+            lExpr.Accept(this);
+            rExpr.Accept(this);
+            if (lExpr.Attributes.ExprType is not GSInt32
+                || rExpr.Attributes.ExprType is not GSInt32)
+            {
+                throw new InvalidOperationException($"At {multiplicativeExpr.Location}: Invalid operator \'{op}\'.");
+            }
+            multiplicativeExpr.Attributes.ExprType = new GSInt32();
+            multiplicativeExpr.Attributes.Value = op switch
+            {
+                '*' => (int)lExpr.Attributes.Value! * (int)rExpr.Attributes.Value!,
+                '/' => (int)lExpr.Attributes.Value! / (int)rExpr.Attributes.Value!,
+                _ => (int)lExpr.Attributes.Value! % (int)rExpr.Attributes.Value!,
+            };
+        }
+
         void IVisitor.Visit(EmptyStmt emptyStmt)
         {
             emptyStmt.Attributes.StmtType = new GSNilType();

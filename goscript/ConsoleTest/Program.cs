@@ -88,11 +88,9 @@ using GoScript.Frontend.Lex;
             x
             y
             a + b
-            a - b
-            a + b + a - b
-            a + b + a - b;
-            x - y + a + b
-            8 + x - (y + a) + b + 3
+            a + b;
+            1 + b + 3 * y * (a + b) / 3
+            a % 5
             x
             (y)
             """;

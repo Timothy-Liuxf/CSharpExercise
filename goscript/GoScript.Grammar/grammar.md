@@ -18,7 +18,11 @@ Type            : TYPE_KEYWORD
 Expression      : AdditiveExpr
                 ;
 
-AdditiveExpr    : AdditiveExpr ('+'|'-') PrimaryExpr
+AdditiveExpr    : AdditiveExpr ('+'|'-') Multiplicative
+                | Multiplicative
+                ;
+
+Multiplicative  : Multiplicative ('*'|'/'|'%') PrimaryExpr
                 | PrimaryExpr
                 ;
 
