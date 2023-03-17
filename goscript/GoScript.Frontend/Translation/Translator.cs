@@ -68,19 +68,27 @@ namespace GoScript.Frontend.Translation
             }
         }
 
-        void IVisitor.Visit(AddExpr addExpr)
+        void IVisitor.Visit(AdditiveExpr additiveExpr)
         {
-            var lExpr = addExpr.LExpr;
-            var rExpr = addExpr.RExpr;
+            char op = additiveExpr.Operator switch
+            {
+                AdditiveExpr.OperatorType.Add => '+',
+                AdditiveExpr.OperatorType.Sub => '-',
+                _ => throw new InternalErrorException($"At {additiveExpr.Location}: Invalid operator type."),
+            };
+
+            var lExpr = additiveExpr.LExpr;
+            var rExpr = additiveExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
             if (lExpr.Attributes.ExprType is not GSInt32
                 || rExpr.Attributes.ExprType is not GSInt32)
             {
-                throw new InvalidOperationException($"At {addExpr.Location}: Invalid operator \'+\'.");
+                throw new InvalidOperationException($"At {additiveExpr.Location}: Invalid operator \'{op}\'.");
             }
-            addExpr.Attributes.ExprType = new GSInt32();
-            addExpr.Attributes.Value = (int)lExpr.Attributes.Value! + (int)rExpr.Attributes.Value!;
+            additiveExpr.Attributes.ExprType = new GSInt32();
+            additiveExpr.Attributes.Value = op == '+' ? (int)lExpr.Attributes.Value! + (int)rExpr.Attributes.Value!
+                : (int)lExpr.Attributes.Value! - (int)rExpr.Attributes.Value!;
         }
 
         void IVisitor.Visit(EmptyStmt emptyStmt)

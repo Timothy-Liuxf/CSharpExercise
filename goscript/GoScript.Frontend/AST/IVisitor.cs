@@ -2,7 +2,7 @@
 {
     internal interface IVisitor
     {
-        void Visit(AddExpr addExpr);
+        void Visit(AdditiveExpr additiveExpr);
         void Visit(IdExpr idExpr);
         void Visit(IntegerRValueExpr integerRValueExpr);
         void Visit(SingleStmt singleStmt);

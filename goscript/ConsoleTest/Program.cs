@@ -83,13 +83,16 @@ using GoScript.Frontend.Lex;
             var w int32 = 6;
             var a = x + y
             var b = a + z + w;
+            a
+            b
+            x
+            y
             a + b
-            x + y + a + b
-            x + (y + a) + (b)
-            x + y + a + b;
-            ;
-
-
+            a - b
+            a + b + a - b
+            a + b + a - b;
+            x - y + a + b
+            8 + x - (y + a) + b + 3
             x
             (y)
             """;

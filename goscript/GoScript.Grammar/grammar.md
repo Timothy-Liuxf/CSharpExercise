@@ -15,10 +15,10 @@ VarDecl         : 'var' IDENTIFIER Type ('=' Expression)?
 Type            : TYPE_KEYWORD
                 ;
 
-Expression      : AddExpr
+Expression      : AdditiveExpr
                 ;
 
-AddExpr         : AddExpr '+' PrimaryExpr
+AdditiveExpr    : AdditiveExpr ('+'|'-') PrimaryExpr
                 | PrimaryExpr
                 ;
 

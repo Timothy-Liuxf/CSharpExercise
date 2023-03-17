@@ -63,10 +63,17 @@ namespace GoScript.Frontend.Parse
         private Expression ParseAddExpr()
         {
             var expr = ParsePrimaryExpr();
-            while (tokens.TryMatchPunctuator(PunctuatorType.Add, out var addOp))
+            while (tokens.TryMatchPunctuator(PunctuatorType.Add, out var op)
+                || tokens.TryMatchPunctuator(PunctuatorType.Sub, out op))
             {
                 var rExpr = ParsePrimaryExpr();
-                expr = new AddExpr(expr, rExpr, addOp!.Location);
+                expr = new AdditiveExpr(expr, rExpr, op!.Type switch
+                {
+                    PunctuatorType.Add => AdditiveExpr.OperatorType.Add,
+                    PunctuatorType.Sub => AdditiveExpr.OperatorType.Sub,
+                    _ => throw new InternalErrorException("Unexpected operator type."),
+                },
+                op.Location);
             }
             return expr;
         }

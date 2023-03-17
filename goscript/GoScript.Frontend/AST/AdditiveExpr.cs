@@ -3,16 +3,24 @@ using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
-    public sealed class AddExpr : Expression
+    public sealed class AdditiveExpr : Expression
     {
+        public enum OperatorType
+        {
+            Add,
+            Sub,
+        }
+
         public Expression LExpr { get; private init; }
         public Expression RExpr { get; private init; }
+        public OperatorType Operator { get; private init; }
         public SourceLocation Location { get; private init; }
 
-        public AddExpr(Expression lExpr, Expression rExpr, SourceLocation location)
+        public AdditiveExpr(Expression lExpr, Expression rExpr, OperatorType @operator, SourceLocation location)
         {
             this.LExpr = lExpr;
             this.RExpr = rExpr;
+            this.Operator = @operator;
             this.Location = location;
         }
 
