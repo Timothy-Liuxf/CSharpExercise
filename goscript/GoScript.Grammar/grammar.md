@@ -16,11 +16,11 @@ VarDecl                 : 'var' IdentifierList Type ('=' ExpressionList)?
                         | 'var' IdentifierList '=' ExpressionList
                         ;
 
-IdentifierList          : 
-						;
+IdentifierList          : Identifier (',' Identifier)*
+                        ;
 
 ExpressionList          : Expression (',' Expression)*
-						;
+                        ;
 
 Type                    : TYPE_KEYWORD
                         ;
