@@ -165,8 +165,10 @@ namespace GoScript.Frontend.Lex
         UInt8,      // uint8
         Int16,      // int16
         UInt16,     // uint16
-        Int32,      // int16
-        UInt32,     // uint16
+        Int,        // int
+        UInt,       // uint
+        Int32,      // int32
+        UInt32,     // uint32
         Int64,      // int64
         UInt64,     // uint64
         Float32,    // float32
@@ -191,6 +193,8 @@ namespace GoScript.Frontend.Lex
                 KeywordType.UInt8 or
                 KeywordType.Int16 or
                 KeywordType.UInt16 or
+                KeywordType.Int or
+                KeywordType.UInt or
                 KeywordType.Int32 or
                 KeywordType.UInt32 or
                 KeywordType.Int64 or
@@ -223,6 +227,8 @@ namespace GoScript.Frontend.Lex
                 KeywordType.UInt8 => "uint8",
                 KeywordType.Int16 => "int16",
                 KeywordType.UInt16 => "uint16",
+                KeywordType.Int => "int",
+                KeywordType.UInt => "uint",
                 KeywordType.Int32 => "int32",
                 KeywordType.UInt32 => "uint32",
                 KeywordType.Int64 => "int64",

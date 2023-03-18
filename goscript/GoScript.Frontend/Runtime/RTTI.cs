@@ -4,7 +4,7 @@ namespace GoScript.Frontend.Runtime
 {
     internal class RTTI
     {
-        public GSType type;
-        public object? value;
+        public GSType? Type { get; set; }
+        public object? Value { get; set; }
     }
 }

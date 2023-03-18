@@ -1,6 +1,7 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Runtime;
 using GoScript.Frontend.Types;
+using System.Reflection;
 
 namespace GoScript.Frontend.Translation
 {
@@ -13,7 +14,14 @@ namespace GoScript.Frontend.Translation
         {
             foreach (var ast in this.asts)
             {
-                ast.Accept(this);
+                try
+                {
+                    ast.Accept(this);
+                }
+                catch
+                {
+                    throw;
+                }
                 yield return (ast as Statement) ?? throw new InternalErrorException($"AST: {ast} is not a statement.");
             }
         }
@@ -37,9 +45,10 @@ namespace GoScript.Frontend.Translation
             var rtti = new RTTI();
             if (varDecl.InitType != null)
             {
-                if (varDecl.InitType == "int32")
+                var gsType = GSBasicType.ParseBasicType(varDecl.InitType);
+                if (gsType is not null)
                 {
-                    rtti.type = new GSInt32();
+                    rtti.Type = gsType;
                 }
                 else
                 {
@@ -51,19 +60,19 @@ namespace GoScript.Frontend.Translation
             varDecl.Attributes.StmtType = new GSNilType();
             if (varDecl.InitExpr == null)
             {
-                rtti.value = (int)0;
+                rtti.Value = Convert.ChangeType(0, ((GSBasicType)rtti.Type!).DotNetType);
             }
             else
             {
                 varDecl.InitExpr.Accept(this);
                 if (varDecl.InitType == null)
                 {
-                    rtti.type = varDecl.InitExpr.Attributes.ExprType!;
-                    rtti.value = varDecl.InitExpr.Attributes.Value;
+                    rtti.Type = varDecl.InitExpr.Attributes.ExprType!;
+                    rtti.Value = varDecl.InitExpr.Attributes.Value;
                 }
                 else
                 {
-                    rtti.value = Convert.ChangeType(varDecl.InitExpr.Attributes.Value, ((GSBasicType)rtti.type).DotNetType);
+                    rtti.Value = Convert.ChangeType(varDecl.InitExpr.Attributes.Value, ((GSBasicType)rtti.Type!).DotNetType);
                 }
             }
         }
@@ -81,14 +90,20 @@ namespace GoScript.Frontend.Translation
             var rExpr = additiveExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            if (lExpr.Attributes.ExprType is not GSInt32
-                || rExpr.Attributes.ExprType is not GSInt32)
+            if (lExpr.Attributes.ExprType is not GSBasicType
+                || rExpr.Attributes.ExprType is not GSBasicType)
             {
                 throw new InvalidOperationException($"At {additiveExpr.Location}: Invalid operator \'{op}\'.");
             }
-            additiveExpr.Attributes.ExprType = new GSInt32();
-            additiveExpr.Attributes.Value = op == '+' ? (int)lExpr.Attributes.Value! + (int)rExpr.Attributes.Value!
-                : (int)lExpr.Attributes.Value! - (int)rExpr.Attributes.Value!;
+            var commonType = GSBasicType.GetCommonType((GSBasicType)lExpr.Attributes.ExprType, (GSBasicType)rExpr.Attributes.ExprType);
+            additiveExpr.Attributes.ExprType = commonType;
+            additiveExpr.Attributes.Value = (object)(
+                    op == '+' ?
+                        (dynamic)Convert.ChangeType(lExpr.Attributes.Value, commonType.DotNetType)!
+                        + (dynamic)Convert.ChangeType(rExpr.Attributes.Value, commonType.DotNetType)!
+                    : (dynamic)Convert.ChangeType(lExpr.Attributes.Value, commonType.DotNetType)!
+                        - (dynamic)Convert.ChangeType(rExpr.Attributes.Value, commonType.DotNetType)!
+                ) ?? throw new InternalErrorException($"Invalid \'{op}\' at {additiveExpr.Location}.");
         }
 
         void IVisitor.Visit(MultiplicativeExpr multiplicativeExpr)
@@ -105,30 +120,33 @@ namespace GoScript.Frontend.Translation
             var rExpr = multiplicativeExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            if (lExpr.Attributes.ExprType is not GSInt32
-                || rExpr.Attributes.ExprType is not GSInt32)
+            if (lExpr.Attributes.ExprType is not GSBasicType
+                || rExpr.Attributes.ExprType is not GSBasicType)
             {
                 throw new InvalidOperationException($"At {multiplicativeExpr.Location}: Invalid operator \'{op}\'.");
             }
-            multiplicativeExpr.Attributes.ExprType = new GSInt32();
-            multiplicativeExpr.Attributes.Value = op switch
+            var commonType = GSBasicType.GetCommonType((GSBasicType)lExpr.Attributes.ExprType, (GSBasicType)rExpr.Attributes.ExprType);
+            var lOp = (dynamic)Convert.ChangeType(lExpr.Attributes.Value, commonType.DotNetType)!;
+            var rOp = (dynamic)Convert.ChangeType(rExpr.Attributes.Value, commonType.DotNetType)!;
+            multiplicativeExpr.Attributes.ExprType = commonType;
+            multiplicativeExpr.Attributes.Value = (object)(op switch
             {
-                '*' => (int)lExpr.Attributes.Value! * (int)rExpr.Attributes.Value!,
-                '/' => (int)lExpr.Attributes.Value! / (int)rExpr.Attributes.Value!,
-                _ => (int)lExpr.Attributes.Value! % (int)rExpr.Attributes.Value!,
-            };
+                '*' => lOp * rOp,
+                '/' => lOp / rOp,
+                _ => lOp % rOp,
+            });
         }
 
         void IVisitor.Visit(UnaryExpr unaryExpr)
         {
             var operand = unaryExpr.Operand;
             operand.Accept(this);
-            if (operand.Attributes.ExprType is not GSInt32)
+            if (operand.Attributes.ExprType is not GSBasicType)
             {
                 throw new InvalidOperationException($"At {unaryExpr.Location}: Invalid unary operator \'-\'.");
             }
-            unaryExpr.Attributes.ExprType = new GSInt32();
-            unaryExpr.Attributes.Value = -(int)operand.Attributes.Value!;
+            unaryExpr.Attributes.ExprType = operand.Attributes.ExprType;
+            unaryExpr.Attributes.Value = -(dynamic)operand.Attributes.Value!;
         }
 
         void IVisitor.Visit(EmptyStmt emptyStmt)
@@ -154,8 +172,8 @@ namespace GoScript.Frontend.Translation
             }
 
             var rtti = this.scope.Symbols[idExpr.Name];
-            idExpr.Attributes.ExprType = rtti.type;
-            idExpr.Attributes.Value = rtti.value;
+            idExpr.Attributes.ExprType = rtti.Type;
+            idExpr.Attributes.Value = rtti.Value;
         }
 
         void IVisitor.Visit(IntegerRValueExpr integerRValueExpr)

@@ -79,8 +79,8 @@ using GoScript.Frontend.Lex;
         var prog = """
             var x int32
             var y int32 = -6
-            var z int32;
-            var w int32 = 6;
+            var z int16 = 32767
+            var w int = 6;
             var a = x + y
             var b = a + z + w;
             a
