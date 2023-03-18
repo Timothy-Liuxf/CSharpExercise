@@ -137,12 +137,17 @@ namespace GoScript.Frontend.Translation
             multiplicativeExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
             var lOp = (dynamic)lExpr.Attributes.Value!;
             var rOp = (dynamic)rExpr.Attributes.Value!;
-            multiplicativeExpr.Attributes.Value = (object)(op switch
+            var res = (object)(op switch
             {
                 '*' => lOp * rOp,
                 '/' => lOp / rOp,
                 _ => lOp % rOp,
             });
+            if (res.GetType() != ((GSBasicType)multiplicativeExpr.Attributes.ExprType!).DotNetType)
+            {
+                res = Convert.ChangeType(res, ((GSBasicType)multiplicativeExpr.Attributes.ExprType!).DotNetType);
+            }
+            multiplicativeExpr.Attributes.Value = res;
         }
 
         void IVisitor.Visit(UnaryExpr unaryExpr)

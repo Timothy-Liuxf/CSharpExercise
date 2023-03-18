@@ -83,8 +83,8 @@ using GoScript.Frontend.Lex;
             var w int = 6;
             var a = x + y
             var b = a + z + w;
-            var c int16 = 300
-            var d int16 = 20
+            var c int16 = 3
+            var d int16 = 2000
             a
             b
             x
@@ -95,7 +95,8 @@ using GoScript.Frontend.Lex;
             a % 5
             x
             - -(- -y)
-            c + d
+            var e int16 = c * d
+            e
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(string.Join(' ', tokens));
