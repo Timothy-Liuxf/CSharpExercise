@@ -5,7 +5,11 @@ Program                 : Statement*
                         ;
 
 Statement               : VarDecl ';'? NEWLINE
+                        | CompoundStmt
                         | Expression? ';'? NEWLINE
+                        ;
+
+CompoundStmt            : '{' NEWLINE Statement* '}' NEWLINE
                         ;
 
 VarDecl                 : 'var' IDENTIFIER Type ('=' Expression)?

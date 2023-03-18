@@ -7,7 +7,7 @@ namespace GoScript.Frontend.Translation
 {
     internal class Translator : IVisitor
     {
-        private Scope scope = new();
+        private ScopeStack scopeStack = new();
         private readonly IEnumerable<ASTNode> asts;
 
         public IEnumerable<Statement> Translate()
@@ -43,7 +43,7 @@ namespace GoScript.Frontend.Translation
             {
                 throw new InternalErrorException($"At {varDecl.Location}: InitExpr and InitType shouldn't be null at the same time.");
             }
-            if (this.scope.Symbols.ContainsKey(varDecl.VarName))
+            if (this.scopeStack.ContainsInCurrentScope(varDecl.VarName))
             {
                 throw new ConflictException($"Conflict at {varDecl.Location}: the name \"{varDecl.VarName}\" has already defined.");
             }
@@ -61,7 +61,7 @@ namespace GoScript.Frontend.Translation
                     throw new SymbolNotFoundException($"At {varDecl.Location}: \"{varDecl.InitType}\" is not a valid type.");
                 }
             }
-            this.scope.Symbols[varDecl.VarName] = rtti;
+            this.scopeStack.Add(varDecl.VarName, rtti);
 
             varDecl.Attributes.StmtType = new GSNilType();
             if (varDecl.InitExpr == null)   // This means varDecl.InitType must not be null
@@ -259,12 +259,12 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(IdExpr idExpr)
         {
-            if (!this.scope.Symbols.ContainsKey(idExpr.Name))
+            var rtti = this.scopeStack.LookUp(idExpr.Name);
+            if (rtti is null)
             {
                 throw new SymbolNotFoundException($"Unknown identifier \"{idExpr.Name}\" at {idExpr.Location}.");
             }
 
-            var rtti = this.scope.Symbols[idExpr.Name];
             idExpr.Attributes.ExprType = rtti.Type;
             idExpr.Attributes.Value = rtti.Value;
         }
@@ -273,6 +273,23 @@ namespace GoScript.Frontend.Translation
         {
             integerLiteralExpr.Attributes.ExprType = new GSIntegerLiteral();
             integerLiteralExpr.Attributes.Value = integerLiteralExpr.IntegerValue;
+        }
+
+        void IVisitor.Visit(CompoundStmt compoundStmt)
+        {
+            this.scopeStack.OpenNewScope();
+            var statements = compoundStmt.Statements;
+            foreach (var statement in statements)
+            {
+                statement.Accept(this);
+            }
+            if (statements.Count > 0)
+            {
+                var lastStmt = statements.Last();
+                compoundStmt.Attributes.StmtType = lastStmt.Attributes.StmtType;
+                compoundStmt.Attributes.Value = lastStmt.Attributes.Value;
+            }
+            this.scopeStack.CloseScope();
         }
     }
 }

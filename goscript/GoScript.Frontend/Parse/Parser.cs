@@ -42,6 +42,11 @@ namespace GoScript.Frontend.Parse
                 return varDecl;
             }
 
+            if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
+            {
+                return ParseCompoundStmt();
+            }
+
             var expr = ParseExpression();
             if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
             {
@@ -148,6 +153,19 @@ namespace GoScript.Frontend.Parse
                 var initExpr = ParseExpression();
                 return new VarDecl(name.Name, initExpr, location);
             }
+        }
+
+        private CompoundStmt ParseCompoundStmt()
+        {
+            var location = tokens.MatchPunctuator(PunctuatorType.LBrace).Location;
+            tokens.MatchNewline();
+            var statements = new List<Statement>();
+            while (!tokens.TryMatchPunctuator(PunctuatorType.RBrace, out _))
+            {
+                statements.Add(ParseStatement());
+            }
+            tokens.MatchNewline();
+            return new CompoundStmt(statements, location);
         }
 
         private readonly TokenReader tokens;

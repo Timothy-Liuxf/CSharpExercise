@@ -121,6 +121,17 @@ using GoScript.Frontend.Lex;
             var y uint32 = 11
             x + y
             x - y
+            {
+                var x uint16 = 5
+                var y uint32 = 6
+                var z uint32 = 7
+                x
+                {
+                    var z uint32 = 10
+                    y + z
+                }
+            }
+            x + y
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(string.Join(' ', tokens));

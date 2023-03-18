@@ -10,5 +10,6 @@
         void Visit(SingleStmt singleStmt);
         void Visit(EmptyStmt emptyStmt);
         void Visit(VarDecl varDecl);
+        void Visit(CompoundStmt compoundStmt);
     }
 }
