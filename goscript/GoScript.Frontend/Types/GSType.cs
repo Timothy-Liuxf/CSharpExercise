@@ -31,5 +31,7 @@
 
         public virtual bool IsBasic => false;
         public virtual bool IsArithmetic => false;
+        public virtual bool IsLiteral => false;
+        public virtual bool IsIntegerLiteral => false;
     }
 }

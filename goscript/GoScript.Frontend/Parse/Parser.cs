@@ -119,7 +119,7 @@ namespace GoScript.Frontend.Parse
             if (tokens.TryMatchLiteral(LiteralType.IntegerLiteral, out var literal))
             {
                 var integerLiteral = (literal as IntegerLiteral)!;
-                return new IntegerRValueExpr(integerLiteral.Value);
+                return new IntegerLiteralExpr(integerLiteral.Value);
             }
             if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
             {

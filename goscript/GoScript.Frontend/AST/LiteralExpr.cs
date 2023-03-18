@@ -2,14 +2,14 @@
 
 namespace GoScript.Frontend.AST
 {
-    public abstract class RValueExpr : Expression
+    public abstract class LiteralExpr : Expression
     {
     }
 
-    public sealed class IntegerRValueExpr : RValueExpr
+    public sealed class IntegerLiteralExpr : LiteralExpr
     {
         public ulong IntegerValue { get; private init; }
-        public IntegerRValueExpr(ulong integerValue)
+        public IntegerLiteralExpr(ulong integerValue)
         {
             this.IntegerValue = integerValue;
         }

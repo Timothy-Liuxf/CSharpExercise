@@ -31,6 +31,12 @@ namespace GoScript.Frontend.Translation
             this.asts = asts;
         }
 
+        private static object ConvertArithmeticLiteralValue(ulong literalValue, GSArithmeticType targetType)
+        {
+            return targetType.IsSigned ? Convert.ChangeType((long)literalValue, targetType.DotNetType)
+                : Convert.ChangeType(literalValue, targetType.DotNetType);
+        }
+
         void IVisitor.Visit(VarDecl varDecl)
         {
             if (varDecl.InitExpr == null && varDecl.InitType == null)
@@ -58,21 +64,49 @@ namespace GoScript.Frontend.Translation
             this.scope.Symbols[varDecl.VarName] = rtti;
 
             varDecl.Attributes.StmtType = new GSNilType();
-            if (varDecl.InitExpr == null)
+            if (varDecl.InitExpr == null)   // This means varDecl.InitType must not be null
             {
                 rtti.Value = Convert.ChangeType(0, ((GSBasicType)rtti.Type!).DotNetType);
             }
             else
             {
                 varDecl.InitExpr.Accept(this);
+                var exprType = varDecl.InitExpr.Attributes.ExprType!;
                 if (varDecl.InitType == null)
                 {
-                    rtti.Type = varDecl.InitExpr.Attributes.ExprType!;
-                    rtti.Value = varDecl.InitExpr.Attributes.Value;
+                    if (exprType.IsIntegerLiteral)
+                    {
+                        var type = new GSInt64();
+                        rtti.Type = type;
+                        rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExpr.Attributes.Value!, type);
+                    }
+                    else
+                    {
+                        rtti.Type = exprType;
+                        rtti.Value = varDecl.InitExpr.Attributes.Value;
+                    }
                 }
                 else
                 {
-                    rtti.Value = Convert.ChangeType(varDecl.InitExpr.Attributes.Value, ((GSBasicType)rtti.Type!).DotNetType);
+                    if (exprType.IsIntegerLiteral)
+                    {
+                        if (rtti.Type!.IsArithmetic)
+                        {
+                            rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExpr.Attributes.Value!, (GSArithmeticType)rtti.Type);
+                        }
+                        else
+                        {
+                            throw new InternalErrorException($"Unknown type {rtti.Type} at {varDecl.Location}.");
+                        }
+                    }
+                    else
+                    {
+                        if (rtti.Type! != exprType)
+                        {
+                            throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {varDecl.Location}.");
+                        }
+                        rtti.Value = varDecl.InitExpr.Attributes.Value;
+                    }
                 }
             }
         }
@@ -90,20 +124,40 @@ namespace GoScript.Frontend.Translation
             var rExpr = additiveExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            if (!lExpr.Attributes.ExprType!.IsArithmetic
-                || !rExpr.Attributes.ExprType!.IsArithmetic)
+            var lType = lExpr.Attributes.ExprType!;
+            var rType = rExpr.Attributes.ExprType!;
+            var lOp = (dynamic)lExpr.Attributes.Value!;
+            var rOp = (dynamic)rExpr.Attributes.Value!;
+            if (lType.IsArithmetic && rType.IsArithmetic)
+            {
+                if (lType != rType)
+                {
+                    throw new InvalidOperationException(
+                        $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {additiveExpr.Location}."
+                    );
+                }
+                additiveExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
+            }
+            else if (lType.IsIntegerLiteral && rType.IsIntegerLiteral)
+            {
+                additiveExpr.Attributes.ExprType = lType;
+            }
+            else if (lType.IsArithmetic && rType.IsIntegerLiteral)
+            {
+                rOp = (dynamic)ConvertArithmeticLiteralValue((ulong)rOp, (GSArithmeticType)lType);
+                additiveExpr.Attributes.ExprType = lType;
+            }
+            else if (rType.IsArithmetic && lType.IsIntegerLiteral)
+            {
+                lOp = (dynamic)ConvertArithmeticLiteralValue((ulong)lOp, (GSArithmeticType)rType);
+                additiveExpr.Attributes.ExprType = rType;
+            }
+            else
             {
                 throw new InvalidOperationException($"At {additiveExpr.Location}: Invalid operator \'{op}\'.");
             }
-            if (lExpr.Attributes.ExprType != rExpr.Attributes.ExprType)
-            {
-                throw new InvalidOperationException(
-                    $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {additiveExpr.Location}."
-                );
-            }
-            additiveExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
-            var lOp = (dynamic)lExpr.Attributes.Value!;
-            var rOp = (dynamic)rExpr.Attributes.Value!;
+
+
             additiveExpr.Attributes.Value = (object)(
                     op == '+' ? lOp + rOp : lOp - rOp
                 ) ?? throw new InternalErrorException($"Invalid \'{op}\' at {additiveExpr.Location}.");
@@ -123,20 +177,39 @@ namespace GoScript.Frontend.Translation
             var rExpr = multiplicativeExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            if (!lExpr.Attributes.ExprType!.IsArithmetic
-                || !rExpr.Attributes.ExprType!.IsArithmetic)
+            var lType = lExpr.Attributes.ExprType!;
+            var rType = rExpr.Attributes.ExprType!;
+            var lOp = (dynamic)lExpr.Attributes.Value!;
+            var rOp = (dynamic)rExpr.Attributes.Value!;
+            if (lType.IsArithmetic && rType.IsArithmetic)
+            {
+                if (lType != rType)
+                {
+                    throw new InvalidOperationException(
+                        $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {multiplicativeExpr.Location}."
+                    );
+                }
+                multiplicativeExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
+            }
+            else if (lType.IsIntegerLiteral && rType.IsIntegerLiteral)
+            {
+                multiplicativeExpr.Attributes.ExprType = lType;
+            }
+            else if (lType.IsArithmetic && rType.IsIntegerLiteral)
+            {
+                rOp = (dynamic)ConvertArithmeticLiteralValue((ulong)rOp, (GSArithmeticType)lType);
+                multiplicativeExpr.Attributes.ExprType = lType;
+            }
+            else if (rType.IsArithmetic && lType.IsIntegerLiteral)
+            {
+                lOp = (dynamic)ConvertArithmeticLiteralValue((ulong)lOp, (GSArithmeticType)rType);
+                multiplicativeExpr.Attributes.ExprType = rType;
+            }
+            else
             {
                 throw new InvalidOperationException($"At {multiplicativeExpr.Location}: Invalid operator \'{op}\'.");
             }
-            if (lExpr.Attributes.ExprType != rExpr.Attributes.ExprType)
-            {
-                throw new InvalidOperationException(
-                    $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {multiplicativeExpr.Location}."
-                );
-            }
-            multiplicativeExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
-            var lOp = (dynamic)lExpr.Attributes.Value!;
-            var rOp = (dynamic)rExpr.Attributes.Value!;
+
             var res = (object)(op switch
             {
                 '*' => lOp * rOp,
@@ -154,12 +227,19 @@ namespace GoScript.Frontend.Translation
         {
             var operand = unaryExpr.Operand;
             operand.Accept(this);
-            if (!operand.Attributes.ExprType!.IsArithmetic)
+            unaryExpr.Attributes.ExprType = operand.Attributes.ExprType;
+            if (operand.Attributes.ExprType!.IsArithmetic)
+            {
+                unaryExpr.Attributes.Value = -(dynamic)operand.Attributes.Value!;
+            }
+            else if (operand.Attributes.ExprType!.IsIntegerLiteral)
+            {
+                unaryExpr.Attributes.Value = (ulong)(-(long)(ulong)operand.Attributes.Value!);
+            }
+            else
             {
                 throw new InvalidOperationException($"At {unaryExpr.Location}: Invalid unary operator \'-\'.");
             }
-            unaryExpr.Attributes.ExprType = operand.Attributes.ExprType;
-            unaryExpr.Attributes.Value = -(dynamic)operand.Attributes.Value!;
         }
 
         void IVisitor.Visit(EmptyStmt emptyStmt)
@@ -189,10 +269,10 @@ namespace GoScript.Frontend.Translation
             idExpr.Attributes.Value = rtti.Value;
         }
 
-        void IVisitor.Visit(IntegerRValueExpr integerRValueExpr)
+        void IVisitor.Visit(IntegerLiteralExpr integerLiteralExpr)
         {
-            integerRValueExpr.Attributes.ExprType = new GSInt32();
-            integerRValueExpr.Attributes.Value = (int)integerRValueExpr.IntegerValue;
+            integerLiteralExpr.Attributes.ExprType = new GSIntegerLiteral();
+            integerLiteralExpr.Attributes.Value = integerLiteralExpr.IntegerValue;
         }
     }
 }

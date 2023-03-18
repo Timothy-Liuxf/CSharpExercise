@@ -74,13 +74,13 @@ using GoScript.Frontend.Lex;
 }
 
 {
-    Console.WriteLine("===== Test Intepreter =====\n\n");
+    Console.WriteLine("===== Test Intepreter 1 =====\n\n");
     {
         var prog = """
             var x int32
             var y int32 = -6
             var z int32 = 32767
-            var w int = 6;
+            var w int32 = 6;
             var a = x + y
             var b = a + z + w;
             var c int16 = 3
@@ -95,8 +95,12 @@ using GoScript.Frontend.Lex;
             a % 5
             x
             - -(- -y)
-            var e int16 = c * d
+            var e int16 = c * d + 5
             e
+            var f int64 = 10
+            var g int = 11
+            var h = 12
+            f + g + h
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(string.Join(' ', tokens));
