@@ -10,12 +10,12 @@
         {
             return type switch
             {
-                "int16" => new GSInt16(),
-                "int32" => new GSInt32(),
-                "int" or "int64" => new GSInt64(),
-                "uint16" => new GSUInt16(),
-                "uint32" => new GSUInt32(),
-                "uint" or "uint64" => new GSUInt64(),
+                "int16" => GSInt16.Instance,
+                "int32" => GSInt32.Instance,
+                "int" or "int64" => GSInt64.Instance,
+                "uint16" => GSUInt16.Instance,
+                "uint32" => GSUInt32.Instance,
+                "uint" or "uint64" => GSUInt64.Instance,
                 _ => null,
             };
         }
@@ -63,6 +63,10 @@
         public override string ToString() => "int16";
 
         public override bool IsSigned => true;
+
+        public static GSInt16 Instance { get; } = new();
+
+        private GSInt16() { }
     }
 
     public sealed class GSInt32 : GSArithmeticType
@@ -72,6 +76,10 @@
         public override string ToString() => "int32";
 
         public override bool IsSigned => true;
+
+        public static GSInt32 Instance { get; } = new();
+
+        private GSInt32() { }
     }
 
     public sealed class GSInt64 : GSArithmeticType
@@ -81,6 +89,10 @@
         public override string ToString() => "int64";
 
         public override bool IsSigned => true;
+
+        public static GSInt64 Instance { get; } = new();
+
+        private GSInt64() { }
     }
 
     public sealed class GSUInt16 : GSArithmeticType
@@ -90,6 +102,10 @@
         public override string ToString() => "uint16";
 
         public override bool IsSigned => false;
+
+        public static GSUInt16 Instance { get; } = new();
+
+        private GSUInt16() { }
     }
 
     public sealed class GSUInt32 : GSArithmeticType
@@ -99,6 +115,10 @@
         public override string ToString() => "uint32";
 
         public override bool IsSigned => false;
+
+        public static GSUInt32 Instance { get; } = new();
+
+        private GSUInt32() { }
     }
 
     public sealed class GSUInt64 : GSArithmeticType
@@ -108,5 +128,9 @@
         public override string ToString() => "uint64";
 
         public override bool IsSigned => false;
+
+        public static GSUInt64 Instance { get; } = new();
+
+        private GSUInt64() { }
     }
 }

@@ -76,7 +76,7 @@ namespace GoScript.Frontend.Translation
                 }
                 rttis.Add(rtti);
 
-                varDecl.Attributes.StmtType = new GSNilType();
+                varDecl.Attributes.StmtType = null;
                 if (varDecl.InitExprs == null)   // This means varDecl.InitType must not be null
                 {
                     rtti.Value = Convert.ChangeType(0, ((GSBasicType)rtti.Type!).DotNetType);
@@ -89,7 +89,7 @@ namespace GoScript.Frontend.Translation
                     {
                         if (exprType.IsIntegerLiteral)
                         {
-                            var type = new GSInt64();
+                            var type = GSInt64.Instance;
                             rtti.Type = type;
                             rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExprs[i].Attributes.Value!, type);
                         }
@@ -263,7 +263,7 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(EmptyStmt emptyStmt)
         {
-            emptyStmt.Attributes.StmtType = new GSNilType();
+            emptyStmt.Attributes.StmtType = null;
         }
 
         void IVisitor.Visit(SingleStmt singleStmt)
@@ -290,7 +290,7 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(IntegerLiteralExpr integerLiteralExpr)
         {
-            integerLiteralExpr.Attributes.ExprType = new GSIntegerLiteral();
+            integerLiteralExpr.Attributes.ExprType = GSIntegerLiteral.Instance;
             integerLiteralExpr.Attributes.Value = integerLiteralExpr.IntegerValue;
         }
 

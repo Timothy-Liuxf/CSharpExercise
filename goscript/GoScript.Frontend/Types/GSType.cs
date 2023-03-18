@@ -4,13 +4,13 @@
     {
         public static bool operator ==(GSType type1, GSType type2)
         {
-            if (type1 is GSBasicType)
+            if (type1.IsBasic)
             {
-                return (type2 is GSBasicType) && (((GSBasicType)type1).DotNetType == ((GSBasicType)type2).DotNetType);
+                return (type2.IsBasic) && (((GSBasicType)type1).DotNetType == ((GSBasicType)type2).DotNetType);
             }
             else
             {
-                return type1 is GSNilType && type2 is GSNilType;
+                return type1.GetType() == type2.GetType();
             }
         }
 
