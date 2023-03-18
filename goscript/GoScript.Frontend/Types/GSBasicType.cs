@@ -13,6 +13,9 @@
                 "int16" => new GSInt16(),
                 "int32" => new GSInt32(),
                 "int" or "int64" => new GSInt64(),
+                "uint16" => new GSUInt16(),
+                "uint32" => new GSUInt32(),
+                "uint" or "uint64" => new GSUInt64(),
                 _ => null,
             };
         }
@@ -78,5 +81,32 @@
         public override string ToString() => "int64";
 
         public override bool IsSigned => true;
+    }
+
+    public sealed class GSUInt16 : GSArithmeticType
+    {
+        public override Type DotNetType => typeof(ushort);
+
+        public override string ToString() => "uint16";
+
+        public override bool IsSigned => false;
+    }
+
+    public sealed class GSUInt32 : GSArithmeticType
+    {
+        public override Type DotNetType => typeof(uint);
+
+        public override string ToString() => "uint32";
+
+        public override bool IsSigned => false;
+    }
+
+    public sealed class GSUInt64 : GSArithmeticType
+    {
+        public override Type DotNetType => typeof(ulong);
+
+        public override string ToString() => "uint64";
+
+        public override bool IsSigned => false;
     }
 }

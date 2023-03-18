@@ -112,3 +112,23 @@ using GoScript.Frontend.Lex;
         }
     }
 }
+
+{
+    Console.WriteLine("===== Test Intepreter 1 =====\n\n");
+    {
+        var prog = """
+            var x uint32 = 10
+            var y uint32 = 11
+            x + y
+            x - y
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(string.Join(' ', tokens));
+
+        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        }
+    }
+}
