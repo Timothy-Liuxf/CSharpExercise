@@ -12,9 +12,15 @@ Statement               : VarDecl ';'? NEWLINE
 CompoundStmt            : '{' NEWLINE Statement* '}' NEWLINE
                         ;
 
-VarDecl                 : 'var' IDENTIFIER Type ('=' Expression)?
-                        | 'var' IDENTIFIER '=' Expression
+VarDecl                 : 'var' IdentifierList Type ('=' ExpressionList)?
+                        | 'var' IdentifierList '=' ExpressionList
                         ;
+
+IdentifierList          : 
+						;
+
+ExpressionList          : Expression (',' Expression)*
+						;
 
 Type                    : TYPE_KEYWORD
                         ;

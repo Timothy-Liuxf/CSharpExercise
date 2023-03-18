@@ -4,11 +4,11 @@ namespace GoScript.Frontend.AST
 {
     public sealed class CompoundStmt : Statement
     {
-        public IList<Statement> Statements { get; private init; }
+        public IReadOnlyList<Statement> Statements { get; private init; }
 
         public SourceLocation Location { get; private init; }
 
-        public CompoundStmt(IList<Statement> statements, SourceLocation location)
+        public CompoundStmt(IReadOnlyList<Statement> statements, SourceLocation location)
         {
             this.Statements = statements;
             this.Location = location;

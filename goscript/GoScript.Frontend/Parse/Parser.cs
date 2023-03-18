@@ -138,21 +138,37 @@ namespace GoScript.Frontend.Parse
         private VarDecl ParseVarDecl()
         {
             var location = tokens.MatchKeyword(KeywordType.Var).Location;
-            var name = tokens.MatchIdentifier();
-            if (tokens.TryMatchTypeKeyword(out var typeKeyword))
+            var identifiers = new List<string>() { tokens.MatchIdentifier().Name };
+            while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
             {
-                if (tokens.TryMatchPunctuator(PunctuatorType.Assign, out _))
+                identifiers.Add(tokens.MatchIdentifier().Name);
+            }
+
+            Keyword? typeKeyword;
+            if (!tokens.TryMatchTypeKeyword(out typeKeyword)
+                || tokens.TryMatchPunctuator(PunctuatorType.Assign, out _))
+            {
+                if (typeKeyword is null)
                 {
-                    var initExpr = ParseExpression();
-                    return new VarDecl(name.Name, Keyword.GetKeywordString(typeKeyword!.Type)!, initExpr, location);
+                    tokens.MatchPunctuator(PunctuatorType.Assign);
                 }
-                return new VarDecl(name.Name, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
+
+                var initExprs = new List<Expression>() { ParseExpression() };
+                while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
+                {
+                    initExprs.Add(ParseExpression());
+                }
+
+                if (typeKeyword is null)
+                {
+                    return new VarDecl(identifiers, initExprs, location);
+                }
+                else
+                {
+                    return new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword.Type)!, initExprs, location);
+                }
             }
-            {
-                tokens.MatchPunctuator(PunctuatorType.Assign);
-                var initExpr = ParseExpression();
-                return new VarDecl(name.Name, initExpr, location);
-            }
+            return new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
         }
 
         private CompoundStmt ParseCompoundStmt()

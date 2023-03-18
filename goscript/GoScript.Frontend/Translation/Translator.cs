@@ -39,75 +39,94 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(VarDecl varDecl)
         {
-            if (varDecl.InitExpr == null && varDecl.InitType == null)
+            if (varDecl.InitExprs == null && varDecl.InitType == null)
             {
-                throw new InternalErrorException($"At {varDecl.Location}: InitExpr and InitType shouldn't be null at the same time.");
-            }
-            if (this.scopeStack.ContainsInCurrentScope(varDecl.VarName))
-            {
-                throw new ConflictException($"Conflict at {varDecl.Location}: the name \"{varDecl.VarName}\" has already defined.");
+                throw new InternalErrorException($"At {varDecl.Location}: InitExprs and InitType shouldn't be null at the same time.");
             }
 
-            var rtti = new RTTI();
-            if (varDecl.InitType != null)
+            if (varDecl.InitExprs is not null && varDecl.VarNames.Count != varDecl.InitExprs.Count)
             {
-                var gsType = GSBasicType.ParseBasicType(varDecl.InitType);
-                if (gsType is not null)
-                {
-                    rtti.Type = gsType;
-                }
-                else
-                {
-                    throw new SymbolNotFoundException($"At {varDecl.Location}: \"{varDecl.InitType}\" is not a valid type.");
-                }
+                throw new SyntaxErrorException($"At {varDecl.Location}: The number of variables doesn't match the number of initializers.");
             }
-            this.scopeStack.Add(varDecl.VarName, rtti);
 
-            varDecl.Attributes.StmtType = new GSNilType();
-            if (varDecl.InitExpr == null)   // This means varDecl.InitType must not be null
+            foreach (var varname in varDecl.VarNames)
             {
-                rtti.Value = Convert.ChangeType(0, ((GSBasicType)rtti.Type!).DotNetType);
-            }
-            else
-            {
-                varDecl.InitExpr.Accept(this);
-                var exprType = varDecl.InitExpr.Attributes.ExprType!;
-                if (varDecl.InitType == null)
+                if (this.scopeStack.ContainsInCurrentScope(varname))
                 {
-                    if (exprType.IsIntegerLiteral)
+                    throw new ConflictException($"Conflict at {varDecl.Location}: the name \"{varname}\" has already defined.");
+                }
+            }
+
+            var cnt = varDecl.VarNames.Count;
+            var rttis = new List<RTTI>();
+            for (int i = 0; i < cnt; ++i)
+            {
+                var rtti = new RTTI();
+                if (varDecl.InitType != null)
+                {
+                    var gsType = GSBasicType.ParseBasicType(varDecl.InitType);
+                    if (gsType is not null)
                     {
-                        var type = new GSInt64();
-                        rtti.Type = type;
-                        rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExpr.Attributes.Value!, type);
+                        rtti.Type = gsType;
                     }
                     else
                     {
-                        rtti.Type = exprType;
-                        rtti.Value = varDecl.InitExpr.Attributes.Value;
+                        throw new SymbolNotFoundException($"At {varDecl.Location}: \"{varDecl.InitType}\" is not a valid type.");
                     }
+                }
+                rttis.Add(rtti);
+
+                varDecl.Attributes.StmtType = new GSNilType();
+                if (varDecl.InitExprs == null)   // This means varDecl.InitType must not be null
+                {
+                    rtti.Value = Convert.ChangeType(0, ((GSBasicType)rtti.Type!).DotNetType);
                 }
                 else
                 {
-                    if (exprType.IsIntegerLiteral)
+                    varDecl.InitExprs[i].Accept(this);
+                    var exprType = varDecl.InitExprs[i].Attributes.ExprType!;
+                    if (varDecl.InitType == null)
                     {
-                        if (rtti.Type!.IsArithmetic)
+                        if (exprType.IsIntegerLiteral)
                         {
-                            rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExpr.Attributes.Value!, (GSArithmeticType)rtti.Type);
+                            var type = new GSInt64();
+                            rtti.Type = type;
+                            rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExprs[i].Attributes.Value!, type);
                         }
                         else
                         {
-                            throw new InternalErrorException($"Unknown type {rtti.Type} at {varDecl.Location}.");
+                            rtti.Type = exprType;
+                            rtti.Value = varDecl.InitExprs[i].Attributes.Value;
                         }
                     }
                     else
                     {
-                        if (rtti.Type! != exprType)
+                        if (exprType.IsIntegerLiteral)
                         {
-                            throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {varDecl.Location}.");
+                            if (rtti.Type!.IsArithmetic)
+                            {
+                                rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExprs[i].Attributes.Value!, (GSArithmeticType)rtti.Type);
+                            }
+                            else
+                            {
+                                throw new InternalErrorException($"Unknown type {rtti.Type} at {varDecl.Location}.");
+                            }
                         }
-                        rtti.Value = varDecl.InitExpr.Attributes.Value;
+                        else
+                        {
+                            if (rtti.Type! != exprType)
+                            {
+                                throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {varDecl.Location}.");
+                            }
+                            rtti.Value = varDecl.InitExprs[i].Attributes.Value;
+                        }
                     }
                 }
+            }
+
+            for (int i = 0; i < cnt; ++i)
+            {
+                this.scopeStack.Add(varDecl.VarNames[i], rttis[i]);
             }
         }
 

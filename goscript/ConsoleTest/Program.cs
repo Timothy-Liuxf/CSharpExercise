@@ -117,10 +117,13 @@ using GoScript.Frontend.Lex;
     Console.WriteLine("===== Test Intepreter 1 =====\n\n");
     {
         var prog = """
-            var x uint32 = 10
-            var y uint32 = 11
+            var x, y uint32 = 10, 11
             x + y
             x - y
+            var a, b, c uint32
+            a + b + c
+            var d, e = 9, 8
+            d + e
             {
                 var x uint16 = 5
                 var y uint32 = 6

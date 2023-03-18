@@ -6,38 +6,38 @@ namespace GoScript.Frontend.AST
 {
     public sealed class VarDecl : Statement
     {
-        public string VarName { get; private init; }
+        public IReadOnlyList<string> VarNames { get; private init; }
         public string? InitType { get; private init; }
-        public Expression? InitExpr { get; private init; }
+        public IReadOnlyList<Expression>? InitExprs { get; private init; }
         public SourceLocation Location { get; private init; }
 
-        public VarDecl(string varName, Expression initExpr, SourceLocation location)
+        public VarDecl(IReadOnlyList<string> varNames, IReadOnlyList<Expression> initExprs, SourceLocation location)
         {
-            VarName = varName;
-            InitExpr = initExpr;
+            VarNames = varNames;
+            InitExprs = initExprs;
             Location = location;
         }
 
-        public VarDecl(string varName, string initType, SourceLocation location)
+        public VarDecl(IReadOnlyList<string> varNames, string initType, SourceLocation location)
         {
-            VarName = varName;
+            VarNames = varNames;
             InitType = initType;
             Location = location;
         }
 
-        public VarDecl(string varName, string initType, Expression initExpr, SourceLocation location)
+        public VarDecl(IReadOnlyList<string> varNames, string initType, IReadOnlyList<Expression> initExprs, SourceLocation location)
         {
-            VarName = varName;
+            VarNames = varNames;
             InitType = initType;
-            InitExpr = initExpr;
+            InitExprs = initExprs;
             Location = location;
         }
 
         public override string ToString()
         {
-            return "var " + this.VarName
-                + (this.InitType == null ? "" : $" {this.InitType}")
-                + (this.InitExpr == null ? "" : $" = {this.InitExpr}")
+            return "var " + string.Join(", ", this.VarNames)
+                + (this.InitType is null ? "" : $" {this.InitType}")
+                + (this.InitExprs is null ? "" : $" = {string.Join(", ", InitExprs)}")
                 + Environment.NewLine;
         }
 
