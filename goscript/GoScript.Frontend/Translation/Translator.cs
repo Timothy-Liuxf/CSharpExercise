@@ -90,19 +90,22 @@ namespace GoScript.Frontend.Translation
             var rExpr = additiveExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            if (lExpr.Attributes.ExprType is not GSBasicType
-                || rExpr.Attributes.ExprType is not GSBasicType)
+            if (!lExpr.Attributes.ExprType!.IsArithmetic
+                || !rExpr.Attributes.ExprType!.IsArithmetic)
             {
                 throw new InvalidOperationException($"At {additiveExpr.Location}: Invalid operator \'{op}\'.");
             }
-            var commonType = GSBasicType.GetCommonType((GSBasicType)lExpr.Attributes.ExprType, (GSBasicType)rExpr.Attributes.ExprType);
-            additiveExpr.Attributes.ExprType = commonType;
+            if (lExpr.Attributes.ExprType != rExpr.Attributes.ExprType)
+            {
+                throw new InvalidOperationException(
+                    $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {additiveExpr.Location}."
+                );
+            }
+            additiveExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
+            var lOp = (dynamic)lExpr.Attributes.Value!;
+            var rOp = (dynamic)rExpr.Attributes.Value!;
             additiveExpr.Attributes.Value = (object)(
-                    op == '+' ?
-                        (dynamic)Convert.ChangeType(lExpr.Attributes.Value, commonType.DotNetType)!
-                        + (dynamic)Convert.ChangeType(rExpr.Attributes.Value, commonType.DotNetType)!
-                    : (dynamic)Convert.ChangeType(lExpr.Attributes.Value, commonType.DotNetType)!
-                        - (dynamic)Convert.ChangeType(rExpr.Attributes.Value, commonType.DotNetType)!
+                    op == '+' ? lOp + rOp : lOp - rOp
                 ) ?? throw new InternalErrorException($"Invalid \'{op}\' at {additiveExpr.Location}.");
         }
 
@@ -120,15 +123,20 @@ namespace GoScript.Frontend.Translation
             var rExpr = multiplicativeExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            if (lExpr.Attributes.ExprType is not GSBasicType
-                || rExpr.Attributes.ExprType is not GSBasicType)
+            if (!lExpr.Attributes.ExprType!.IsArithmetic
+                || !rExpr.Attributes.ExprType!.IsArithmetic)
             {
                 throw new InvalidOperationException($"At {multiplicativeExpr.Location}: Invalid operator \'{op}\'.");
             }
-            var commonType = GSBasicType.GetCommonType((GSBasicType)lExpr.Attributes.ExprType, (GSBasicType)rExpr.Attributes.ExprType);
-            var lOp = (dynamic)Convert.ChangeType(lExpr.Attributes.Value, commonType.DotNetType)!;
-            var rOp = (dynamic)Convert.ChangeType(rExpr.Attributes.Value, commonType.DotNetType)!;
-            multiplicativeExpr.Attributes.ExprType = commonType;
+            if (lExpr.Attributes.ExprType != rExpr.Attributes.ExprType)
+            {
+                throw new InvalidOperationException(
+                    $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {multiplicativeExpr.Location}."
+                );
+            }
+            multiplicativeExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
+            var lOp = (dynamic)lExpr.Attributes.Value!;
+            var rOp = (dynamic)rExpr.Attributes.Value!;
             multiplicativeExpr.Attributes.Value = (object)(op switch
             {
                 '*' => lOp * rOp,
@@ -141,7 +149,7 @@ namespace GoScript.Frontend.Translation
         {
             var operand = unaryExpr.Operand;
             operand.Accept(this);
-            if (operand.Attributes.ExprType is not GSBasicType)
+            if (!operand.Attributes.ExprType!.IsArithmetic)
             {
                 throw new InvalidOperationException($"At {unaryExpr.Location}: Invalid unary operator \'-\'.");
             }

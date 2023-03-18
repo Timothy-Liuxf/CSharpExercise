@@ -28,5 +28,8 @@
         {
             return (this is GSBasicType) ? ((GSBasicType)this).DotNetType.GetHashCode() : 0;
         }
+
+        public virtual bool IsBasic => false;
+        public virtual bool IsArithmetic => false;
     }
 }
