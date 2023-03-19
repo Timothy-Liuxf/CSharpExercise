@@ -142,6 +142,56 @@ namespace GoScript.Frontend.Translation
             }
         }
 
+        void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
+        {
+            var lExpr = logicalOrExpr.LExpr;
+            var rExpr = logicalOrExpr.RExpr;
+            lExpr.Accept(this);
+            rExpr.Accept(this);
+            var lExprType = lExpr.Attributes.ExprType!;
+            var rExprType = rExpr.Attributes.ExprType!;
+
+            if ((lExprType.IsBool || lExprType.IsBoolConstant)
+                && (rExprType.IsBool || rExprType.IsBoolConstant))
+            {
+                if (lExprType.IsBoolConstant && rExprType.IsBoolConstant)
+                {
+                    logicalOrExpr.Attributes.Value = (bool)lExpr.Attributes.Value! || (bool)rExpr.Attributes.Value!;
+                    logicalOrExpr.IsConstantEvaluated = true;
+                }
+                logicalOrExpr.Attributes.ExprType = GSBool.Instance;
+            }
+            else
+            {
+                throw new InvalidOperationException($"At {logicalOrExpr.Location}: The type of logical or expression should be bool.");
+            }
+        }
+
+        void IVisitor.Visit(LogicalAndExpr logicalAndExpr)
+        {
+            var lExpr = logicalAndExpr.LExpr;
+            var rExpr = logicalAndExpr.RExpr;
+            lExpr.Accept(this);
+            rExpr.Accept(this);
+            var lExprType = lExpr.Attributes.ExprType!;
+            var rExprType = rExpr.Attributes.ExprType!;
+
+            if ((lExprType.IsBool || lExprType.IsBoolConstant)
+                && (rExprType.IsBool || rExprType.IsBoolConstant))
+            {
+                if (lExprType.IsBoolConstant && rExprType.IsBoolConstant)
+                {
+                    logicalAndExpr.Attributes.Value = (bool)lExpr.Attributes.Value! && (bool)rExpr.Attributes.Value!;
+                    logicalAndExpr.IsConstantEvaluated = true;
+                }
+                logicalAndExpr.Attributes.ExprType = GSBool.Instance;
+            }
+            else
+            {
+                throw new InvalidOperationException($"At {logicalAndExpr.Location}: The type of logical and expression should be bool.");
+            }
+        }
+
         void IVisitor.Visit(AdditiveExpr additiveExpr)
         {
             char op = additiveExpr.Operator switch

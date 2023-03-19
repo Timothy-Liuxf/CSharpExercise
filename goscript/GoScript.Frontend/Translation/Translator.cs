@@ -94,6 +94,44 @@ namespace GoScript.Frontend.Translation
             }
         }
 
+        void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
+        {
+            if (logicalOrExpr.IsConstantEvaluated) return;
+
+            var lExpr = logicalOrExpr.LExpr;
+            var rExpr = logicalOrExpr.RExpr;
+
+            lExpr.Accept(this);
+            if ((bool)lExpr.Attributes.Value!)
+            {
+                logicalOrExpr.Attributes.Value = true;
+            }
+            else
+            {
+                rExpr.Accept(this);
+                logicalOrExpr.Attributes.Value = rExpr.Attributes.Value;
+            }
+        }
+
+        void IVisitor.Visit(LogicalAndExpr logicalAndExpr)
+        {
+            if (logicalAndExpr.IsConstantEvaluated) return;
+
+            var lExpr = logicalAndExpr.LExpr;
+            var rExpr = logicalAndExpr.RExpr;
+
+            lExpr.Accept(this);
+            if (!(bool)lExpr.Attributes.Value!)
+            {
+                logicalAndExpr.Attributes.Value = false;
+            }
+            else
+            {
+                rExpr.Accept(this);
+                logicalAndExpr.Attributes.Value = rExpr.Attributes.Value;
+            }
+        }
+
         void IVisitor.Visit(AdditiveExpr additiveExpr)
         {
             if (additiveExpr.IsConstantEvaluated) return;

@@ -62,7 +62,29 @@ namespace GoScript.Frontend.Parse
 
         private Expression ParseExpression()
         {
-            return ParseAdditiveExpr();
+            return ParseLogicalOrExpr();
+        }
+
+        private Expression ParseLogicalOrExpr()
+        {
+            var expr = ParseLogicalAndExpr();
+            while (tokens.TryMatchPunctuator(PunctuatorType.Or, out var op))
+            {
+                var rExpr = ParseLogicalAndExpr();
+                expr = new LogicalOrExpr(expr, rExpr, op!.Location);
+            }
+            return expr;
+        }
+
+        private Expression ParseLogicalAndExpr()
+        {
+            var expr = ParseAdditiveExpr();
+            while (tokens.TryMatchPunctuator(PunctuatorType.And, out var op))
+            {
+                var rExpr = ParseAdditiveExpr();
+                expr = new LogicalAndExpr(expr, rExpr, op!.Location);
+            }
+            return expr;
         }
 
         private Expression ParseAdditiveExpr()

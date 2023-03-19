@@ -2,6 +2,8 @@
 {
     internal interface IVisitor
     {
+        void Visit(LogicalOrExpr logicalOrExpr);
+        void Visit(LogicalAndExpr logicalAndExpr);
         void Visit(AdditiveExpr additiveExpr);
         void Visit(MultiplicativeExpr multiplicativeExpr);
         void Visit(UnaryExpr unaryExpr);

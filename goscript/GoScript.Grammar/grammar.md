@@ -28,6 +28,14 @@ Type                    : TYPE_KEYWORD
 Expression              : AdditiveExpr
                         ;
 
+LogicalOrExpr           : LogicalOrExpr '||' LogicalAndExpr
+                        | LogicalAndExpr
+                        ;
+
+LogicalAndExpr          : LogicalAndExpr '&&' AdditiveExpr
+                        | AdditiveExpr
+                        ;
+
 AdditiveExpr            : AdditiveExpr ('+'|'-') MultiplicativeExpr
                         | MultiplicativeExpr
                         ;
