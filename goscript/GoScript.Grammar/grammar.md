@@ -42,6 +42,7 @@ UnaryExpr               : '-' UnaryExpr
 
 PrimaryExpr             : IDENTIFIER
                         | INTEGER_LITERAL
+                        | BOOL_LITERAL
                         | '(' Expression ')'
                         ;
 ```

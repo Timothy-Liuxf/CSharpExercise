@@ -83,20 +83,27 @@ namespace GoScript.Frontend.Translation
                 }
                 else
                 {
-                    varDecl.InitExprs[i].Accept(this);
-                    var exprType = varDecl.InitExprs[i].Attributes.ExprType!;
+                    var initExpr = varDecl.InitExprs[i];
+                    var varName = varDecl.VarNames[i];
+                    initExpr.Accept(this);
+                    var exprType = initExpr.Attributes.ExprType!;
                     if (varDecl.InitType == null)
                     {
                         if (exprType.IsIntegerLiteral)
                         {
                             var type = GSInt64.Instance;
                             rtti.Type = type;
-                            rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExprs[i].Attributes.Value!, type);
+                            rtti.Value = ConvertArithmeticLiteralValue((ulong)initExpr.Attributes.Value!, type);
+                        }
+                        else if (exprType.IsBoolLiteral)
+                        {
+                            rtti.Type = GSBool.Instance;
+                            rtti.Value = initExpr.Attributes.Value;
                         }
                         else
                         {
                             rtti.Type = exprType;
-                            rtti.Value = varDecl.InitExprs[i].Attributes.Value;
+                            rtti.Value = initExpr.Attributes.Value;
                         }
                     }
                     else
@@ -105,11 +112,23 @@ namespace GoScript.Frontend.Translation
                         {
                             if (rtti.Type!.IsArithmetic)
                             {
-                                rtti.Value = ConvertArithmeticLiteralValue((ulong)varDecl.InitExprs[i].Attributes.Value!, (GSArithmeticType)rtti.Type);
+                                rtti.Value = ConvertArithmeticLiteralValue((ulong)initExpr.Attributes.Value!, (GSArithmeticType)rtti.Type);
                             }
                             else
                             {
                                 throw new InternalErrorException($"Unknown type {rtti.Type} at {varDecl.Location}.");
+                            }
+                        }
+                        else if (exprType.IsBoolLiteral)
+                        {
+                            if (rtti.Type!.IsBool)
+                            {
+                                rtti.Value = initExpr.Attributes.Value;
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException(
+                                    $"At {varDecl.Location}: cannot use bool constant {initExpr} to init {rtti.Type} variable \'{varName}\'.");
                             }
                         }
                         else
@@ -118,7 +137,7 @@ namespace GoScript.Frontend.Translation
                             {
                                 throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {varDecl.Location}.");
                             }
-                            rtti.Value = varDecl.InitExprs[i].Attributes.Value;
+                            rtti.Value = initExpr.Attributes.Value;
                         }
                     }
                 }
@@ -292,6 +311,12 @@ namespace GoScript.Frontend.Translation
         {
             integerLiteralExpr.Attributes.ExprType = GSIntegerLiteral.Instance;
             integerLiteralExpr.Attributes.Value = integerLiteralExpr.IntegerValue;
+        }
+
+        void IVisitor.Visit(BoolLiteralExpr boolLiteralExpr)
+        {
+            boolLiteralExpr.Attributes.ExprType = GSBoolLiteral.Instance;
+            boolLiteralExpr.Attributes.Value = boolLiteralExpr.BoolValue;
         }
 
         void IVisitor.Visit(CompoundStmt compoundStmt)

@@ -121,10 +121,13 @@ namespace GoScript.Frontend.Parse
             {
                 return new IdExpr(identifier!.Name, identifier.Location);
             }
-            if (tokens.TryMatchLiteral(LiteralType.IntegerLiteral, out var literal))
+            if (tokens.TryMatchLiteral(LiteralType.IntegerLiteral, out var integerLiteral))
             {
-                var integerLiteral = (literal as IntegerLiteral)!;
-                return new IntegerLiteralExpr(integerLiteral.Value);
+                return new IntegerLiteralExpr((integerLiteral as IntegerLiteral)!.Value);
+            }
+            if (tokens.TryMatchLiteral(LiteralType.BoolLiteral, out var boolLiteral))
+            {
+                return new BoolLiteralExpr((boolLiteral as BoolLiteral)!.Value);
             }
             if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
             {
@@ -132,7 +135,7 @@ namespace GoScript.Frontend.Parse
                 tokens.MatchPunctuator(PunctuatorType.RParen);
                 return expr;
             }
-            throw new NotImplementedException("ParsePrimaryExpr");
+            throw new NotImplementedException($"ParsePrimaryExpr at {tokens.CurrentToken?.Location.ToString() ?? "EOF"}.");
         }
 
         private VarDecl ParseVarDecl()

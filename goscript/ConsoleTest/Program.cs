@@ -74,7 +74,7 @@ using GoScript.Frontend.Lex;
 }
 
 {
-    Console.WriteLine("===== Test Intepreter 1 =====\n\n");
+    Console.WriteLine("===== Test Intepreter 0 =====\n\n");
     {
         var prog = """
             var x int32
@@ -135,6 +135,28 @@ using GoScript.Frontend.Lex;
                 }
             }
             x + y
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(string.Join(' ', tokens));
+
+        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        }
+    }
+}
+
+{
+    Console.WriteLine("===== Test Intepreter 2 =====\n\n");
+    {
+        var prog = """
+            var a bool = true
+            var b = false
+            var c bool
+            a
+            b
+            c
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(string.Join(' ', tokens));

@@ -16,6 +16,7 @@
                 "uint16" => GSUInt16.Instance,
                 "uint32" => GSUInt32.Instance,
                 "uint" or "uint64" => GSUInt64.Instance,
+                "bool" => GSBool.Instance,
                 _ => null,
             };
         }
@@ -132,5 +133,19 @@
         public static GSUInt64 Instance { get; } = new();
 
         private GSUInt64() { }
+    }
+
+    public sealed class GSBool : GSBasicType
+    {
+        public override Type DotNetType => typeof(bool);
+
+        public override string ToString() => "bool";
+
+        public override bool IsBool => true;
+
+        public static GSBool Instance { get; } = new();
+
+        private GSBool() { }
+
     }
 }

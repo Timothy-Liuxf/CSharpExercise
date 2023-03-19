@@ -13,4 +13,13 @@
 
         private GSIntegerLiteral() { }
     }
+
+    public sealed class GSBoolLiteral : GSLiteralType
+    {
+        public override bool IsBoolLiteral => true;
+
+        public static GSBoolLiteral Instance { get; } = new();
+
+        private GSBoolLiteral() { }
+    }
 }

@@ -200,7 +200,8 @@ namespace GoScript.Frontend.Lex
                 KeywordType.Int64 or
                 KeywordType.UInt64 or
                 KeywordType.Float32 or
-                KeywordType.Float64 => true,
+                KeywordType.Float64 or
+                KeywordType.Bool => true,
                 _ => false,
             };
         }
@@ -337,7 +338,7 @@ namespace GoScript.Frontend.Lex
 
     public class BoolLiteral : Literal
     {
-        public override LiteralType Type => LiteralType.FloatLiteral;
+        public override LiteralType Type => LiteralType.BoolLiteral;
 
         public bool Value { get; private init; }
 

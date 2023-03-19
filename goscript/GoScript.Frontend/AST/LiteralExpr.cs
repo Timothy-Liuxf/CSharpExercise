@@ -21,4 +21,20 @@ namespace GoScript.Frontend.AST
 
         internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
+
+    public sealed class BoolLiteralExpr : LiteralExpr
+    {
+        public bool BoolValue { get; private init; }
+        public BoolLiteralExpr(bool boolValue)
+        {
+            this.BoolValue = boolValue;
+        }
+
+        public override string ToString()
+        {
+            return this.BoolValue ? "true" : "false";
+        }
+
+        internal override void Accept(IVisitor visitor) => visitor.Visit(this);
+    }
 }
