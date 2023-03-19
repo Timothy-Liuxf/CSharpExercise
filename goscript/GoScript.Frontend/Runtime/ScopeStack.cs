@@ -70,6 +70,7 @@
                 throw new InternalErrorException($"The count of the scope stack is unexpextedly {this.scopes.Count}.");
             }
 
+            this.scopes.Last!.Value.ClearValues();
             this.scopes.RemoveLast();
         }
     }
