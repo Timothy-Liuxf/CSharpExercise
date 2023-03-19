@@ -1,10 +1,13 @@
-﻿using GoScript.Frontend.Types;
+﻿using GoScript.Frontend.Runtime;
+using GoScript.Frontend.Types;
 using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
     public sealed class IdExpr : Expression
     {
+        internal WeakReference<RTTI?> RTTI { get; } = new(null);
+
         public string Name { get; private init; }
         public SourceLocation Location { get; private init; }
 

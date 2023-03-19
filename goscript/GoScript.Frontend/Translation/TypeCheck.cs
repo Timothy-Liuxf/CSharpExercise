@@ -1,6 +1,7 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Runtime;
 using GoScript.Frontend.Types;
+using GoScript.Utils;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 
@@ -102,36 +103,7 @@ namespace GoScript.Frontend.Translation
                     }
                     else
                     {
-                        if (exprType.IsIntegerConstant)
-                        {
-                            if (rtti.Type!.IsArithmetic)
-                            {
-                                if (!CheckArithmeticConvertible((ulong)initExpr.Attributes.Value!, (GSArithmeticType)rtti.Type))
-                                {
-                                    throw new InvalidOperationException($"At {varDecl.Location}: The value {initExpr.Attributes.Value} is out of range of {rtti.Type}.");
-                                }
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException(
-                                    $"At {varDecl.Location}: Cannot use integer constant to init {rtti.Type} variable \"{varName}\".");
-                            }
-                        }
-                        else if (exprType.IsBoolConstant)
-                        {
-                            if (!rtti.Type!.IsBool)
-                            {
-                                throw new InvalidOperationException(
-                                    $"At {varDecl.Location}: Cannot use bool constant {initExpr} to init {rtti.Type} variable \"{varName}\".");
-                            }
-                        }
-                        else
-                        {
-                            if (rtti.Type! != exprType)
-                            {
-                                throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {varDecl.Location}.");
-                            }
-                        }
+                        AssignValueHelper(rtti, initExpr, varDecl.Location, varName, true);
                     }
                 }
             }
@@ -139,6 +111,76 @@ namespace GoScript.Frontend.Translation
             for (int i = 0; i < cnt; ++i)
             {
                 this.scopeStack.Add(varDecl.VarNames[i], rttis[i]);
+            }
+        }
+
+        void IVisitor.Visit(AssignStmt assignStmt)
+        {
+            var assignedExprs = assignStmt.AssignedExprs;
+            var exprs = assignStmt.Exprs;
+            foreach (var assignedExpr in assignedExprs)
+            {
+                if (assignedExpr is not IdExpr)
+                {
+                    throw new InvalidOperationException(
+                        $"At {assignStmt.Location}: Cannot assign to {assignedExpr}.");
+                }
+            }
+            if (assignedExprs.Count != exprs.Count)
+            {
+                throw new SyntaxErrorException($"At {assignStmt.Location}: The number of assigned objects doesn't match the number of expressions.");
+            }
+
+            var cnt = assignedExprs.Count;
+            for (int i = 0; i < cnt; ++i)
+            {
+                var assignedExpr = (assignedExprs[i] as IdExpr)!;
+                var expr = exprs[i];
+                expr.Accept(this);
+                assignedExpr.Accept(this);
+
+                var varName = assignedExpr.Name;
+                if (!assignedExpr.RTTI.TryGetTarget(out var rtti))
+                {
+                    throw new InternalErrorException($"At {assignedExpr.Location}: \"{varName}\" has no RTTI.");
+                }
+                AssignValueHelper(rtti, expr, assignStmt.Location, varName, false);
+            }
+        }
+
+        private void AssignValueHelper(RTTI rtti, Expression expr, SourceLocation location, string assignee, bool isVarDecl)
+        {
+            var exprType = expr.Attributes.ExprType!;
+            var op = isVarDecl ? "init" : "assign to";
+            if (exprType.IsIntegerConstant)
+            {
+                if (rtti.Type!.IsArithmetic)
+                {
+                    if (!CheckArithmeticConvertible((ulong)expr.Attributes.Value!, (GSArithmeticType)rtti.Type))
+                    {
+                        throw new InvalidOperationException($"At {location}: The value {expr.Attributes.Value} is out of range of {rtti.Type}.");
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"At {location}: Cannot use integer constant to {op} {rtti.Type} variable \"{assignee}\".");
+                }
+            }
+            else if (exprType.IsBoolConstant)
+            {
+                if (!rtti.Type!.IsBool)
+                {
+                    throw new InvalidOperationException(
+                        $"At {location}: Cannot use bool constant {expr} to init {rtti.Type} variable \"{assignee}\".");
+                }
+            }
+            else
+            {
+                if (rtti.Type! != exprType)
+                {
+                    throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {location}.");
+                }
             }
         }
 
@@ -372,6 +414,7 @@ namespace GoScript.Frontend.Translation
             }
 
             idExpr.Attributes.ExprType = rtti.Type;
+            idExpr.RTTI.SetTarget(rtti);
         }
 
         void IVisitor.Visit(IntegerConstantExpr integerConstantExpr)

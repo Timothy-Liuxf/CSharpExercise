@@ -1,4 +1,5 @@
 ﻿using GoScript.Frontend.Lex;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GoScript.Frontend.Parse
 {
@@ -45,7 +46,7 @@ namespace GoScript.Frontend.Parse
             throw new SyntaxErrorException(token.Location, $"Expect token \'{Punctuator.GetPunctuator(type)}\', found \'{token.ToString()}\'.");
         }
 
-        public bool TryPeekPunctuator(PunctuatorType type, out Punctuator? punctuator)
+        public bool TryPeekPunctuator(PunctuatorType type, [MaybeNullWhen(false), NotNullWhen(true)] out Punctuator? punctuator)
         {
             var token = PeekToken();
             if (token.TokenCatagory == TokenType.Punctuator
@@ -58,7 +59,7 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        public bool TryMatchPunctuator(PunctuatorType type, out Punctuator? punctuator)
+        public bool TryMatchPunctuator(PunctuatorType type, [MaybeNullWhen(false), NotNullWhen(true)] out Punctuator? punctuator)
         {
             if (TryPeekPunctuator(type, out punctuator))
             {
@@ -83,7 +84,7 @@ namespace GoScript.Frontend.Parse
             throw new SyntaxErrorException(token.Location, $"Expect token \'{Keyword.GetKeywordString(type)}\', found \'{token}\'.");
         }
 
-        public bool TryPeekKeyword(KeywordType type, out Keyword? keyword)
+        public bool TryPeekKeyword(KeywordType type, [MaybeNullWhen(false), NotNullWhen(true)] out Keyword? keyword)
         {
             var token = PeekToken();
             if (token.TokenCatagory == TokenType.Keyword
@@ -96,7 +97,7 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        public bool TryMatchKeyword(KeywordType type, out Keyword? keyword)
+        public bool TryMatchKeyword(KeywordType type, [MaybeNullWhen(false), NotNullWhen(true)] out Keyword? keyword)
         {
             if (TryPeekKeyword(type, out keyword))
             {
@@ -105,7 +106,7 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        public bool TryPeekTypeKeyword(out Keyword? keyword)
+        public bool TryPeekTypeKeyword([MaybeNullWhen(false), NotNullWhen(true)] out Keyword? keyword)
         {
             var token = PeekToken();
             if (token.TokenCatagory == TokenType.Keyword
@@ -118,7 +119,7 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        public bool TryMatchTypeKeyword(out Keyword? keyword)
+        public bool TryMatchTypeKeyword([MaybeNullWhen(false), NotNullWhen(true)] out Keyword? keyword)
         {
             if (TryPeekTypeKeyword(out keyword))
             {
@@ -143,7 +144,7 @@ namespace GoScript.Frontend.Parse
             throw new SyntaxErrorException(token.Location, $"Expect {type.ToString()}, found \'{token.ToString()}\'.");
         }
 
-        public bool TryPeekLiteral(LiteralType type, out Literal? literal)
+        public bool TryPeekLiteral(LiteralType type, [MaybeNullWhen(false), NotNullWhen(true)] out Literal? literal)
         {
             var token = PeekToken();
             if (token.TokenCatagory == TokenType.Literal
@@ -156,7 +157,7 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        public bool TryMatchLiteral(LiteralType type, out Literal? literal)
+        public bool TryMatchLiteral(LiteralType type, [MaybeNullWhen(false), NotNullWhen(true)] out Literal? literal)
         {
             if (TryPeekLiteral(type, out literal))
             {
@@ -177,7 +178,7 @@ namespace GoScript.Frontend.Parse
             throw new SyntaxErrorException(token.Location, $"Expect identifier, found \'{token.ToString()}\'.");
         }
 
-        public bool TryPeekIdentifier(out Identifier? identifier)
+        public bool TryPeekIdentifier([MaybeNullWhen(false), NotNullWhen(true)] out Identifier? identifier)
         {
             var token = PeekToken();
             if (token.TokenCatagory == TokenType.Identifier)
@@ -189,7 +190,7 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        public bool TryMatchIdentifier(out Identifier? identifier)
+        public bool TryMatchIdentifier([MaybeNullWhen(false), NotNullWhen(true)] out Identifier? identifier)
         {
             if (TryPeekIdentifier(out identifier))
             {
@@ -210,7 +211,7 @@ namespace GoScript.Frontend.Parse
             throw new SyntaxErrorException(token.Location, $"Expect newline character, found \'{token.ToString()}\'.");
         }
 
-        public bool TryPeekNewline(out Newline? newline)
+        public bool TryPeekNewline([MaybeNullWhen(false), NotNullWhen(true)] out Newline? newline)
         {
             var token = PeekToken();
             if (token.TokenCatagory == TokenType.Newline)
@@ -222,7 +223,7 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        public bool TryMatchNewline(out Newline? newline)
+        public bool TryMatchNewline([MaybeNullWhen(false), NotNullWhen(true)] out Newline? newline)
         {
             if (TryPeekNewline(out newline))
             {

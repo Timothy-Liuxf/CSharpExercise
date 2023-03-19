@@ -77,20 +77,46 @@ namespace GoScript.Frontend.Translation
                     }
                     else
                     {
-                        if (exprType.IsIntegerConstant)
-                        {
-                            rtti.Value = ConvertArithmeticConstantValue((ulong)initExpr.Attributes.Value!, (GSArithmeticType)type);
-                        }
-                        else if (exprType.IsBoolConstant)
-                        {
-                            rtti.Value = initExpr.Attributes.Value;
-                        }
-                        else
-                        {
-                            rtti.Value = initExpr.Attributes.Value;
-                        }
+                        AssignValueHelper(rtti, initExpr);
                     }
                 }
+            }
+        }
+
+        void IVisitor.Visit(AssignStmt assignStmt)
+        {
+            var assignedExprs = assignStmt.AssignedExprs;
+            var exprs = assignStmt.Exprs;
+            var cnt = assignedExprs.Count;
+            for (int i = 0; i < cnt; ++i)
+            {
+                var assignedExpr = (assignedExprs[i] as IdExpr)!;
+                var expr = exprs[i];
+                expr.Accept(this);
+                assignedExpr.Accept(this);
+                if (!assignedExpr.RTTI.TryGetTarget(out var rtti))
+                {
+                    throw new InternalErrorException($"At {assignedExpr.Location}: the RTTI of \"{assignedExpr.Name}\" has not been built.");
+                }
+                AssignValueHelper(rtti, expr);
+            }
+        }
+
+        private void AssignValueHelper(RTTI rtti, Expression expr)
+        {
+            var exprType = expr.Attributes.ExprType!;
+            var exprValue = expr.Attributes.Value;
+            if (exprType.IsIntegerConstant)
+            {
+                rtti.Value = ConvertArithmeticConstantValue((ulong)exprValue!, (GSArithmeticType)rtti.Type!);
+            }
+            else if (exprType.IsBoolConstant)
+            {
+                rtti.Value = exprValue;
+            }
+            else
+            {
+                rtti.Value = exprValue;
             }
         }
 
@@ -248,7 +274,10 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(IdExpr idExpr)
         {
-            var rtti = this.scopeStack.LookUp(idExpr.Name) ?? throw new InternalErrorException($"At {idExpr.Location}: Symbol \"{idExpr.Name}\" has not been built.");
+            if (!idExpr.RTTI.TryGetTarget(out var rtti))
+            {
+                throw new InternalErrorException($"At {idExpr.Location}: Symbol \"{idExpr.Name}\" has not been built.");
+            }
             idExpr.Attributes.Value = rtti.Value;
         }
 

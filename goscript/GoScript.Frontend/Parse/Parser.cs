@@ -1,5 +1,6 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Lex;
+using System.Runtime.Serialization;
 
 namespace GoScript.Frontend.Parse
 {
@@ -23,6 +24,21 @@ namespace GoScript.Frontend.Parse
 
         private Statement ParseStatement()
         {
+            if (tokens.TryPeekKeyword(KeywordType.Var, out _))
+            {
+                return ParseVarDecl();
+            }
+
+            if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
+            {
+                return ParseCompoundStmt();
+            }
+
+            return ParseAssignOrExprStmt();
+        }
+
+        private Statement ParseAssignOrExprStmt()
+        {
             if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
             {
                 tokens.MatchNewline();
@@ -34,21 +50,32 @@ namespace GoScript.Frontend.Parse
                 return new EmptyStmt();
             }
 
-            if (tokens.TryPeekKeyword(KeywordType.Var, out _))
+            var expr = ParseExpression();
+            if (tokens.TryPeekPunctuator(PunctuatorType.Comma, out var comma)
+                || tokens.TryPeekPunctuator(PunctuatorType.Assign, out _))
             {
-                var varDecl = ParseVarDecl();
+                // AssignStmt
+                var assignedExprs = new List<Expression> { expr };
+                if (comma is not null)
+                {
+                    while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
+                    {
+                        assignedExprs.Add(ParseExpression());
+                    }
+                }
+                var assign = tokens.MatchPunctuator(PunctuatorType.Assign);
+
+                var assigneeExprs = new List<Expression> { ParseExpression() };
+                while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
+                {
+                    assignedExprs.Add(ParseExpression());
+                }
+
                 tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
                 tokens.MatchNewline();
-                return varDecl;
+                return new AssignStmt(assignedExprs, assigneeExprs, assign.Location);
             }
-
-            if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
-            {
-                return ParseCompoundStmt();
-            }
-
-            var expr = ParseExpression();
-            if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
+            else if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
             {
                 tokens.MatchNewline();
                 return new SingleStmt(expr, false);
@@ -71,7 +98,7 @@ namespace GoScript.Frontend.Parse
             while (tokens.TryMatchPunctuator(PunctuatorType.Or, out var op))
             {
                 var rExpr = ParseLogicalAndExpr();
-                expr = new LogicalOrExpr(expr, rExpr, op!.Location);
+                expr = new LogicalOrExpr(expr, rExpr, op.Location);
             }
             return expr;
         }
@@ -82,7 +109,7 @@ namespace GoScript.Frontend.Parse
             while (tokens.TryMatchPunctuator(PunctuatorType.And, out var op))
             {
                 var rExpr = ParseAdditiveExpr();
-                expr = new LogicalAndExpr(expr, rExpr, op!.Location);
+                expr = new LogicalAndExpr(expr, rExpr, op.Location);
             }
             return expr;
         }
@@ -94,7 +121,7 @@ namespace GoScript.Frontend.Parse
                 || tokens.TryMatchPunctuator(PunctuatorType.Sub, out op))
             {
                 var rExpr = ParseMultiplicativeExpr();
-                expr = new AdditiveExpr(expr, rExpr, op!.Type switch
+                expr = new AdditiveExpr(expr, rExpr, op.Type switch
                 {
                     PunctuatorType.Add => AdditiveExpr.OperatorType.Add,
                     PunctuatorType.Sub => AdditiveExpr.OperatorType.Sub,
@@ -113,7 +140,7 @@ namespace GoScript.Frontend.Parse
                 || tokens.TryMatchPunctuator(PunctuatorType.Mod, out op))
             {
                 var rExpr = ParseUnaryExpr();
-                expr = new MultiplicativeExpr(expr, rExpr, op!.Type switch
+                expr = new MultiplicativeExpr(expr, rExpr, op.Type switch
                 {
                     PunctuatorType.Star => MultiplicativeExpr.OperatorType.Mul,
                     PunctuatorType.Div => MultiplicativeExpr.OperatorType.Div,
@@ -130,12 +157,12 @@ namespace GoScript.Frontend.Parse
             if (tokens.TryMatchPunctuator(PunctuatorType.Sub, out var negOp))
             {
                 var expr = ParseUnaryExpr();
-                return new UnaryExpr(UnaryExpr.OperatorType.Neg, expr, negOp!.Location);
+                return new UnaryExpr(UnaryExpr.OperatorType.Neg, expr, negOp.Location);
             }
             if (tokens.TryMatchPunctuator(PunctuatorType.Not, out var notOp))
             {
                 var expr = ParseUnaryExpr();
-                return new UnaryExpr(UnaryExpr.OperatorType.Not, expr, notOp!.Location);
+                return new UnaryExpr(UnaryExpr.OperatorType.Not, expr, notOp.Location);
             }
             return ParsePrimaryExpr();
         }
@@ -144,7 +171,7 @@ namespace GoScript.Frontend.Parse
         {
             if (tokens.TryMatchIdentifier(out var identifier))
             {
-                return new IdExpr(identifier!.Name, identifier.Location);
+                return new IdExpr(identifier.Name, identifier.Location);
             }
             if (tokens.TryMatchLiteral(LiteralType.IntegerLiteral, out var integerLiteral))
             {
@@ -165,6 +192,7 @@ namespace GoScript.Frontend.Parse
 
         private VarDecl ParseVarDecl()
         {
+            VarDecl varDecl;
             var location = tokens.MatchKeyword(KeywordType.Var).Location;
             var identifiers = new List<string>() { tokens.MatchIdentifier().Name };
             while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
@@ -189,14 +217,21 @@ namespace GoScript.Frontend.Parse
 
                 if (typeKeyword is null)
                 {
-                    return new VarDecl(identifiers, initExprs, location);
+                    varDecl = new VarDecl(identifiers, initExprs, location);
                 }
                 else
                 {
-                    return new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword.Type)!, initExprs, location);
+                    varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword.Type)!, initExprs, location);
                 }
             }
-            return new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
+            else
+            {
+                varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
+            }
+
+            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+            tokens.MatchNewline();
+            return varDecl;
         }
 
         private CompoundStmt ParseCompoundStmt()

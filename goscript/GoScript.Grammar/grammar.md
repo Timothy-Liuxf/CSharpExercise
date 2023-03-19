@@ -6,7 +6,17 @@ Program                 : Statement*
 
 Statement               : VarDecl ';'? NEWLINE
                         | CompoundStmt
+                        | AssignOrExprStmt
+                        ;
+
+AssignOrExprStmt        : IdExprList '=' ExpressionList ';'? NEWLINE
                         | Expression? ';'? NEWLINE
+                        ;
+
+IdExprList              : IdExpr (',' IdExpr)*
+                        ;
+						
+IdExpr                  : IDENTIFIER
                         ;
 
 CompoundStmt            : '{' NEWLINE Statement* '}' NEWLINE
@@ -49,7 +59,7 @@ UnaryExpr               : '-' UnaryExpr
                         : PrimaryExpr
                         ;
 
-PrimaryExpr             : IDENTIFIER
+PrimaryExpr             : IdExpr
                         | INTEGER_LITERAL
                         | BOOL_LITERAL
                         | '(' Expression ')'
