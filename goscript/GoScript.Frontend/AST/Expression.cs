@@ -11,5 +11,7 @@ namespace GoScript.Frontend.AST
         }
 
         public AttributesList Attributes = new();
+
+        public bool IsConstantEvaluated { get; set; } = false;
     }
 }

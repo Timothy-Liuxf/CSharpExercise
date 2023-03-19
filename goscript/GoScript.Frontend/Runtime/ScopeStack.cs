@@ -53,9 +53,9 @@
             }
         }
 
-        public void OpenNewScope()
+        public void AttachScope(Scope scope)
         {
-            this.scopes.AddLast(new Scope());
+            this.scopes.AddLast(scope);
         }
 
         public void CloseScope()

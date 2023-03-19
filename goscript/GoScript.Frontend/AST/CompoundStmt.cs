@@ -1,4 +1,5 @@
-﻿using GoScript.Utils;
+﻿using GoScript.Frontend.Runtime;
+using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
@@ -7,6 +8,8 @@ namespace GoScript.Frontend.AST
         public IReadOnlyList<Statement> Statements { get; private init; }
 
         public SourceLocation Location { get; private init; }
+
+        internal Scope? AttachedScope { get; set; }
 
         public CompoundStmt(IReadOnlyList<Statement> statements, SourceLocation location)
         {
