@@ -2,14 +2,14 @@
 
 namespace GoScript.Frontend.AST
 {
-    public abstract class LiteralExpr : Expression
+    public abstract class ConstantExpr : Expression
     {
     }
 
-    public sealed class IntegerLiteralExpr : LiteralExpr
+    public sealed class IntegerConstantExpr : ConstantExpr
     {
         public ulong IntegerValue { get; private init; }
-        public IntegerLiteralExpr(ulong integerValue)
+        public IntegerConstantExpr(ulong integerValue)
         {
             this.IntegerValue = integerValue;
         }
@@ -22,10 +22,10 @@ namespace GoScript.Frontend.AST
         internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
 
-    public sealed class BoolLiteralExpr : LiteralExpr
+    public sealed class BoolConstantExpr : ConstantExpr
     {
         public bool BoolValue { get; private init; }
-        public BoolLiteralExpr(bool boolValue)
+        public BoolConstantExpr(bool boolValue)
         {
             this.BoolValue = boolValue;
         }

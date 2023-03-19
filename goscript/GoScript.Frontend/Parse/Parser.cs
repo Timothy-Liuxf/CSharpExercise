@@ -123,11 +123,11 @@ namespace GoScript.Frontend.Parse
             }
             if (tokens.TryMatchLiteral(LiteralType.IntegerLiteral, out var integerLiteral))
             {
-                return new IntegerLiteralExpr((integerLiteral as IntegerLiteral)!.Value);
+                return new IntegerConstantExpr((integerLiteral as IntegerLiteral)!.Value);
             }
             if (tokens.TryMatchLiteral(LiteralType.BoolLiteral, out var boolLiteral))
             {
-                return new BoolLiteralExpr((boolLiteral as BoolLiteral)!.Value);
+                return new BoolConstantExpr((boolLiteral as BoolLiteral)!.Value);
             }
             if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
             {

@@ -31,10 +31,10 @@ namespace GoScript.Frontend.Translation
             this.asts = asts;
         }
 
-        private static object ConvertArithmeticLiteralValue(ulong literalValue, GSArithmeticType targetType)
+        private static object ConvertArithmeticConstantValue(ulong constantValue, GSArithmeticType targetType)
         {
-            return targetType.IsSigned ? Convert.ChangeType((long)literalValue, targetType.DotNetType)
-                : Convert.ChangeType(literalValue, targetType.DotNetType);
+            return targetType.IsSigned ? Convert.ChangeType((long)constantValue, targetType.DotNetType)
+                : Convert.ChangeType(constantValue, targetType.DotNetType);
         }
 
         void IVisitor.Visit(VarDecl varDecl)
@@ -89,13 +89,13 @@ namespace GoScript.Frontend.Translation
                     var exprType = initExpr.Attributes.ExprType!;
                     if (varDecl.InitType == null)
                     {
-                        if (exprType.IsIntegerLiteral)
+                        if (exprType.IsIntegerConstant)
                         {
                             var type = GSInt64.Instance;
                             rtti.Type = type;
-                            rtti.Value = ConvertArithmeticLiteralValue((ulong)initExpr.Attributes.Value!, type);
+                            rtti.Value = ConvertArithmeticConstantValue((ulong)initExpr.Attributes.Value!, type);
                         }
-                        else if (exprType.IsBoolLiteral)
+                        else if (exprType.IsBoolConstant)
                         {
                             rtti.Type = GSBool.Instance;
                             rtti.Value = initExpr.Attributes.Value;
@@ -108,18 +108,18 @@ namespace GoScript.Frontend.Translation
                     }
                     else
                     {
-                        if (exprType.IsIntegerLiteral)
+                        if (exprType.IsIntegerConstant)
                         {
                             if (rtti.Type!.IsArithmetic)
                             {
-                                rtti.Value = ConvertArithmeticLiteralValue((ulong)initExpr.Attributes.Value!, (GSArithmeticType)rtti.Type);
+                                rtti.Value = ConvertArithmeticConstantValue((ulong)initExpr.Attributes.Value!, (GSArithmeticType)rtti.Type);
                             }
                             else
                             {
                                 throw new InternalErrorException($"Unknown type {rtti.Type} at {varDecl.Location}.");
                             }
                         }
-                        else if (exprType.IsBoolLiteral)
+                        else if (exprType.IsBoolConstant)
                         {
                             if (rtti.Type!.IsBool)
                             {
@@ -176,18 +176,18 @@ namespace GoScript.Frontend.Translation
                 }
                 additiveExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
             }
-            else if (lType.IsIntegerLiteral && rType.IsIntegerLiteral)
+            else if (lType.IsIntegerConstant && rType.IsIntegerConstant)
             {
                 additiveExpr.Attributes.ExprType = lType;
             }
-            else if (lType.IsArithmetic && rType.IsIntegerLiteral)
+            else if (lType.IsArithmetic && rType.IsIntegerConstant)
             {
-                rOp = (dynamic)ConvertArithmeticLiteralValue((ulong)rOp, (GSArithmeticType)lType);
+                rOp = (dynamic)ConvertArithmeticConstantValue((ulong)rOp, (GSArithmeticType)lType);
                 additiveExpr.Attributes.ExprType = lType;
             }
-            else if (rType.IsArithmetic && lType.IsIntegerLiteral)
+            else if (rType.IsArithmetic && lType.IsIntegerConstant)
             {
-                lOp = (dynamic)ConvertArithmeticLiteralValue((ulong)lOp, (GSArithmeticType)rType);
+                lOp = (dynamic)ConvertArithmeticConstantValue((ulong)lOp, (GSArithmeticType)rType);
                 additiveExpr.Attributes.ExprType = rType;
             }
             else
@@ -229,18 +229,18 @@ namespace GoScript.Frontend.Translation
                 }
                 multiplicativeExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
             }
-            else if (lType.IsIntegerLiteral && rType.IsIntegerLiteral)
+            else if (lType.IsIntegerConstant && rType.IsIntegerConstant)
             {
                 multiplicativeExpr.Attributes.ExprType = lType;
             }
-            else if (lType.IsArithmetic && rType.IsIntegerLiteral)
+            else if (lType.IsArithmetic && rType.IsIntegerConstant)
             {
-                rOp = (dynamic)ConvertArithmeticLiteralValue((ulong)rOp, (GSArithmeticType)lType);
+                rOp = (dynamic)ConvertArithmeticConstantValue((ulong)rOp, (GSArithmeticType)lType);
                 multiplicativeExpr.Attributes.ExprType = lType;
             }
-            else if (rType.IsArithmetic && lType.IsIntegerLiteral)
+            else if (rType.IsArithmetic && lType.IsIntegerConstant)
             {
-                lOp = (dynamic)ConvertArithmeticLiteralValue((ulong)lOp, (GSArithmeticType)rType);
+                lOp = (dynamic)ConvertArithmeticConstantValue((ulong)lOp, (GSArithmeticType)rType);
                 multiplicativeExpr.Attributes.ExprType = rType;
             }
             else
@@ -270,7 +270,7 @@ namespace GoScript.Frontend.Translation
             {
                 unaryExpr.Attributes.Value = -(dynamic)operand.Attributes.Value!;
             }
-            else if (operand.Attributes.ExprType!.IsIntegerLiteral)
+            else if (operand.Attributes.ExprType!.IsIntegerConstant)
             {
                 unaryExpr.Attributes.Value = (ulong)(-(long)(ulong)operand.Attributes.Value!);
             }
@@ -307,16 +307,16 @@ namespace GoScript.Frontend.Translation
             idExpr.Attributes.Value = rtti.Value;
         }
 
-        void IVisitor.Visit(IntegerLiteralExpr integerLiteralExpr)
+        void IVisitor.Visit(IntegerConstantExpr integerConstantExpr)
         {
-            integerLiteralExpr.Attributes.ExprType = GSIntegerLiteral.Instance;
-            integerLiteralExpr.Attributes.Value = integerLiteralExpr.IntegerValue;
+            integerConstantExpr.Attributes.ExprType = GSIntegerConstant.Instance;
+            integerConstantExpr.Attributes.Value = integerConstantExpr.IntegerValue;
         }
 
-        void IVisitor.Visit(BoolLiteralExpr boolLiteralExpr)
+        void IVisitor.Visit(BoolConstantExpr boolConstantExpr)
         {
-            boolLiteralExpr.Attributes.ExprType = GSBoolLiteral.Instance;
-            boolLiteralExpr.Attributes.Value = boolLiteralExpr.BoolValue;
+            boolConstantExpr.Attributes.ExprType = GSBoolConstant.Instance;
+            boolConstantExpr.Attributes.Value = boolConstantExpr.BoolValue;
         }
 
         void IVisitor.Visit(CompoundStmt compoundStmt)
