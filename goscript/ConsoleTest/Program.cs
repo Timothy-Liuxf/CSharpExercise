@@ -157,6 +157,9 @@ using GoScript.Frontend.Lex;
             a
             b
             c
+            !a
+            !b
+            !(!!(c))
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(string.Join(' ', tokens));

@@ -105,12 +105,15 @@ namespace GoScript.Frontend.Parse
 
         private Expression ParseUnaryExpr()
         {
-            if (tokens.TryMatchPunctuator(PunctuatorType.Sub, out var op))
+            if (tokens.TryMatchPunctuator(PunctuatorType.Sub, out var negOp))
             {
                 var expr = ParseUnaryExpr();
-                return new UnaryExpr(expr, op!.Location);
-                // return new UnaryExpr(expr, UnaryExpr.OperatorType.Neg, op!.Location);
-                // return new UnaryExpr(expr, UnaryExpr.OperatorType.Not, op!.Location);
+                return new UnaryExpr(UnaryExpr.OperatorType.Neg, expr, negOp!.Location);
+            }
+            if (tokens.TryMatchPunctuator(PunctuatorType.Not, out var notOp))
+            {
+                var expr = ParseUnaryExpr();
+                return new UnaryExpr(UnaryExpr.OperatorType.Not, expr, notOp!.Location);
             }
             return ParsePrimaryExpr();
         }

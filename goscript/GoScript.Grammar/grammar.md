@@ -37,6 +37,7 @@ MultiplicativeExpr      : MultiplicativeExpr ('*'|'/'|'%') UnaryExpr
                         ;
 
 UnaryExpr               : '-' UnaryExpr
+                        : '!' UnaryExpr
                         : PrimaryExpr
                         ;
 

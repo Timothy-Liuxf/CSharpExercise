@@ -266,17 +266,37 @@ namespace GoScript.Frontend.Translation
             var operand = unaryExpr.Operand;
             operand.Accept(this);
             unaryExpr.Attributes.ExprType = operand.Attributes.ExprType;
-            if (operand.Attributes.ExprType!.IsArithmetic)
+            var exprType = unaryExpr.Attributes.ExprType!;
+            var operandValue = operand.Attributes.Value!;
+
+            switch (unaryExpr.Operator)
             {
-                unaryExpr.Attributes.Value = -(dynamic)operand.Attributes.Value!;
-            }
-            else if (operand.Attributes.ExprType!.IsIntegerConstant)
-            {
-                unaryExpr.Attributes.Value = (ulong)(-(long)(ulong)operand.Attributes.Value!);
-            }
-            else
-            {
-                throw new InvalidOperationException($"At {unaryExpr.Location}: Invalid unary operator \'-\'.");
+                case UnaryExpr.OperatorType.Neg:
+                    if (exprType.IsArithmetic)
+                    {
+                        unaryExpr.Attributes.Value = -(dynamic)operandValue;
+                    }
+                    else if (exprType.IsIntegerConstant)
+                    {
+                        unaryExpr.Attributes.Value = (ulong)(-(long)(ulong)operandValue);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"At {unaryExpr.Location}: Invalid unary operator \'-\' on type {exprType}.");
+                    }
+                    break;
+                case UnaryExpr.OperatorType.Not:
+                    if (exprType.IsBool || exprType.IsBoolConstant)
+                    {
+                        unaryExpr.Attributes.Value = !(bool)operandValue;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"At {unaryExpr.Location}: Invalid unary operator \'!\' on type {exprType}.");
+                    }
+                    break;
+                default:
+                    throw new InternalErrorException($"At {unaryExpr.Location}: Invalid operator type {unaryExpr.Operator}.");
             }
         }
 
