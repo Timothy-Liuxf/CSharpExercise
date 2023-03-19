@@ -15,7 +15,7 @@ AssignOrExprStmt        : IdExprList '=' ExpressionList ';'? NEWLINE
 
 IdExprList              : IdExpr (',' IdExpr)*
                         ;
-						
+
 IdExpr                  : IDENTIFIER
                         ;
 
