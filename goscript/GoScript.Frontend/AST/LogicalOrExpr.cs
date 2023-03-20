@@ -6,13 +6,12 @@ namespace GoScript.Frontend.AST
     {
         public Expression LExpr { get; private init; }
         public Expression RExpr { get; private init; }
-        public SourceLocation Location { get; private init; }
 
         public LogicalOrExpr(Expression lExpr, Expression rExpr, SourceLocation location)
+            : base(location)
         {
             this.LExpr = lExpr;
             this.RExpr = rExpr;
-            this.Location = location;
         }
 
         public override string ToString()

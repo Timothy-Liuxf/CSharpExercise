@@ -80,30 +80,13 @@ namespace GoScript.Frontend.Translation
                     var initExpr = varDecl.InitExprs[i];
                     var varName = varDecl.VarNames[i];
                     initExpr.Accept(this);
-                    var exprType = initExpr.Attributes.ExprType!;
                     if (varDecl.InitType == null)
                     {
-                        if (exprType.IsIntegerConstant)
-                        {
-                            var type = GSInt64.Instance;
-                            rtti.Type = type;
-                            if (!CheckArithmeticConvertible((ulong)initExpr.Attributes.Value!, type))
-                            {
-                                throw new InvalidOperationException($"At {varDecl.Location}: The value {initExpr.Attributes.Value} is out of range of int.");
-                            }
-                        }
-                        else if (exprType.IsBoolConstant)
-                        {
-                            rtti.Type = GSBool.Instance;
-                        }
-                        else
-                        {
-                            rtti.Type = exprType;
-                        }
+                        DefNewVarWithoutTypeHelper(rtti, initExpr);
                     }
                     else
                     {
-                        AssignValueHelper(rtti, initExpr, varDecl.Location, varName, true);
+                        AssignValueHelper(rtti, initExpr, varName, true);
                     }
                 }
             }
@@ -144,11 +127,74 @@ namespace GoScript.Frontend.Translation
                 {
                     throw new InternalErrorException($"At {assignedExpr.Location}: \"{varName}\" has no RTTI.");
                 }
-                AssignValueHelper(rtti, expr, assignStmt.Location, varName, false);
+                AssignValueHelper(rtti, expr, varName, false);
             }
         }
 
-        private void AssignValueHelper(RTTI rtti, Expression expr, SourceLocation location, string assignee, bool isVarDecl)
+        void IVisitor.Visit(DefAssignStmt defAssignStmt)
+        {
+            var varNames = defAssignStmt.VarNames;
+            var exprs = defAssignStmt.InitExprs;
+
+            if (varNames.Count != exprs.Count)
+            {
+                throw new SyntaxErrorException(
+                    $"At {defAssignStmt.Location}: The number of assigned objects doesn't match the number of expressions.");
+            }
+
+            var cnt = varNames.Count;
+            var rttis = new List<(string, RTTI)>();
+            bool hasNewVar = false;
+            for (int i = 0; i < cnt; ++i)
+            {
+                var varName = varNames[i];
+                var expr = exprs[i];
+                expr.Accept(this);
+
+                if (this.scopeStack.TryLookUp(varName, out var rtti))
+                {
+                    AssignValueHelper(rtti, expr, varName, false);
+                }
+                else
+                {
+                    hasNewVar = true;
+                    rtti = new RTTI();
+                    rttis.Add((varName, rtti));
+                    DefNewVarWithoutTypeHelper(rtti, expr);
+                }
+            }
+            if (!hasNewVar) throw new InvalidOperationException(
+                $"At {defAssignStmt.Location}: No new variables on the left side of :=.");
+
+            foreach (var (varName, rtti) in rttis)
+            {
+                this.scopeStack.Add(varName, rtti);
+            }
+        }
+
+        private void DefNewVarWithoutTypeHelper(RTTI rtti, Expression initExpr)
+        {
+            var exprType = initExpr.Attributes.ExprType!;
+            if (exprType.IsIntegerConstant)
+            {
+                var type = GSInt64.Instance;
+                rtti.Type = type;
+                if (!CheckArithmeticConvertible((ulong)initExpr.Attributes.Value!, type))
+                {
+                    throw new InvalidOperationException($"At {initExpr.Location}: The value {initExpr.Attributes.Value} is out of range of {type}.");
+                }
+            }
+            else if (exprType.IsBoolConstant)
+            {
+                rtti.Type = GSBool.Instance;
+            }
+            else
+            {
+                rtti.Type = exprType;
+            }
+        }
+
+        private void AssignValueHelper(RTTI rtti, Expression expr, string assignee, bool isVarDecl)
         {
             var exprType = expr.Attributes.ExprType!;
             var op = isVarDecl ? "init" : "assign to";
@@ -158,13 +204,13 @@ namespace GoScript.Frontend.Translation
                 {
                     if (!CheckArithmeticConvertible((ulong)expr.Attributes.Value!, (GSArithmeticType)rtti.Type))
                     {
-                        throw new InvalidOperationException($"At {location}: The value {expr.Attributes.Value} is out of range of {rtti.Type}.");
+                        throw new InvalidOperationException($"At {expr.Location}: The value {expr.Attributes.Value} is out of range of {rtti.Type}.");
                     }
                 }
                 else
                 {
                     throw new InvalidOperationException(
-                        $"At {location}: Cannot use integer constant to {op} {rtti.Type} variable \"{assignee}\".");
+                        $"At {expr.Location}: Cannot use integer constant to {op} {rtti.Type} variable \"{assignee}\".");
                 }
             }
             else if (exprType.IsBoolConstant)
@@ -172,14 +218,14 @@ namespace GoScript.Frontend.Translation
                 if (!rtti.Type!.IsBool)
                 {
                     throw new InvalidOperationException(
-                        $"At {location}: Cannot use bool constant {expr} to init {rtti.Type} variable \"{assignee}\".");
+                        $"At {expr.Location}: Cannot use bool constant {expr} to init {rtti.Type} variable \"{assignee}\".");
                 }
             }
             else
             {
                 if (rtti.Type! != exprType)
                 {
-                    throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {location}.");
+                    throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {expr.Location}.");
                 }
             }
         }

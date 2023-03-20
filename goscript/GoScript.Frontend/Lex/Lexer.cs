@@ -28,9 +28,6 @@ namespace GoScript.Frontend.Lex
                     var nextChar = true;
                     switch (ch)
                     {
-                        case ':':
-                            yield return new Punctuator(PunctuatorType.Colon, orgLocation);
-                            break;
                         case ',':
                             yield return new Punctuator(PunctuatorType.Comma, orgLocation);
                             break;
@@ -104,6 +101,7 @@ namespace GoScript.Frontend.Lex
                         case '%':
                             yield return new Punctuator(PunctuatorType.Mod, orgLocation);
                             break;
+                        case ':':
                         case '>':
                         case '<':
                         case '!':
@@ -114,17 +112,19 @@ namespace GoScript.Frontend.Lex
                             {
                                 var (singlePunctuator, doublePunctuators) = ch switch
                                 {
+                                    ':' => (PunctuatorType.Colon,
+                                            new (char, PunctuatorType)[] { ('=', PunctuatorType.DefAssign), }),
                                     '>' => (PunctuatorType.Greater,
                                             new (char, PunctuatorType)[]
                                             {
-                                            ('=', PunctuatorType.GreaterEq),
-                                            ('>', PunctuatorType.RShift),
+                                                ('=', PunctuatorType.GreaterEq),
+                                                ('>', PunctuatorType.RShift),
                                             }),
                                     '<' => (PunctuatorType.Less,
                                             new (char, PunctuatorType)[]
                                             {
-                                            ('=', PunctuatorType.LessEq),
-                                            ('<', PunctuatorType.LShift),
+                                                ('=', PunctuatorType.LessEq),
+                                                ('<', PunctuatorType.LShift),
                                             }),
                                     '!' => (PunctuatorType.Not,
                                             new (char, PunctuatorType)[] { ('=', PunctuatorType.NotEqual) }),
@@ -133,13 +133,13 @@ namespace GoScript.Frontend.Lex
                                     '&' => (PunctuatorType.BitAnd,
                                             new (char, PunctuatorType)[]
                                             {
-                                            ('&', PunctuatorType.And),
+                                                ('&', PunctuatorType.And),
                                                 /* ('=', PunctuatorType.BitAndAssign), */
                                             }),
                                     '|' => (PunctuatorType.BitOr,
                                             new (char, PunctuatorType)[]
                                             {
-                                            ('|', PunctuatorType.Or),
+                                                ('|', PunctuatorType.Or),
                                                 /* ('=', PunctuatorType.BitOrAssign), */
                                             }),
                                     '~' => (PunctuatorType.BitNot,

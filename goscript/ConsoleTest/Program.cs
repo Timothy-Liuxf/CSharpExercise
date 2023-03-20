@@ -12,7 +12,7 @@ using GoScript.Frontend.Lex;
         """;
 
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-        Console.WriteLine(string.Join(' ', tokens));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
     }
 
     {
@@ -43,7 +43,7 @@ using GoScript.Frontend.Lex;
         """;
 
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-        Console.WriteLine(string.Join(' ', tokens));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
     }
 }
 
@@ -63,7 +63,7 @@ using GoScript.Frontend.Lex;
 
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-        Console.WriteLine(string.Join(' ', tokens));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
 
         var asts = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
         foreach (var ast in asts)
@@ -103,7 +103,7 @@ using GoScript.Frontend.Lex;
             f + g + h
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-        Console.WriteLine(string.Join(' ', tokens));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
 
         var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
         foreach (var ast in asts)
@@ -137,7 +137,7 @@ using GoScript.Frontend.Lex;
             x + y
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-        Console.WriteLine(string.Join(' ', tokens));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
 
         var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
         foreach (var ast in asts)
@@ -165,7 +165,7 @@ using GoScript.Frontend.Lex;
             !!a && (b || !c) && !!a
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-        Console.WriteLine(string.Join(' ', tokens));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
 
         var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
         foreach (var ast in asts)
@@ -179,9 +179,9 @@ using GoScript.Frontend.Lex;
     Console.WriteLine("===== Test Intepreter 3 =====\n\n");
     {
         var prog = """
-            var x = 5
-            var y = 6
-            var z = 10
+            var x = 999
+            var y int = 888
+            x, y, z := 5, 6, 10
             x = 9
             x
             y
@@ -209,7 +209,7 @@ using GoScript.Frontend.Lex;
             z
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
-        Console.WriteLine(string.Join(' ', tokens));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
 
         var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
         foreach (var ast in asts)

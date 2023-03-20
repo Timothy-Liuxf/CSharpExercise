@@ -1,4 +1,6 @@
-﻿namespace GoScript.Frontend.Runtime
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace GoScript.Frontend.Runtime
 {
     internal class ScopeStack
     {
@@ -22,7 +24,7 @@
             return null;
         }
 
-        public bool TryLookUp(string name, out RTTI? rtti)
+        public bool TryLookUp(string name, [MaybeNullWhen(false), NotNullWhen(true)] out RTTI? rtti)
         {
             rtti = LookUp(name);
             return rtti is not null;

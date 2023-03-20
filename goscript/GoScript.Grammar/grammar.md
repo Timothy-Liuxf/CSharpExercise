@@ -10,6 +10,7 @@ Statement               : VarDecl ';'? NEWLINE
                         ;
 
 AssignOrExprStmt        : IdExprList '=' ExpressionList ';'? NEWLINE
+                        | IdExprList ':=' ExpressionList ';'? NEWLINE
                         | Expression? ';'? NEWLINE
                         ;
 

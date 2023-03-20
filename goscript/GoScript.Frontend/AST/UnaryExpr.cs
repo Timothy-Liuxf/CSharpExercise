@@ -13,13 +13,12 @@ namespace GoScript.Frontend.AST
 
         public OperatorType Operator { get; private init; }
         public Expression Operand { get; private init; }
-        public SourceLocation Location { get; private init; }
 
         public UnaryExpr(OperatorType @operator, Expression operand, SourceLocation location)
+            : base(location)
         {
             this.Operator = @operator;
             this.Operand = operand;
-            this.Location = location;
         }
 
         public override string ToString()

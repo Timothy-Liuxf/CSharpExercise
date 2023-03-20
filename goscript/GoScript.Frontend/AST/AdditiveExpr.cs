@@ -13,14 +13,13 @@ namespace GoScript.Frontend.AST
         public Expression LExpr { get; private init; }
         public Expression RExpr { get; private init; }
         public OperatorType Operator { get; private init; }
-        public SourceLocation Location { get; private init; }
 
         public AdditiveExpr(Expression lExpr, Expression rExpr, OperatorType @operator, SourceLocation location)
+            : base(location)
         {
             this.LExpr = lExpr;
             this.RExpr = rExpr;
             this.Operator = @operator;
-            this.Location = location;
         }
 
         public override string ToString()

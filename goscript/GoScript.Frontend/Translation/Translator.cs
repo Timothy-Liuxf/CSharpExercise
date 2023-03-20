@@ -59,26 +59,7 @@ namespace GoScript.Frontend.Translation
                 {
                     var initExpr = varDecl.InitExprs[i];
                     initExpr.Accept(this);
-                    var exprType = initExpr.Attributes.ExprType!;
-                    if (varDecl.InitType == null)
-                    {
-                        if (exprType.IsIntegerConstant)
-                        {
-                            rtti.Value = ConvertArithmeticConstantValue((ulong)initExpr.Attributes.Value!, (GSInt64)type);
-                        }
-                        else if (exprType.IsBoolConstant)
-                        {
-                            rtti.Value = initExpr.Attributes.Value;
-                        }
-                        else
-                        {
-                            rtti.Value = initExpr.Attributes.Value;
-                        }
-                    }
-                    else
-                    {
-                        AssignValueHelper(rtti, initExpr);
-                    }
+                    AssignValueHelper(rtti, initExpr);
                 }
             }
         }
@@ -99,6 +80,22 @@ namespace GoScript.Frontend.Translation
                     throw new InternalErrorException($"At {assignedExpr.Location}: the RTTI of \"{assignedExpr.Name}\" has not been built.");
                 }
                 AssignValueHelper(rtti, expr);
+            }
+        }
+
+        void IVisitor.Visit(DefAssignStmt defAssignStmt)
+        {
+            var assignedVarNames = defAssignStmt.VarNames;
+            var initExprs = defAssignStmt.InitExprs;
+            var cnt = assignedVarNames.Count;
+            for (int i = 0; i < cnt; ++i)
+            {
+                var assignedVarName = assignedVarNames[i];
+                var initExpr = initExprs[i];
+                initExpr.Accept(this);
+                var rtti = this.scopeStack.LookUp(assignedVarName)
+                    ?? throw new InternalErrorException($"At {defAssignStmt.Location}: the symbol of \"{assignedVarName}\" has not been built.");
+                AssignValueHelper(rtti, initExpr);
             }
         }
 

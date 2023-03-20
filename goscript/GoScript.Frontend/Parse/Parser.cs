@@ -1,6 +1,5 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Lex;
-using System.Runtime.Serialization;
 
 namespace GoScript.Frontend.Parse
 {
@@ -52,7 +51,8 @@ namespace GoScript.Frontend.Parse
 
             var expr = ParseExpression();
             if (tokens.TryPeekPunctuator(PunctuatorType.Comma, out var comma)
-                || tokens.TryPeekPunctuator(PunctuatorType.Assign, out _))
+                || tokens.TryPeekPunctuator(PunctuatorType.Assign, out _)
+                || tokens.TryPeekPunctuator(PunctuatorType.DefAssign, out _))
             {
                 // AssignStmt
                 var assignedExprs = new List<Expression> { expr };
@@ -63,17 +63,38 @@ namespace GoScript.Frontend.Parse
                         assignedExprs.Add(ParseExpression());
                     }
                 }
-                var assign = tokens.MatchPunctuator(PunctuatorType.Assign);
+
+                // Match = or :=
+                if (!tokens.TryMatchPunctuator(PunctuatorType.Assign, out var assign))
+                {
+                    assign = tokens.MatchPunctuator(PunctuatorType.DefAssign);
+                }
 
                 var assigneeExprs = new List<Expression> { ParseExpression() };
                 while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
                 {
-                    assignedExprs.Add(ParseExpression());
+                    assigneeExprs.Add(ParseExpression());
                 }
 
                 tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
                 tokens.MatchNewline();
-                return new AssignStmt(assignedExprs, assigneeExprs, assign.Location);
+
+                if (assign.Type == PunctuatorType.Assign)
+                {
+                    // '='
+                    return new AssignStmt(assignedExprs, assigneeExprs, assign.Location);
+                }
+                else
+                {
+                    // ':='
+                    var assignedNames = assignedExprs.Select((assignedExpr, _) =>
+                    {
+                        return assignedExpr.IsIdExpr ? (assignedExpr as IdExpr)!.Name
+                            : throw new InvalidOperationException(
+                                $"At {assignedExpr.Location}: Non-name {assignedExpr} on left side of :=");
+                    }).ToList();
+                    return new DefAssignStmt(assignedNames, assigneeExprs, assign.Location);
+                }
             }
             else if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
             {
@@ -175,11 +196,11 @@ namespace GoScript.Frontend.Parse
             }
             if (tokens.TryMatchLiteral(LiteralType.IntegerLiteral, out var integerLiteral))
             {
-                return new IntegerConstantExpr((integerLiteral as IntegerLiteral)!.Value);
+                return new IntegerConstantExpr((integerLiteral as IntegerLiteral)!.Value, integerLiteral.Location);
             }
             if (tokens.TryMatchLiteral(LiteralType.BoolLiteral, out var boolLiteral))
             {
-                return new BoolConstantExpr((boolLiteral as BoolLiteral)!.Value);
+                return new BoolConstantExpr((boolLiteral as BoolLiteral)!.Value, boolLiteral.Location);
             }
             if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
             {

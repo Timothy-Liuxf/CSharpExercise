@@ -61,6 +61,7 @@ namespace GoScript.Frontend.Lex
         LShift,     // <<
         RShift,     // >>
         Assign,     // =
+        DefAssign,  // :=
     }
 
     public class Punctuator : Token
@@ -108,6 +109,7 @@ namespace GoScript.Frontend.Lex
                 PunctuatorType.LShift => "<<",
                 PunctuatorType.RShift => ">>",
                 PunctuatorType.Assign => "=",
+                PunctuatorType.DefAssign => ":=",
                 _ => null,
             };
         }

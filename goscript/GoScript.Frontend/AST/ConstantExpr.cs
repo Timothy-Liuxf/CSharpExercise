@@ -1,15 +1,18 @@
-﻿using GoScript.Frontend.Types;
+﻿using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
     public abstract class ConstantExpr : Expression
     {
+        public ConstantExpr(SourceLocation location) : base(location)
+        {
+        }
     }
 
     public sealed class IntegerConstantExpr : ConstantExpr
     {
         public ulong IntegerValue { get; private init; }
-        public IntegerConstantExpr(ulong integerValue)
+        public IntegerConstantExpr(ulong integerValue, SourceLocation location) : base(location)
         {
             this.IntegerValue = integerValue;
         }
@@ -25,7 +28,7 @@ namespace GoScript.Frontend.AST
     public sealed class BoolConstantExpr : ConstantExpr
     {
         public bool BoolValue { get; private init; }
-        public BoolConstantExpr(bool boolValue)
+        public BoolConstantExpr(bool boolValue, SourceLocation location) : base(location)
         {
             this.BoolValue = boolValue;
         }
