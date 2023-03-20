@@ -1,4 +1,5 @@
 ﻿using GoScript.Frontend.AST;
+using GoScript.Frontend.Lex;
 using GoScript.Frontend.Runtime;
 using GoScript.Frontend.Types;
 using GoScript.Utils;
@@ -280,123 +281,179 @@ namespace GoScript.Frontend.Translation
             }
         }
 
+        void IVisitor.Visit(ComparisonExpr comparisonExpr)
+        {
+            var op = comparisonExpr.Operator switch
+            {
+                ComparisonExpr.OperatorType.Equ => "==",
+                ComparisonExpr.OperatorType.Neq => "!=",
+                ComparisonExpr.OperatorType.Gre => ">",
+                ComparisonExpr.OperatorType.Les => "<",
+                ComparisonExpr.OperatorType.Geq => ">=",
+                ComparisonExpr.OperatorType.Leq => "<=",
+                _ => throw new InternalErrorException($"At {comparisonExpr.Location}: Invalid operator type."),
+            };
+
+            var result = CheckArithmeticOperator(comparisonExpr, op);
+            switch (result)
+            {
+                case CheckArithmeticOperatorResult.BothArithmetic:
+                case CheckArithmeticOperatorResult.RightConstant:
+                case CheckArithmeticOperatorResult.LeftConstant:
+                    comparisonExpr.Attributes.ExprType = GSBool.Instance;
+                    break;
+                case CheckArithmeticOperatorResult.BothConstant:
+                    {
+                        var lConstant = (long)(ulong)comparisonExpr.LExpr.Attributes.Value!;
+                        var rConstant = (long)(ulong)comparisonExpr.RExpr.Attributes.Value!;
+                        comparisonExpr.Attributes.ExprType = GSBoolConstant.Instance;
+                        comparisonExpr.Attributes.Value = (op switch
+                        {
+                            "==" => lConstant == rConstant,
+                            "!=" => lConstant != rConstant,
+                            ">" => lConstant > rConstant,
+                            "<" => lConstant < rConstant,
+                            ">=" => lConstant >= rConstant,
+                            _ => lConstant <= rConstant,
+                        });
+                        comparisonExpr.IsConstantEvaluated = true;
+                    }
+                    break;
+                default:
+                    throw new InternalErrorException(
+                        $"Invalid result type of {nameof(CheckArithmeticOperator)}.");
+            }
+        }
+
         void IVisitor.Visit(AdditiveExpr additiveExpr)
         {
-            char op = additiveExpr.Operator switch
+            var op = additiveExpr.Operator switch
             {
-                AdditiveExpr.OperatorType.Add => '+',
-                AdditiveExpr.OperatorType.Sub => '-',
+                AdditiveExpr.OperatorType.Add => "+",
+                AdditiveExpr.OperatorType.Sub => "-",
                 _ => throw new InternalErrorException($"At {additiveExpr.Location}: Invalid operator type."),
             };
 
-            var lExpr = additiveExpr.LExpr;
-            var rExpr = additiveExpr.RExpr;
-            lExpr.Accept(this);
-            rExpr.Accept(this);
-            var lType = lExpr.Attributes.ExprType!;
-            var rType = rExpr.Attributes.ExprType!;
-            var lOp = (dynamic)lExpr.Attributes.Value!;
-            var rOp = (dynamic)rExpr.Attributes.Value!;
-            if (lType.IsArithmetic && rType.IsArithmetic)
+            var result = CheckArithmeticOperator(additiveExpr, op);
+            switch (result)
             {
-                if (lType != rType)
-                {
-                    throw new InvalidOperationException(
-                        $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {additiveExpr.Location}."
-                    );
-                }
-                additiveExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
-            }
-            else if (lType.IsIntegerConstant && rType.IsIntegerConstant)
-            {
-                additiveExpr.Attributes.ExprType = lType;
-                additiveExpr.Attributes.Value = (object)(
-                    op == '+' ? (ulong)lOp + (ulong)rOp : (ulong)lOp - (ulong)rOp
-                ) ?? throw new InternalErrorException($"Invalid \'{op}\' at {additiveExpr.Location}.");
-                additiveExpr.IsConstantEvaluated = true;
-            }
-            else if (lType.IsArithmetic && rType.IsIntegerConstant)
-            {
-                if (!CheckArithmeticConvertible((ulong)rOp, (GSArithmeticType)lType))
-                {
-                    throw new InvalidOperationException($"At {additiveExpr.Location}: The value {rOp} is out of range of {lType}.");
-                }
-                additiveExpr.Attributes.ExprType = lType;
-            }
-            else if (rType.IsArithmetic && lType.IsIntegerConstant)
-            {
-                if (!CheckArithmeticConvertible((ulong)lOp, (GSArithmeticType)rType))
-                {
-                    throw new InvalidOperationException($"At {additiveExpr.Location}: The value {lOp} is out of range of {rType}.");
-                }
-                additiveExpr.Attributes.ExprType = rType;
-            }
-            else
-            {
-                throw new InvalidOperationException($"At {additiveExpr.Location}: Invalid operator \'{op}\'.");
+                case CheckArithmeticOperatorResult.BothArithmetic:
+                case CheckArithmeticOperatorResult.RightConstant:
+                    additiveExpr.Attributes.ExprType = additiveExpr.LExpr.Attributes.ExprType;
+                    break;
+                case CheckArithmeticOperatorResult.LeftConstant:
+                    additiveExpr.Attributes.ExprType = additiveExpr.RExpr.Attributes.ExprType;
+                    break;
+                case CheckArithmeticOperatorResult.BothConstant:
+                    {
+                        var lOp = additiveExpr.LExpr.Attributes.Value!;
+                        var rOp = additiveExpr.RExpr.Attributes.Value!;
+                        additiveExpr.Attributes.ExprType = additiveExpr.LExpr.Attributes.ExprType;
+                        additiveExpr.Attributes.Value = (object)(
+                            op == "+" ? (ulong)lOp + (ulong)rOp : (ulong)lOp - (ulong)rOp
+                        ) ?? throw new InternalErrorException($"Invalid \'{op}\' at {additiveExpr.Location}.");
+                        additiveExpr.IsConstantEvaluated = true;
+                    }
+                    break;
+                default:
+                    throw new InternalErrorException(
+                        $"Invalid result type of {nameof(CheckArithmeticOperator)}.");
             }
         }
 
         void IVisitor.Visit(MultiplicativeExpr multiplicativeExpr)
         {
-            char op = multiplicativeExpr.Operator switch
+            string op = multiplicativeExpr.Operator switch
             {
-                MultiplicativeExpr.OperatorType.Mul => '*',
-                MultiplicativeExpr.OperatorType.Div => '/',
-                MultiplicativeExpr.OperatorType.Mod => '%',
+                MultiplicativeExpr.OperatorType.Mul => "*",
+                MultiplicativeExpr.OperatorType.Div => "/",
+                MultiplicativeExpr.OperatorType.Mod => "%",
                 _ => throw new InternalErrorException($"At {multiplicativeExpr.Location}: Invalid operator type."),
             };
 
-            var lExpr = multiplicativeExpr.LExpr;
-            var rExpr = multiplicativeExpr.RExpr;
+            var result = CheckArithmeticOperator(multiplicativeExpr, op);
+            switch (result)
+            {
+                case CheckArithmeticOperatorResult.BothArithmetic:
+                case CheckArithmeticOperatorResult.RightConstant:
+                    multiplicativeExpr.Attributes.ExprType = multiplicativeExpr.LExpr.Attributes.ExprType;
+                    break;
+                case CheckArithmeticOperatorResult.LeftConstant:
+                    multiplicativeExpr.Attributes.ExprType = multiplicativeExpr.RExpr.Attributes.ExprType;
+                    break;
+                case CheckArithmeticOperatorResult.BothConstant:
+                    {
+                        var lConstant = (ulong)multiplicativeExpr.LExpr.Attributes.Value!;
+                        var rConstant = (ulong)multiplicativeExpr.RExpr.Attributes.Value!;
+                        multiplicativeExpr.Attributes.ExprType = multiplicativeExpr.LExpr.Attributes.ExprType;
+                        multiplicativeExpr.Attributes.Value = (op switch
+                        {
+                            "*" => lConstant * rConstant,
+                            "/" => lConstant / rConstant,
+                            _ => lConstant % rConstant,
+                        });
+                        multiplicativeExpr.IsConstantEvaluated = true;
+                    }
+                    break;
+                default:
+                    throw new InternalErrorException(
+                        $"Invalid result type of {nameof(CheckArithmeticOperator)}.");
+            }
+        }
+
+        private enum CheckArithmeticOperatorResult
+        {
+            BothArithmetic,
+            RightConstant,
+            LeftConstant,
+            BothConstant,
+        }
+
+        private CheckArithmeticOperatorResult CheckArithmeticOperator(ArithmeticExpression arithmeticExpr, string op)
+        {
+            var lExpr = arithmeticExpr.LExpr;
+            var rExpr = arithmeticExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
             var lType = lExpr.Attributes.ExprType!;
             var rType = rExpr.Attributes.ExprType!;
-            var lOp = (dynamic)lExpr.Attributes.Value!;
-            var rOp = (dynamic)rExpr.Attributes.Value!;
+            var lOp = lExpr.Attributes.Value!;
+            var rOp = rExpr.Attributes.Value!;
             if (lType.IsArithmetic && rType.IsArithmetic)
             {
                 if (lType != rType)
                 {
                     throw new InvalidOperationException(
-                        $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {multiplicativeExpr.Location}."
+                        $"Mismatched types: {lExpr.Attributes.ExprType} and {rExpr.Attributes.ExprType} at {arithmeticExpr.Location}."
                     );
                 }
-                multiplicativeExpr.Attributes.ExprType = lExpr.Attributes.ExprType;
+                return CheckArithmeticOperatorResult.BothArithmetic;
             }
             else if (lType.IsIntegerConstant && rType.IsIntegerConstant)
             {
-                var lConstant = (ulong)lOp;
-                var rConstant = (ulong)rOp;
-                multiplicativeExpr.Attributes.ExprType = lType;
-                multiplicativeExpr.Attributes.Value = (op switch
-                {
-                    '*' => lConstant * rConstant,
-                    '/' => lConstant / rConstant,
-                    _ => lConstant % rConstant,
-                });
-                multiplicativeExpr.IsConstantEvaluated = true;
+                return CheckArithmeticOperatorResult.BothConstant;
             }
             else if (lType.IsArithmetic && rType.IsIntegerConstant)
             {
                 if (!CheckArithmeticConvertible((ulong)rOp, (GSArithmeticType)lType))
                 {
-                    throw new InvalidOperationException($"At {multiplicativeExpr.Location}: The value {rOp} is out of range of {lType}.");
+                    throw new InvalidOperationException($"At {arithmeticExpr.Location}: The value {rOp} is out of range of {lType}.");
                 }
-                multiplicativeExpr.Attributes.ExprType = lType;
+                // arithmeticExpr.Attributes.ExprType = lType;
+                return CheckArithmeticOperatorResult.RightConstant;
             }
             else if (rType.IsArithmetic && lType.IsIntegerConstant)
             {
                 if (!CheckArithmeticConvertible((ulong)lOp, (GSArithmeticType)rType))
                 {
-                    throw new InvalidOperationException($"At {multiplicativeExpr.Location}: The value {lOp} is out of range of {rType}.");
+                    throw new InvalidOperationException($"At {arithmeticExpr.Location}: The value {lOp} is out of range of {rType}.");
                 }
-                multiplicativeExpr.Attributes.ExprType = rType;
+                // arithmeticExpr.Attributes.ExprType = rType;
+                return CheckArithmeticOperatorResult.LeftConstant;
             }
             else
             {
-                throw new InvalidOperationException($"At {multiplicativeExpr.Location}: Invalid operator \'{op}\'.");
+                throw new InvalidOperationException($"At {arithmeticExpr.Location}: Invalid operator \'{op}\'.");
             }
         }
 

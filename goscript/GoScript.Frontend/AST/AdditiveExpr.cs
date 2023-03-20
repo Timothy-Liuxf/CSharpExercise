@@ -2,7 +2,7 @@
 
 namespace GoScript.Frontend.AST
 {
-    public sealed class AdditiveExpr : Expression
+    public sealed class AdditiveExpr : ArithmeticExpression
     {
         public enum OperatorType
         {
@@ -10,15 +10,11 @@ namespace GoScript.Frontend.AST
             Sub,
         }
 
-        public Expression LExpr { get; private init; }
-        public Expression RExpr { get; private init; }
         public OperatorType Operator { get; private init; }
 
         public AdditiveExpr(Expression lExpr, Expression rExpr, OperatorType @operator, SourceLocation location)
-            : base(location)
+            : base(lExpr, rExpr, location)
         {
-            this.LExpr = lExpr;
-            this.RExpr = rExpr;
             this.Operator = @operator;
         }
 

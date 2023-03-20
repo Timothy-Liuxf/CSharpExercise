@@ -126,11 +126,36 @@ namespace GoScript.Frontend.Parse
 
         private Expression ParseLogicalAndExpr()
         {
-            var expr = ParseAdditiveExpr();
+            var expr = ParseComparisonExpr();
             while (tokens.TryMatchPunctuator(PunctuatorType.And, out var op))
             {
                 var rExpr = ParseAdditiveExpr();
                 expr = new LogicalAndExpr(expr, rExpr, op.Location);
+            }
+            return expr;
+        }
+
+        private Expression ParseComparisonExpr()
+        {
+            var expr = ParseAdditiveExpr();
+            while (tokens.TryMatchPunctuator(PunctuatorType.Equal, out var op)
+                || tokens.TryMatchPunctuator(PunctuatorType.NotEqual, out op)
+                || tokens.TryMatchPunctuator(PunctuatorType.Greater, out op)
+                || tokens.TryMatchPunctuator(PunctuatorType.Less, out op)
+                || tokens.TryMatchPunctuator(PunctuatorType.GreaterEq, out op)
+                || tokens.TryMatchPunctuator(PunctuatorType.LessEq, out op))
+            {
+                var rExpr = ParseAdditiveExpr();
+                expr = new ComparisonExpr(expr, rExpr, op.Type switch
+                {
+                    PunctuatorType.Equal => ComparisonExpr.OperatorType.Equ,
+                    PunctuatorType.NotEqual => ComparisonExpr.OperatorType.Neq,
+                    PunctuatorType.Greater => ComparisonExpr.OperatorType.Gre,
+                    PunctuatorType.Less => ComparisonExpr.OperatorType.Les,
+                    PunctuatorType.GreaterEq => ComparisonExpr.OperatorType.Geq,
+                    PunctuatorType.LessEq => ComparisonExpr.OperatorType.Leq,
+                    _ => throw new InternalErrorException($"Unexpected operator {op.Type}"),
+                }, op.Location);
             }
             return expr;
         }

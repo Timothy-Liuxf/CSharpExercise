@@ -2,18 +2,21 @@
 
 namespace GoScript.Frontend.AST
 {
-    public sealed class MultiplicativeExpr : ArithmeticExpression
+    public sealed class ComparisonExpr : ArithmeticExpression
     {
         public enum OperatorType
         {
-            Mul,
-            Div,
-            Mod,
+            Equ,
+            Neq,
+            Gre,
+            Les,
+            Geq,
+            Leq,
         }
 
         public OperatorType Operator { get; private init; }
 
-        public MultiplicativeExpr(Expression lExpr, Expression rExpr, OperatorType @operator, SourceLocation location)
+        public ComparisonExpr(Expression lExpr, Expression rExpr, OperatorType @operator, SourceLocation location)
             : base(lExpr, rExpr, location)
         {
             this.Operator = @operator;
@@ -23,9 +26,12 @@ namespace GoScript.Frontend.AST
         {
             var ch = this.Operator switch
             {
-                OperatorType.Mul => '*',
-                OperatorType.Div => '/',
-                OperatorType.Mod => '%',
+                OperatorType.Equ => "==",
+                OperatorType.Neq => "!=",
+                OperatorType.Gre => ">",
+                OperatorType.Les => "<",
+                OperatorType.Geq => ">=",
+                OperatorType.Leq => "<=",
                 _ => throw new InternalErrorException("Unknown operator type."),
             };
             return $"{this.LExpr} {ch} {this.RExpr}";

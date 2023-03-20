@@ -1,6 +1,7 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Runtime;
 using GoScript.Frontend.Types;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace GoScript.Frontend.Translation
@@ -155,6 +156,39 @@ namespace GoScript.Frontend.Translation
             }
         }
 
+        void IVisitor.Visit(ComparisonExpr comparisonExpr)
+        {
+            if (comparisonExpr.IsConstantEvaluated) return;
+
+            var op = comparisonExpr.Operator switch
+            {
+                ComparisonExpr.OperatorType.Equ => "==",
+                ComparisonExpr.OperatorType.Neq => "!=",
+                ComparisonExpr.OperatorType.Gre => ">",
+                ComparisonExpr.OperatorType.Les => "<",
+                ComparisonExpr.OperatorType.Geq => ">=",
+                ComparisonExpr.OperatorType.Leq => "<=",
+                _ => throw new InternalErrorException($"At {comparisonExpr.Location}: Invalid operator type."),
+            };
+
+            var lExpr = comparisonExpr.LExpr;
+            var rExpr = comparisonExpr.RExpr;
+            lExpr.Accept(this);
+            rExpr.Accept(this);
+            var (lOp, rOp) = EvaluateArithmeticExpression(comparisonExpr);
+
+            var res = (object)(op switch
+            {
+                "==" => lOp == rOp,
+                "!=" => lOp != rOp,
+                ">" => lOp > rOp,
+                "<" => lOp < rOp,
+                ">=" => lOp >= rOp,
+                _ => lOp <= rOp,
+            });
+            comparisonExpr.Attributes.Value = res;
+        }
+
         void IVisitor.Visit(AdditiveExpr additiveExpr)
         {
             if (additiveExpr.IsConstantEvaluated) return;
@@ -170,18 +204,7 @@ namespace GoScript.Frontend.Translation
             var rExpr = additiveExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            var lType = lExpr.Attributes.ExprType!;
-            var rType = rExpr.Attributes.ExprType!;
-            var lOp = (dynamic)lExpr.Attributes.Value!;
-            var rOp = (dynamic)rExpr.Attributes.Value!;
-            if (lType.IsArithmetic && rType.IsIntegerConstant)
-            {
-                rOp = (dynamic)ConvertArithmeticConstantValue((ulong)rOp, (GSArithmeticType)lType);
-            }
-            else if (rType.IsArithmetic && lType.IsIntegerConstant)
-            {
-                lOp = (dynamic)ConvertArithmeticConstantValue((ulong)lOp, (GSArithmeticType)rType);
-            }
+            var (lOp, rOp) = EvaluateArithmeticExpression(additiveExpr);
             additiveExpr.Attributes.Value = (object)(
                     op == '+' ? lOp + rOp : lOp - rOp
                 ) ?? throw new InternalErrorException($"Invalid \'{op}\' at {additiveExpr.Location}.");
@@ -203,18 +226,7 @@ namespace GoScript.Frontend.Translation
             var rExpr = multiplicativeExpr.RExpr;
             lExpr.Accept(this);
             rExpr.Accept(this);
-            var lType = lExpr.Attributes.ExprType!;
-            var rType = rExpr.Attributes.ExprType!;
-            var lOp = (dynamic)lExpr.Attributes.Value!;
-            var rOp = (dynamic)rExpr.Attributes.Value!;
-            if (lType.IsArithmetic && rType.IsIntegerConstant)
-            {
-                rOp = (dynamic)ConvertArithmeticConstantValue((ulong)rOp, (GSArithmeticType)lType);
-            }
-            else if (rType.IsArithmetic && lType.IsIntegerConstant)
-            {
-                lOp = (dynamic)ConvertArithmeticConstantValue((ulong)lOp, (GSArithmeticType)rType);
-            }
+            var (lOp, rOp) = EvaluateArithmeticExpression(multiplicativeExpr);
 
             var res = (object)(op switch
             {
@@ -227,6 +239,25 @@ namespace GoScript.Frontend.Translation
                 res = Convert.ChangeType(res, ((GSBasicType)multiplicativeExpr.Attributes.ExprType!).DotNetType);
             }
             multiplicativeExpr.Attributes.Value = res;
+        }
+
+        private (dynamic lOp, dynamic rOp) EvaluateArithmeticExpression(ArithmeticExpression arithmeticExpression)
+        {
+            var lExpr = arithmeticExpression.LExpr;
+            var rExpr = arithmeticExpression.RExpr;
+            var lType = lExpr.Attributes.ExprType!;
+            var rType = rExpr.Attributes.ExprType!;
+            var lOp = (dynamic)lExpr.Attributes.Value!;
+            var rOp = (dynamic)rExpr.Attributes.Value!;
+            if (lType.IsArithmetic && rType.IsIntegerConstant)
+            {
+                rOp = (dynamic)ConvertArithmeticConstantValue((ulong)rOp, (GSArithmeticType)lType);
+            }
+            else if (rType.IsArithmetic && lType.IsIntegerConstant)
+            {
+                lOp = (dynamic)ConvertArithmeticConstantValue((ulong)lOp, (GSArithmeticType)rType);
+            }
+            return (lOp, rOp);
         }
 
         void IVisitor.Visit(UnaryExpr unaryExpr)

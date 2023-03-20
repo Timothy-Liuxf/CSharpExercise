@@ -4,6 +4,7 @@
     {
         void Visit(LogicalOrExpr logicalOrExpr);
         void Visit(LogicalAndExpr logicalAndExpr);
+        void Visit(ComparisonExpr comparisonExpr);
         void Visit(AdditiveExpr additiveExpr);
         void Visit(MultiplicativeExpr multiplicativeExpr);
         void Visit(UnaryExpr unaryExpr);

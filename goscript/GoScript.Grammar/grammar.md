@@ -43,7 +43,16 @@ LogicalOrExpr           : LogicalOrExpr '||' LogicalAndExpr
                         | LogicalAndExpr
                         ;
 
-LogicalAndExpr          : LogicalAndExpr '&&' AdditiveExpr
+LogicalAndExpr          : LogicalAndExpr '&&' ComparisonExpr
+                        | ComparisonExpr
+                        ;
+
+ComparisonExpr          : ComparisonExpr '==' AdditiveExpr
+                        | ComparisonExpr '!=' AdditiveExpr
+                        | ComparisonExpr '<' AdditiveExpr
+                        | ComparisonExpr '>' AdditiveExpr
+                        | ComparisonExpr '<=' AdditiveExpr
+                        | ComparisonExpr '>=' AdditiveExpr
                         | AdditiveExpr
                         ;
 

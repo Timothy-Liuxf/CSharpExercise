@@ -185,7 +185,7 @@ using GoScript.Frontend.Lex;
             x = 9
             x
             y
-            z
+            1 + 2 + z + 4 + 5
             {
                 var y = 4
                 y = 10
@@ -206,7 +206,37 @@ using GoScript.Frontend.Lex;
                 z = z + z
                 z
             }
-            z
+            z * 9
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
+
+        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        }
+    }
+}
+
+{
+    Console.WriteLine("===== Test Intepreter 4 =====\n\n");
+    {
+        var prog = """
+            x, y, z := 10, -10, 20
+            x > y
+            x < y
+            x == y
+            x != y
+            x >= x
+            x <= x
+            z == 20
+            z != 20
+            z > -6
+            z <= -8
+            10 > -96
+            10 <= -50
+            x + y > 23 + 89 + z + 56 + 89
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(' ' + string.Join(' ', tokens));
