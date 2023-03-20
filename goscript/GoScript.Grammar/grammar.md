@@ -6,12 +6,12 @@ Program                 : Statement*
 
 Statement               : VarDecl ';'? NEWLINE
                         | CompoundStmt
-                        | AssignOrExprStmt
+                        | AssignOrExprStmt ';'? NEWLINE
                         ;
 
-AssignOrExprStmt        : IdExprList '=' ExpressionList ';'? NEWLINE
-                        | IdExprList ':=' ExpressionList ';'? NEWLINE
-                        | Expression? ';'? NEWLINE
+AssignOrExprStmt        : IdExprList '=' ExpressionList
+                        | IdExprList ':=' ExpressionList
+                        | Expression?
                         ;
 
 IdExprList              : IdExpr (',' IdExpr)*

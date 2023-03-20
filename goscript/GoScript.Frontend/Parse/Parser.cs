@@ -25,7 +25,10 @@ namespace GoScript.Frontend.Parse
         {
             if (tokens.TryPeekKeyword(KeywordType.Var, out _))
             {
-                return ParseVarDecl();
+                var varDecl = ParseVarDecl();
+                tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+                tokens.MatchNewline();
+                return varDecl;
             }
 
             if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
@@ -33,18 +36,16 @@ namespace GoScript.Frontend.Parse
                 return ParseCompoundStmt();
             }
 
-            return ParseAssignOrExprStmt();
+            var statement = ParseAssignOrExprStmt();
+            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+            tokens.MatchNewline();
+            return statement;
         }
 
         private Statement ParseAssignOrExprStmt()
         {
-            if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
-            {
-                tokens.MatchNewline();
-                return new EmptyStmt();
-            }
-
-            if (tokens.TryMatchNewline(out _))
+            if (tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out _)
+                || tokens.TryPeekNewline(out _))
             {
                 return new EmptyStmt();
             }
@@ -76,9 +77,6 @@ namespace GoScript.Frontend.Parse
                     assigneeExprs.Add(ParseExpression());
                 }
 
-                tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
-                tokens.MatchNewline();
-
                 if (assign.Type == PunctuatorType.Assign)
                 {
                     // '='
@@ -96,15 +94,13 @@ namespace GoScript.Frontend.Parse
                     return new DefAssignStmt(assignedNames, assigneeExprs, assign.Location);
                 }
             }
-            else if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
+            else if (!tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out _))
             {
-                tokens.MatchNewline();
-                return new SingleStmt(expr, false);
+                return new SingleStmt(expr, true);
             }
             else
             {
-                tokens.MatchNewline();
-                return new SingleStmt(expr, true);
+                return new SingleStmt(expr, false);
             }
         }
 
@@ -275,8 +271,6 @@ namespace GoScript.Frontend.Parse
                 varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
             }
 
-            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
-            tokens.MatchNewline();
             return varDecl;
         }
 
