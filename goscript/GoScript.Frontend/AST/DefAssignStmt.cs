@@ -18,7 +18,7 @@ namespace GoScript.Frontend.AST
         public override string ToString()
         {
             return string.Join(", ", this.VarNames)
-                + $" := {string.Join(", ", InitExprs)}"
+                + $" := {string.Join(", ", this.InitExprs)}"
                 + Environment.NewLine;
         }
 

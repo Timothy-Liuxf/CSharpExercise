@@ -255,7 +255,8 @@ using GoScript.Frontend.Lex;
         var prog = """
             x, y := true, false
             var z bool = false
-            var w = true
+            var w = x != y
+            w
             x == y
             z == w
             y == z == w
@@ -274,5 +275,39 @@ using GoScript.Frontend.Lex;
         {
             Console.WriteLine(ast.Attributes.Value ?? "No echo.");
         }
+    }
+}
+
+{
+    Console.WriteLine("===== Test Intepreter 6 =====\n\n");
+    {
+        var prog = """
+            var x int = 20
+            var y int = 3
+            var z = y + 17
+            if x != z {
+                y = 888
+                true
+            } else if x == y {
+                x = 666
+                false
+            } else {
+                x = 777
+                false
+            }
+            x
+            y
+            z
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
+        var asts = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
+        Console.WriteLine(string.Join("", asts));
+
+        // var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        // foreach (var ast in asts)
+        // {
+        //     Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        // }
     }
 }

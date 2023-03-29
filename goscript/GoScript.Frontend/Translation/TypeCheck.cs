@@ -36,8 +36,9 @@ namespace GoScript.Frontend.Translation
             }
         }
 
-        void IVisitor.Visit(VarDecl varDecl)
+        void IVisitor.Visit(VarDeclStmt varDeclStmt)
         {
+            var varDecl = varDeclStmt.VarDecl;
             if (varDecl.InitExprs == null && varDecl.InitType == null)
             {
                 throw new InternalErrorException($"At {varDecl.Location}: InitExprs and InitType shouldn't be null at the same time.");
@@ -75,7 +76,7 @@ namespace GoScript.Frontend.Translation
                 }
                 rttis.Add(rtti);
 
-                varDecl.Attributes.StmtType = null;
+                varDeclStmt.Attributes.StmtType = null;
                 if (varDecl.InitExprs is not null)
                 {
                     var initExpr = varDecl.InitExprs[i];
@@ -229,6 +230,11 @@ namespace GoScript.Frontend.Translation
                     throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {expr.Location}.");
                 }
             }
+        }
+
+        void IVisitor.Visit(IfStmt ifStmt)
+        {
+            throw new NotImplementedException("TypeCheck.IVisitor.Visit(IfStmt ifStmt)");
         }
 
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
@@ -574,10 +580,11 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(CompoundStmt compoundStmt)
         {
+            var compound = compoundStmt.Compound;
             var scope = new Scope();
-            compoundStmt.AttachedScope = scope;
+            compound.AttachedScope = scope;
             this.scopeStack.AttachScope(scope);
-            var statements = compoundStmt.Statements;
+            var statements = compound.Statements;
             foreach (var statement in statements)
             {
                 statement.Accept(this);

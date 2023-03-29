@@ -15,6 +15,13 @@ namespace GoScript.Frontend.AST
             this.Location = location;
         }
 
+        public override string ToString()
+        {
+            return string.Join(", ", this.AssignedExprs)
+                + $" = {string.Join(", ", this.Exprs)}"
+                + Environment.NewLine;
+        }
+
         internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
 }

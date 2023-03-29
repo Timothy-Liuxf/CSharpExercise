@@ -42,8 +42,9 @@ namespace GoScript.Frontend.Translation
                 : Convert.ChangeType(constantValue, targetType.DotNetType);
         }
 
-        void IVisitor.Visit(VarDecl varDecl)
+        void IVisitor.Visit(VarDeclStmt varDeclStmt)
         {
+            var varDecl = varDeclStmt.VarDecl;
             var cnt = varDecl.VarNames.Count;
             for (int i = 0; i < cnt; ++i)
             {
@@ -116,6 +117,11 @@ namespace GoScript.Frontend.Translation
             {
                 rtti.Value = exprValue;
             }
+        }
+
+        void IVisitor.Visit(IfStmt ifStmt)
+        {
+            throw new NotImplementedException("Translator.IVisitor.Visit(IfStmt ifStmt)");
         }
 
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
@@ -319,9 +325,10 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(CompoundStmt compoundStmt)
         {
-            this.scopeStack.AttachScope(compoundStmt.AttachedScope
-                ?? throw new InternalErrorException($"At {compoundStmt.Location}: CompoundStmt has no attached scope."));
-            var statements = compoundStmt.Statements;
+            var compound = compoundStmt.Compound;
+            this.scopeStack.AttachScope(compound.AttachedScope
+                ?? throw new InternalErrorException($"At {compound.Location}: CompoundStmt has no attached scope."));
+            var statements = compound.Statements;
             foreach (var statement in statements)
             {
                 statement.Accept(this);

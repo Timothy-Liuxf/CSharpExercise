@@ -4,7 +4,8 @@
 Program                 : Statement*
                         ;
 
-Statement               : VarDecl ';'? NEWLINE
+Statement               : VarDeclStmt
+                        | IfStmt
                         | CompoundStmt
                         | AssignOrExprStmt ';'? NEWLINE
                         ;
@@ -20,11 +21,20 @@ IdExprList              : IdExpr (',' IdExpr)*
 IdExpr                  : IDENTIFIER
                         ;
 
-CompoundStmt            : '{' NEWLINE Statement* '}' NEWLINE
+CompoundStmt            : Compound NEWLINE
                         ;
 
+Compound                : '{' NEWLINE Statement* '}'
+                        ;
+
+VarDeclStmt             : VarDecl ';'? NEWLINE
+                        ;
+						
 VarDecl                 : 'var' IdentifierList Type ('=' ExpressionList)?
                         | 'var' IdentifierList '=' ExpressionList
+                        ;
+
+IfStmt                  : 'if' Expression CompoundStmt ('else' 'if' Expression CompoundStmt)* ('else' CompoundStmt)?
                         ;
 
 IdentifierList          : Identifier (',' Identifier)*

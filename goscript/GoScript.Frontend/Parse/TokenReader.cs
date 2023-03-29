@@ -101,6 +101,7 @@ namespace GoScript.Frontend.Parse
         {
             if (TryPeekKeyword(type, out keyword))
             {
+                MatchToken();
                 return true;
             }
             return false;

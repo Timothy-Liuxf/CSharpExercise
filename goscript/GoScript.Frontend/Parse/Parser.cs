@@ -1,5 +1,6 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Lex;
+using GoScript.Utils;
 
 namespace GoScript.Frontend.Parse
 {
@@ -25,10 +26,12 @@ namespace GoScript.Frontend.Parse
         {
             if (tokens.TryPeekKeyword(KeywordType.Var, out _))
             {
-                var varDecl = ParseVarDecl();
-                tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
-                tokens.MatchNewline();
-                return varDecl;
+                return ParseVarDeclStmt();
+            }
+
+            if (tokens.TryPeekKeyword(KeywordType.If, out _))
+            {
+                return ParseIfStmt();
             }
 
             if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
@@ -40,6 +43,103 @@ namespace GoScript.Frontend.Parse
             tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
             tokens.MatchNewline();
             return statement;
+        }
+
+        private VarDeclStmt ParseVarDeclStmt()
+        {
+            var varDecl = ParseVarDecl();
+            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+            tokens.MatchNewline();
+            return new VarDeclStmt(varDecl);
+        }
+
+        private VarDecl ParseVarDecl()
+        {
+            VarDecl varDecl;
+            var location = tokens.MatchKeyword(KeywordType.Var).Location;
+            var identifiers = new List<string>() { tokens.MatchIdentifier().Name };
+            while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
+            {
+                identifiers.Add(tokens.MatchIdentifier().Name);
+            }
+
+            Keyword? typeKeyword;
+            if (!tokens.TryMatchTypeKeyword(out typeKeyword)
+                || tokens.TryMatchPunctuator(PunctuatorType.Assign, out _))
+            {
+                if (typeKeyword is null)
+                {
+                    tokens.MatchPunctuator(PunctuatorType.Assign);
+                }
+
+                var initExprs = new List<Expression>() { ParseExpression() };
+                while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
+                {
+                    initExprs.Add(ParseExpression());
+                }
+
+                if (typeKeyword is null)
+                {
+                    varDecl = new VarDecl(identifiers, initExprs, location);
+                }
+                else
+                {
+                    varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword.Type)!, initExprs, location);
+                }
+            }
+            else
+            {
+                varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
+            }
+
+            return varDecl;
+        }
+
+        private IfStmt ParseIfStmt()
+        {
+            var location = tokens.MatchKeyword(KeywordType.If).Location;
+            var condBranches = new List<(Expression, Compound, SourceLocation)>();
+            var cond = ParseExpression();
+            var branch = ParseCompound();
+            condBranches.Add((cond, branch, location));
+            while (tokens.TryMatchKeyword(KeywordType.Else, out var @else))
+            {
+                if (tokens.TryMatchKeyword(KeywordType.If, out var @if))
+                {
+                    // else if
+                    cond = ParseExpression();
+                    branch = ParseCompound();
+                    condBranches.Add((cond, branch, @if.Location));
+                }
+                else
+                {
+                    // else
+                    branch = ParseCompound();
+                    tokens.MatchNewline();
+                    return new IfStmt(condBranches, branch, location);
+                }
+            }
+            tokens.MatchNewline();
+            return new IfStmt(condBranches, location);
+        }
+
+        private CompoundStmt ParseCompoundStmt()
+        {
+            var compound = ParseCompound();
+            tokens.MatchNewline();
+            return new CompoundStmt(compound);
+        }
+
+        private Compound ParseCompound()
+        {
+            var location = tokens.MatchPunctuator(PunctuatorType.LBrace).Location;
+            tokens.MatchNewline();
+            var statements = new List<Statement>();
+            while (!tokens.TryMatchPunctuator(PunctuatorType.RBrace, out _))
+            {
+                statements.Add(ParseStatement());
+            }
+            return new Compound(statements, location);
         }
 
         private Statement ParseAssignOrExprStmt()
@@ -230,61 +330,6 @@ namespace GoScript.Frontend.Parse
                 return expr;
             }
             throw new NotImplementedException($"ParsePrimaryExpr at {tokens.CurrentToken?.Location.ToString() ?? "EOF"}.");
-        }
-
-        private VarDecl ParseVarDecl()
-        {
-            VarDecl varDecl;
-            var location = tokens.MatchKeyword(KeywordType.Var).Location;
-            var identifiers = new List<string>() { tokens.MatchIdentifier().Name };
-            while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
-            {
-                identifiers.Add(tokens.MatchIdentifier().Name);
-            }
-
-            Keyword? typeKeyword;
-            if (!tokens.TryMatchTypeKeyword(out typeKeyword)
-                || tokens.TryMatchPunctuator(PunctuatorType.Assign, out _))
-            {
-                if (typeKeyword is null)
-                {
-                    tokens.MatchPunctuator(PunctuatorType.Assign);
-                }
-
-                var initExprs = new List<Expression>() { ParseExpression() };
-                while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
-                {
-                    initExprs.Add(ParseExpression());
-                }
-
-                if (typeKeyword is null)
-                {
-                    varDecl = new VarDecl(identifiers, initExprs, location);
-                }
-                else
-                {
-                    varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword.Type)!, initExprs, location);
-                }
-            }
-            else
-            {
-                varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
-            }
-
-            return varDecl;
-        }
-
-        private CompoundStmt ParseCompoundStmt()
-        {
-            var location = tokens.MatchPunctuator(PunctuatorType.LBrace).Location;
-            tokens.MatchNewline();
-            var statements = new List<Statement>();
-            while (!tokens.TryMatchPunctuator(PunctuatorType.RBrace, out _))
-            {
-                statements.Add(ParseStatement());
-            }
-            tokens.MatchNewline();
-            return new CompoundStmt(statements, location);
         }
 
         private readonly TokenReader tokens;

@@ -3,7 +3,7 @@ using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
-    public sealed class CompoundStmt : Statement
+    public sealed class Compound
     {
         public IReadOnlyList<Statement> Statements { get; private init; }
 
@@ -11,7 +11,7 @@ namespace GoScript.Frontend.AST
 
         internal Scope? AttachedScope { get; set; }
 
-        public CompoundStmt(IReadOnlyList<Statement> statements, SourceLocation location)
+        public Compound(IReadOnlyList<Statement> statements, SourceLocation location)
         {
             this.Statements = statements;
             this.Location = location;
@@ -24,8 +24,23 @@ namespace GoScript.Frontend.AST
             {
                 result += stmt.ToString();
             }
-            result += "}" + Environment.NewLine;
+            result += "}";
             return result;
+        }
+    }
+
+    public sealed class CompoundStmt : Statement
+    {
+        public Compound Compound { get; private init; }
+
+        public CompoundStmt(Compound compound)
+        {
+            this.Compound = compound;
+        }
+
+        public override string ToString()
+        {
+            return this.Compound.ToString() + Environment.NewLine;
         }
 
         internal override void Accept(IVisitor visitor) => visitor.Visit(this);

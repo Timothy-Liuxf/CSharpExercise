@@ -155,6 +155,7 @@ namespace GoScript.Frontend.Lex
         Func,       // func
         Var,        // var
         If,         // if
+        Else,         // else
         For,        // for
         Break,      // break
         Continue,   // continue
@@ -218,6 +219,7 @@ namespace GoScript.Frontend.Lex
                 KeywordType.Func => "func",
                 KeywordType.Var => "var",
                 KeywordType.If => "if",
+                KeywordType.Else => "else",
                 KeywordType.For => "for",
                 KeywordType.Break => "break",
                 KeywordType.Continue => "continue",
