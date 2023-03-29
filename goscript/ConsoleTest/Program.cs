@@ -248,3 +248,31 @@ using GoScript.Frontend.Lex;
         }
     }
 }
+
+{
+    Console.WriteLine("===== Test Intepreter 5 =====\n\n");
+    {
+        var prog = """
+            x, y := true, false
+            var z bool = false
+            var w = true
+            x == y
+            z == w
+            y == z == w
+            x == true
+            x == false
+            true == false
+            true == true
+            true == x
+            false == x
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
+
+        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        }
+    }
+}

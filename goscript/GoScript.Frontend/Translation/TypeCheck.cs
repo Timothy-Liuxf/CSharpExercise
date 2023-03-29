@@ -319,6 +319,41 @@ namespace GoScript.Frontend.Translation
                         comparisonExpr.IsConstantEvaluated = true;
                     }
                     break;
+                case CheckArithmeticOperatorResult.NotArithmetic:
+                    {
+                        bool valid = false;
+                        if (op == "==" || op == "!=")
+                        {
+                            var lType = comparisonExpr.LExpr.Attributes.ExprType!;
+                            var rType = comparisonExpr.RExpr.Attributes.ExprType!;
+                            if (lType.IsBasic && rType.IsBasic && lType == rType)
+                            {
+                                valid = true;
+                                comparisonExpr.Attributes.ExprType = GSBool.Instance;
+                            }
+                            else if (lType.IsBool && rType.IsBoolConstant
+                                || lType.IsBoolConstant && rType.IsBool)
+                            {
+                                valid = true;
+                                comparisonExpr.Attributes.ExprType = GSBool.Instance;
+                            }
+                            else if (lType.IsBoolConstant && rType.IsBoolConstant)
+                            {
+                                valid = true;
+                                var lConstant = (bool)comparisonExpr.LExpr.Attributes.Value!;
+                                var rConstant = (bool)comparisonExpr.RExpr.Attributes.Value!;
+                                comparisonExpr.Attributes.ExprType = GSBool.Instance;
+                                comparisonExpr.Attributes.Value =
+                                    op == "==" ? lConstant == rConstant : lConstant != rConstant;
+                                comparisonExpr.IsConstantEvaluated = true;
+                            }
+                        }
+                        if (!valid)
+                        {
+                            throw new InvalidOperationException($"At: {comparisonExpr.Location}: Invalid operator \'{op}\'");
+                        }
+                    }
+                    break;
                 default:
                     throw new InternalErrorException(
                         $"Invalid result type of {nameof(CheckArithmeticOperator)}.");
@@ -355,6 +390,8 @@ namespace GoScript.Frontend.Translation
                         additiveExpr.IsConstantEvaluated = true;
                     }
                     break;
+                case CheckArithmeticOperatorResult.NotArithmetic:
+                    throw new InvalidOperationException($"At: {additiveExpr.Location}: Invalid operator \'{op}\'");
                 default:
                     throw new InternalErrorException(
                         $"Invalid result type of {nameof(CheckArithmeticOperator)}.");
@@ -395,6 +432,8 @@ namespace GoScript.Frontend.Translation
                         multiplicativeExpr.IsConstantEvaluated = true;
                     }
                     break;
+                case CheckArithmeticOperatorResult.NotArithmetic:
+                    throw new InvalidOperationException($"At: {multiplicativeExpr.Location}: Invalid operator \'{op}\'");
                 default:
                     throw new InternalErrorException(
                         $"Invalid result type of {nameof(CheckArithmeticOperator)}.");
@@ -407,6 +446,7 @@ namespace GoScript.Frontend.Translation
             RightConstant,
             LeftConstant,
             BothConstant,
+            NotArithmetic,
         }
 
         private CheckArithmeticOperatorResult CheckArithmeticOperator(ArithmeticExpression arithmeticExpr, string op)
@@ -439,7 +479,6 @@ namespace GoScript.Frontend.Translation
                 {
                     throw new InvalidOperationException($"At {arithmeticExpr.Location}: The value {rOp} is out of range of {lType}.");
                 }
-                // arithmeticExpr.Attributes.ExprType = lType;
                 return CheckArithmeticOperatorResult.RightConstant;
             }
             else if (rType.IsArithmetic && lType.IsIntegerConstant)
@@ -448,12 +487,11 @@ namespace GoScript.Frontend.Translation
                 {
                     throw new InvalidOperationException($"At {arithmeticExpr.Location}: The value {lOp} is out of range of {rType}.");
                 }
-                // arithmeticExpr.Attributes.ExprType = rType;
                 return CheckArithmeticOperatorResult.LeftConstant;
             }
             else
             {
-                throw new InvalidOperationException($"At {arithmeticExpr.Location}: Invalid operator \'{op}\'.");
+                return CheckArithmeticOperatorResult.NotArithmetic;
             }
         }
 
