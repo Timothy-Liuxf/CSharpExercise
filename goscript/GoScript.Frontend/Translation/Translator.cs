@@ -121,7 +121,39 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(IfStmt ifStmt)
         {
-            throw new NotImplementedException("Translator.IVisitor.Visit(IfStmt ifStmt)");
+            bool done = false;
+            foreach (var (cond, branch, _) in ifStmt.ConditionBranches)
+            {
+                cond.Accept(this);
+                if (cond.Attributes.Value is not bool condValue)
+                {
+                    throw new InternalErrorException($"At {cond.Location}: the value of the condition is not a bool.");
+                }
+                if (condValue)
+                {
+                    foreach (var statement in branch.Statements)
+                    {
+                        statement.Accept(this);
+                    }
+                    if (branch.Statements.Count > 0)
+                    {
+                        ifStmt.Attributes.Value = branch.Statements.Last().Attributes.Value;
+                    }
+                    done = true;
+                    break;
+                }
+            }
+            if (!done && ifStmt.ElseBranch is not null)
+            {
+                foreach (var statement in ifStmt.ElseBranch.Statements)
+                {
+                    statement.Accept(this);
+                }
+                if (ifStmt.ElseBranch.Statements.Count > 0)
+                {
+                    ifStmt.Attributes.Value = ifStmt.ElseBranch.Statements.Last().Attributes.Value;
+                }
+            }
         }
 
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)

@@ -12,6 +12,8 @@
         public static GSIntegerConstant Instance { get; } = new();
 
         private GSIntegerConstant() { }
+
+        public override string ToString() => "integer constant";
     }
 
     public sealed class GSBoolConstant : GSConstantType
@@ -21,5 +23,7 @@
         public static GSBoolConstant Instance { get; } = new();
 
         private GSBoolConstant() { }
+
+        public override string ToString() => "bool constant";
     }
 }

@@ -29,7 +29,7 @@ Compound                : '{' NEWLINE Statement* '}'
 
 VarDeclStmt             : VarDecl ';'? NEWLINE
                         ;
-						
+
 VarDecl                 : 'var' IdentifierList Type ('=' ExpressionList)?
                         | 'var' IdentifierList '=' ExpressionList
                         ;

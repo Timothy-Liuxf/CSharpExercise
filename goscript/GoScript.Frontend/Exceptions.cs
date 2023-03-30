@@ -1,4 +1,5 @@
-﻿using GoScript.Utils;
+﻿using GoScript.Frontend.Types;
+using GoScript.Utils;
 
 namespace GoScript.Frontend
 {
@@ -33,5 +34,11 @@ namespace GoScript.Frontend
     public class InvalidOperationException : CodeErrorException
     {
         public InvalidOperationException(string message) : base(message) { }
+    }
+
+    public class TypeErrorException : CodeErrorException
+    {
+        public TypeErrorException(GSType expected, GSType actual, SourceLocation location)
+            : base($"Type error at {location}: Expected {expected}, found {actual}.") { }
     }
 }

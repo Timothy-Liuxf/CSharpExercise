@@ -291,6 +291,7 @@ using GoScript.Frontend.Lex;
             } else if x == y {
                 x = 666
                 false
+            } else if false {
             } else {
                 x = 777
                 false
@@ -298,16 +299,24 @@ using GoScript.Frontend.Lex;
             x
             y
             z
+            if x == 777 {
+                true
+            }
+            if x != 777 {
+                false
+            } else if x == 777 {
+                true
+            }
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(' ' + string.Join(' ', tokens));
-        var asts = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
-        Console.WriteLine(string.Join("", asts));
+        var astsParsed = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
+        Console.WriteLine(string.Join("", astsParsed));
 
-        // var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
-        // foreach (var ast in asts)
-        // {
-        //     Console.WriteLine(ast.Attributes.Value ?? "No echo.");
-        // }
+        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        }
     }
 }
