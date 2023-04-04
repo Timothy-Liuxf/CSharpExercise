@@ -7,10 +7,13 @@ Program                 : Statement*
 Statement               : VarDeclStmt
                         | IfStmt
                         | CompoundStmt
-                        | AssignOrExprStmt ';'? NEWLINE
+                        | AssignOrExprStmt
                         ;
 
-AssignOrExprStmt        : IdExprList '=' ExpressionList
+AssignOrExprStmt        : AssignOrExpr ';'? NEWLINE
+                        ;
+
+AssignOrExpr            : IdExprList '=' ExpressionList
                         | IdExprList ':=' ExpressionList
                         | Expression?
                         ;

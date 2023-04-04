@@ -39,10 +39,7 @@ namespace GoScript.Frontend.Parse
                 return ParseCompoundStmt();
             }
 
-            var statement = ParseAssignOrExprStmt();
-            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
-            tokens.MatchNewline();
-            return statement;
+            return ParseAssignOrExprStmt();
         }
 
         private VarDeclStmt ParseVarDeclStmt()
@@ -143,6 +140,14 @@ namespace GoScript.Frontend.Parse
         }
 
         private Statement ParseAssignOrExprStmt()
+        {
+            var statement = ParseAssignOrExpr();
+            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+            tokens.MatchNewline();
+            return statement;
+        }
+
+        private Statement ParseAssignOrExpr()
         {
             if (tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out _)
                 || tokens.TryPeekNewline(out _))
