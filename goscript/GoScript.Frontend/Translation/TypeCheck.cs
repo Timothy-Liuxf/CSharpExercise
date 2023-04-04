@@ -36,9 +36,8 @@ namespace GoScript.Frontend.Translation
             }
         }
 
-        void IVisitor.Visit(VarDeclStmt varDeclStmt)
+        void IVisitor.Visit(VarDecl varDecl)
         {
-            var varDecl = varDeclStmt.VarDecl;
             if (varDecl.InitExprs == null && varDecl.InitType == null)
             {
                 throw new InternalErrorException($"At {varDecl.Location}: InitExprs and InitType shouldn't be null at the same time.");
@@ -76,7 +75,7 @@ namespace GoScript.Frontend.Translation
                 }
                 rttis.Add(rtti);
 
-                varDeclStmt.Attributes.StmtType = null;
+                varDecl.Attributes.StmtType = null;
                 if (varDecl.InitExprs is not null)
                 {
                     var initExpr = varDecl.InitExprs[i];
@@ -97,6 +96,13 @@ namespace GoScript.Frontend.Translation
             {
                 this.scopeStack.Add(varDecl.VarNames[i], rttis[i]);
             }
+        }
+
+        void IVisitor.Visit(VarDeclStmt varDeclStmt)
+        {
+            var varDecl = varDeclStmt.VarDecl;
+            varDecl.Accept(this);
+            varDeclStmt.Attributes.StmtType = varDecl.Attributes.StmtType;
         }
 
         void IVisitor.Visit(AssignStmt assignStmt)
@@ -242,26 +248,14 @@ namespace GoScript.Frontend.Translation
                 {
                     throw new TypeErrorException(GSBool.Instance, condType, location);
                 }
-                foreach (var statement in branch.Statements)
-                {
-                    statement.Accept(this);
-                }
-                if (branch.Statements.Count > 0)
-                {
-                    ifStmt.Attributes.StmtType = branch.Statements.Last().Attributes.StmtType;
-                }
+                branch.Accept(this);
+                ifStmt.Attributes.StmtType = branch.Attributes.StmtType;
             }
             var elseBranch = ifStmt.ElseBranch;
             if (elseBranch is not null)
             {
-                foreach (var statement in elseBranch.Statements)
-                {
-                    statement.Accept(this);
-                }
-                if (elseBranch.Statements.Count > 0)
-                {
-                    ifStmt.Attributes.StmtType = elseBranch.Statements.Last().Attributes.StmtType;
-                }
+                elseBranch.Accept(this);
+                ifStmt.Attributes.StmtType = elseBranch.Attributes.StmtType;
             }
         }
 
@@ -606,9 +600,8 @@ namespace GoScript.Frontend.Translation
             boolConstantExpr.IsConstantEvaluated = true;
         }
 
-        void IVisitor.Visit(CompoundStmt compoundStmt)
+        void IVisitor.Visit(Compound compound)
         {
-            var compound = compoundStmt.Compound;
             var scope = new Scope();
             compound.AttachedScope = scope;
             this.scopeStack.AttachScope(scope);
@@ -620,9 +613,16 @@ namespace GoScript.Frontend.Translation
             if (statements.Count > 0)
             {
                 var lastStmt = statements.Last();
-                compoundStmt.Attributes.StmtType = lastStmt.Attributes.StmtType;
+                compound.Attributes.StmtType = lastStmt.Attributes.StmtType;
             }
             this.scopeStack.CloseScope();
+        }
+
+        void IVisitor.Visit(CompoundStmt compoundStmt)
+        {
+            var compound = compoundStmt.Compound;
+            compound.Accept(this);
+            compoundStmt.Attributes.StmtType = compound.Attributes.StmtType;
         }
     }
 }

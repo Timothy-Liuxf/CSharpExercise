@@ -13,8 +13,10 @@
         void Visit(BoolConstantExpr boolLiteralExpr);
         void Visit(SingleStmt singleStmt);
         void Visit(EmptyStmt emptyStmt);
-        void Visit(VarDeclStmt varDecl);
+        void Visit(VarDecl varDecl);
+        void Visit(VarDeclStmt varDeclStmt);
         void Visit(IfStmt ifStmt);
+        void Visit(Compound compound);
         void Visit(CompoundStmt compoundStmt);
         void Visit(AssignStmt assignStmt);
         void Visit(DefAssignStmt defAssignStmt);

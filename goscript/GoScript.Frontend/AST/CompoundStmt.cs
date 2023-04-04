@@ -3,7 +3,7 @@ using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
-    public sealed class Compound
+    public sealed class Compound : Statement
     {
         public IReadOnlyList<Statement> Statements { get; private init; }
 
@@ -27,6 +27,8 @@ namespace GoScript.Frontend.AST
             result += "}";
             return result;
         }
+
+        internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
 
     public sealed class CompoundStmt : Statement

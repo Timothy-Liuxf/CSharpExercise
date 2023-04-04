@@ -2,7 +2,7 @@
 
 namespace GoScript.Frontend.AST
 {
-    public sealed class VarDecl
+    public sealed class VarDecl : Statement
     {
         public IReadOnlyList<string> VarNames { get; private init; }
         public string? InitType { get; private init; }
@@ -37,6 +37,8 @@ namespace GoScript.Frontend.AST
                 + (this.InitType is null ? "" : $" {this.InitType}")
                 + (this.InitExprs is null ? "" : $" = {string.Join(", ", InitExprs)}");
         }
+
+        internal override void Accept(IVisitor visitor) => visitor.Visit(this);
     }
 
     public sealed class VarDeclStmt : Statement

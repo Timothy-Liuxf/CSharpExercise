@@ -42,9 +42,8 @@ namespace GoScript.Frontend.Translation
                 : Convert.ChangeType(constantValue, targetType.DotNetType);
         }
 
-        void IVisitor.Visit(VarDeclStmt varDeclStmt)
+        void IVisitor.Visit(VarDecl varDecl)
         {
-            var varDecl = varDeclStmt.VarDecl;
             var cnt = varDecl.VarNames.Count;
             for (int i = 0; i < cnt; ++i)
             {
@@ -64,6 +63,13 @@ namespace GoScript.Frontend.Translation
                     AssignValueHelper(rtti, initExpr);
                 }
             }
+        }
+
+        void IVisitor.Visit(VarDeclStmt varDeclStmt)
+        {
+            var varDecl = varDeclStmt.VarDecl;
+            varDecl.Accept(this);
+            varDeclStmt.Attributes.Value = varDecl.Attributes.Value;
         }
 
         void IVisitor.Visit(AssignStmt assignStmt)
@@ -131,28 +137,16 @@ namespace GoScript.Frontend.Translation
                 }
                 if (condValue)
                 {
-                    foreach (var statement in branch.Statements)
-                    {
-                        statement.Accept(this);
-                    }
-                    if (branch.Statements.Count > 0)
-                    {
-                        ifStmt.Attributes.Value = branch.Statements.Last().Attributes.Value;
-                    }
+                    branch.Accept(this);
+                    ifStmt.Attributes.Value = branch.Attributes.Value;
                     done = true;
                     break;
                 }
             }
             if (!done && ifStmt.ElseBranch is not null)
             {
-                foreach (var statement in ifStmt.ElseBranch.Statements)
-                {
-                    statement.Accept(this);
-                }
-                if (ifStmt.ElseBranch.Statements.Count > 0)
-                {
-                    ifStmt.Attributes.Value = ifStmt.ElseBranch.Statements.Last().Attributes.Value;
-                }
+                ifStmt.ElseBranch.Accept(this);
+                ifStmt.Attributes.Value = ifStmt.ElseBranch.Attributes.Value;
             }
         }
 
@@ -355,9 +349,8 @@ namespace GoScript.Frontend.Translation
         {
         }
 
-        void IVisitor.Visit(CompoundStmt compoundStmt)
+        void IVisitor.Visit(Compound compound)
         {
-            var compound = compoundStmt.Compound;
             this.scopeStack.AttachScope(compound.AttachedScope
                 ?? throw new InternalErrorException($"At {compound.Location}: CompoundStmt has no attached scope."));
             var statements = compound.Statements;
@@ -368,9 +361,16 @@ namespace GoScript.Frontend.Translation
             if (statements.Count > 0)
             {
                 var lastStmt = statements.Last();
-                compoundStmt.Attributes.Value = lastStmt.Attributes.Value;
+                compound.Attributes.Value = lastStmt.Attributes.Value;
             }
             this.scopeStack.CloseScope();
+        }
+
+        void IVisitor.Visit(CompoundStmt compoundStmt)
+        {
+            var compound = compoundStmt.Compound;
+            compound.Accept(this);
+            compoundStmt.Attributes.Value = compound.Attributes.Value;
         }
     }
 }
