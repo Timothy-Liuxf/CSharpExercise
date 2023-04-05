@@ -6,6 +6,7 @@ Program                 : Statement*
 
 Statement               : VarDeclStmt
                         | IfStmt
+                        | ForStmt
                         | CompoundStmt
                         | AssignOrExprStmt
                         ;
@@ -38,6 +39,11 @@ VarDecl                 : 'var' IdentifierList Type ('=' ExpressionList)?
                         ;
 
 IfStmt                  : 'if' Expression CompoundStmt ('else' 'if' Expression CompoundStmt)* ('else' CompoundStmt)?
+                        ;
+
+ForStmt                 : 'for' AssignOrExpr ';' Expr ';' Expr CompoundStmt
+                        | 'for' Expr CompoundStmt
+                        | 'for' CompoundStmt
                         ;
 
 IdentifierList          : Identifier (',' Identifier)*
