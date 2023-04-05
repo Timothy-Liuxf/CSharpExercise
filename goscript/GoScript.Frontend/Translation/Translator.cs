@@ -21,9 +21,9 @@ namespace GoScript.Frontend.Translation
                     ast.Accept(this.typeCheck);
                     ast.Accept(this);
                 }
-                catch
+                catch (Exception e)
                 {
-                    throw;
+                    throw new InternalErrorException(e.ToString() + e.StackTrace);
                 }
                 yield return (ast as Statement) ?? throw new InternalErrorException($"AST: {ast} is not a statement.");
             }
@@ -152,7 +152,44 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(ForStmt forStmt)
         {
-            throw new NotImplementedException(nameof(ForStmt));
+            this.scopeStack.AttachScope(forStmt.AttachedScope
+                ?? throw new InternalErrorException($"At {forStmt.Location}: ForStmt has no attached scope."));
+            try
+            {
+                var initStmt = forStmt.InitStmt;
+                var condition = forStmt.Condition;
+                var postStmt = forStmt.PostStmt;
+                var statements = forStmt.Statements;
+                initStmt?.Accept(this);
+                if (condition is not null)
+                {
+                    while (true)
+                    {
+                        condition.Accept(this);
+                        if (condition.Attributes.Value is not bool condValue)
+                        {
+                            throw new InternalErrorException($"At {condition.Location}: the value of the condition is not a bool.");
+                        }
+                        if (!condValue)
+                        {
+                            break;
+                        }
+                        statements.Accept(this);
+                        postStmt?.Accept(this);
+                    }
+                }
+                else
+                {
+                    while (true)
+                    {
+                        statements.Accept(this);
+                    }
+                }
+            }
+            finally
+            {
+                this.scopeStack.CloseScope();
+            }
         }
 
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
@@ -358,17 +395,23 @@ namespace GoScript.Frontend.Translation
         {
             this.scopeStack.AttachScope(compound.AttachedScope
                 ?? throw new InternalErrorException($"At {compound.Location}: CompoundStmt has no attached scope."));
-            var statements = compound.Statements;
-            foreach (var statement in statements)
+            try
             {
-                statement.Accept(this);
+                var statements = compound.Statements;
+                foreach (var statement in statements)
+                {
+                    statement.Accept(this);
+                }
+                if (statements.Count > 0)
+                {
+                    var lastStmt = statements.Last();
+                    compound.Attributes.Value = lastStmt.Attributes.Value;
+                }
             }
-            if (statements.Count > 0)
+            finally
             {
-                var lastStmt = statements.Last();
-                compound.Attributes.Value = lastStmt.Attributes.Value;
+                this.scopeStack.CloseScope();
             }
-            this.scopeStack.CloseScope();
         }
 
         void IVisitor.Visit(CompoundStmt compoundStmt)

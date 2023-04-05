@@ -1,4 +1,5 @@
-﻿using GoScript.Utils;
+﻿using GoScript.Frontend.Runtime;
+using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
@@ -8,6 +9,7 @@ namespace GoScript.Frontend.AST
         public Expression? Condition { get; private init; }
         public Statement? PostStmt { get; private init; }
         public CompoundStmt Statements { get; private init; }
+        internal Scope? AttachedScope { get; set; }
 
         public ForStmt(CompoundStmt statements, SourceLocation location)
             : base(location)

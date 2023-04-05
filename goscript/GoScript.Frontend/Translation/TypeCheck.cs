@@ -14,6 +14,7 @@ namespace GoScript.Frontend.Translation
     internal class TypeCheck : IVisitor
     {
         private readonly ScopeStack scopeStack = new();
+        private bool InLoop { get; set; } = false;
 
         public TypeCheck(ScopeStack scopeStack)
         {
@@ -261,7 +262,41 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(ForStmt forStmt)
         {
-            throw new NotImplementedException(nameof(ForStmt));
+            var initStmt = forStmt.InitStmt;
+            var condition = forStmt.Condition;
+            var postStmt = forStmt.PostStmt;
+            var statements = forStmt.Statements;
+
+            var scope = new Scope();
+            forStmt.AttachedScope = scope;
+            this.scopeStack.AttachScope(scope);
+            try
+            {
+                initStmt?.Accept(this);
+                condition?.Accept(this);
+                postStmt?.Accept(this);
+                if (condition is not null)
+                {
+                    var condType = condition.Attributes.ExprType!;
+                    if (!(condType.IsBool || condType.IsBoolConstant))
+                    {
+                        throw new TypeErrorException(GSBool.Instance, condType, condition.Location);
+                    }
+                }
+                InLoop = true;
+                try
+                {
+                    statements.Accept(this);
+                }
+                finally
+                {
+                    InLoop = false;
+                }
+            }
+            finally
+            {
+                this.scopeStack.CloseScope();
+            }
         }
 
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
@@ -610,17 +645,23 @@ namespace GoScript.Frontend.Translation
             var scope = new Scope();
             compound.AttachedScope = scope;
             this.scopeStack.AttachScope(scope);
-            var statements = compound.Statements;
-            foreach (var statement in statements)
+            try
             {
-                statement.Accept(this);
+                var statements = compound.Statements;
+                foreach (var statement in statements)
+                {
+                    statement.Accept(this);
+                }
+                if (statements.Count > 0)
+                {
+                    var lastStmt = statements.Last();
+                    compound.Attributes.StmtType = lastStmt.Attributes.StmtType;
+                }
             }
-            if (statements.Count > 0)
+            finally
             {
-                var lastStmt = statements.Last();
-                compound.Attributes.StmtType = lastStmt.Attributes.StmtType;
+                this.scopeStack.CloseScope();
             }
-            this.scopeStack.CloseScope();
         }
 
         void IVisitor.Visit(CompoundStmt compoundStmt)

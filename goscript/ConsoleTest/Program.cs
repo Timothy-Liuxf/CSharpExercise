@@ -343,10 +343,10 @@ using GoScript.Frontend.Lex;
         var astsParsed = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
         Console.WriteLine(string.Join("", astsParsed));
 
-        // var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
-        // foreach (var ast in asts)
-        // {
-        //     Console.WriteLine(ast.Attributes.Value ?? "No echo.");
-        // }
+        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        }
     }
 }
