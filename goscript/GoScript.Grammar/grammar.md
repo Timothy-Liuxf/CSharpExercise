@@ -7,6 +7,8 @@ Program                 : Statement*
 Statement               : VarDeclStmt
                         | IfStmt
                         | ForStmt
+                        | BreakStmt
+                        | ContinueStmt
                         | CompoundStmt
                         | AssignOrExprStmt
                         ;
@@ -44,6 +46,12 @@ IfStmt                  : 'if' Expression CompoundStmt ('else' 'if' Expression C
 ForStmt                 : 'for' AssignOrExpr ';' Expr ';' Expr CompoundStmt
                         | 'for' Expr CompoundStmt
                         | 'for' CompoundStmt
+                        ;
+
+BreakStmt               : 'break' ';'? NEWLINE
+                        ;
+
+ContinueStmt            : 'continue' ';'? NEWLINE
                         ;
 
 IdentifierList          : Identifier (',' Identifier)*
