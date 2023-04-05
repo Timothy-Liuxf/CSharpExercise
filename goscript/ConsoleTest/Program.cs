@@ -307,6 +307,7 @@ using GoScript.Frontend.Lex;
             } else if x == 777 {
                 true
             }
+            x
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(' ' + string.Join(' ', tokens));

@@ -33,6 +33,10 @@ namespace GoScript.Frontend.AST
             {
                 result += $" else {this.ElseBranch}" + Environment.NewLine;
             }
+            else
+            {
+                result += Environment.NewLine;
+            }
             return result;
         }
 

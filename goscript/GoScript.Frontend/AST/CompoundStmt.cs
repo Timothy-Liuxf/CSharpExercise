@@ -1,10 +1,13 @@
 ﻿using GoScript.Frontend.Runtime;
 using GoScript.Utils;
+using System.CodeDom.Compiler;
 
 namespace GoScript.Frontend.AST
 {
     public sealed class Compound : Statement
     {
+        public const string Indent = "    ";
+
         public IReadOnlyList<Statement> Statements { get; private init; }
 
         internal Scope? AttachedScope { get; set; }
@@ -17,13 +20,22 @@ namespace GoScript.Frontend.AST
 
         public override string ToString()
         {
-            string result = "{" + Environment.NewLine;
+            if (Statements.Count == 0)
+            {
+                return "{" + Environment.NewLine + "}";
+            }
+            var result = "";
             foreach (Statement stmt in Statements)
             {
                 result += stmt.ToString();
             }
-            result += "}";
-            return result;
+            var endWithNewLine = result.EndsWith(Environment.NewLine);
+            var lines = result.Split(Environment.NewLine);
+            result = string.Join(Environment.NewLine,
+                lines.Take(endWithNewLine ? lines.Length - 1 : lines.Length)
+                     .Select((line, _) => Indent + line))
+                     + Environment.NewLine;
+            return "{" + Environment.NewLine + result + "}";
         }
 
         internal override void Accept(IVisitor visitor) => visitor.Visit(this);
