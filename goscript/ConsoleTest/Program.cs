@@ -320,3 +320,33 @@ using GoScript.Frontend.Lex;
         }
     }
 }
+
+{
+    Console.WriteLine("===== Test Intepreter 7 =====\n\n");
+    {
+        var prog = """
+            sum := 0
+            for i := 0; i < 10; i = i + 1 {
+                sum = sum + i
+            }
+            sum
+            sum = 0
+            i := 0
+            for i < 10 {
+                sum = sum + i
+                i = i + 1
+            }
+            sum
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
+        var astsParsed = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
+        Console.WriteLine(string.Join("", astsParsed));
+
+        // var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        // foreach (var ast in asts)
+        // {
+        //     Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        // }
+    }
+}

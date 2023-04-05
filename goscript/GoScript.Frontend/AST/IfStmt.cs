@@ -1,5 +1,4 @@
-﻿using GoScript.Frontend.Runtime;
-using GoScript.Utils;
+﻿using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
@@ -8,19 +7,17 @@ namespace GoScript.Frontend.AST
         public IList<(Expression, Compound, SourceLocation)> ConditionBranches { get; private init; }
         public Compound? ElseBranch { get; private init; }
 
-        public SourceLocation Location { get; private init; }
-
         public IfStmt(IList<(Expression, Compound, SourceLocation)> conditionBranches, SourceLocation location)
+            : base(location)
         {
             this.ConditionBranches = conditionBranches;
-            this.Location = location;
         }
 
         public IfStmt(IList<(Expression, Compound, SourceLocation)> conditionBranches, Compound elseBranch, SourceLocation location)
+            : base(location)
         {
             this.ConditionBranches = conditionBranches;
             this.ElseBranch = elseBranch;
-            this.Location = location;
         }
 
         public override string ToString()

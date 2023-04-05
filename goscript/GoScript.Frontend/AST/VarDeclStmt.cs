@@ -7,28 +7,27 @@ namespace GoScript.Frontend.AST
         public IReadOnlyList<string> VarNames { get; private init; }
         public string? InitType { get; private init; }
         public IReadOnlyList<Expression>? InitExprs { get; private init; }
-        public SourceLocation Location { get; private init; }
 
         public VarDecl(IReadOnlyList<string> varNames, IReadOnlyList<Expression> initExprs, SourceLocation location)
+            : base(location)
         {
-            VarNames = varNames;
-            InitExprs = initExprs;
-            Location = location;
+            this.VarNames = varNames;
+            this.InitExprs = initExprs;
         }
 
         public VarDecl(IReadOnlyList<string> varNames, string initType, SourceLocation location)
+            : base(location)
         {
-            VarNames = varNames;
-            InitType = initType;
-            Location = location;
+            this.VarNames = varNames;
+            this.InitType = initType;
         }
 
         public VarDecl(IReadOnlyList<string> varNames, string initType, IReadOnlyList<Expression> initExprs, SourceLocation location)
+            : base(location)
         {
-            VarNames = varNames;
-            InitType = initType;
-            InitExprs = initExprs;
-            Location = location;
+            this.VarNames = varNames;
+            this.InitType = initType;
+            this.InitExprs = initExprs;
         }
 
         public override string ToString()
@@ -45,7 +44,8 @@ namespace GoScript.Frontend.AST
     {
         public VarDecl VarDecl { get; private init; }
 
-        public VarDeclStmt(VarDecl varDecl)
+        public VarDeclStmt(VarDecl varDecl, SourceLocation location)
+            : base(location)
         {
             this.VarDecl = varDecl;
         }

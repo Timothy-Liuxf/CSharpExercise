@@ -16,6 +16,7 @@
         void Visit(VarDecl varDecl);
         void Visit(VarDeclStmt varDeclStmt);
         void Visit(IfStmt ifStmt);
+        void Visit(ForStmt forStmt);
         void Visit(Compound compound);
         void Visit(CompoundStmt compoundStmt);
         void Visit(AssignStmt assignStmt);

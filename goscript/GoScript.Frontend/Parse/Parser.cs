@@ -1,6 +1,7 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Lex;
 using GoScript.Utils;
+using System.Data;
 
 namespace GoScript.Frontend.Parse
 {
@@ -34,6 +35,11 @@ namespace GoScript.Frontend.Parse
                 return ParseIfStmt();
             }
 
+            if (tokens.TryPeekKeyword(KeywordType.For, out _))
+            {
+                return ParseForStmt();
+            }
+
             if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
             {
                 return ParseCompoundStmt();
@@ -47,7 +53,7 @@ namespace GoScript.Frontend.Parse
             var varDecl = ParseVarDecl();
             tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
             tokens.MatchNewline();
-            return new VarDeclStmt(varDecl);
+            return new VarDeclStmt(varDecl, varDecl.Location);
         }
 
         private VarDecl ParseVarDecl()
@@ -120,11 +126,43 @@ namespace GoScript.Frontend.Parse
             return new IfStmt(condBranches, location);
         }
 
+        private ForStmt ParseForStmt()
+        {
+            var location = tokens.MatchKeyword(KeywordType.For).Location;
+            if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
+            {
+                return new ForStmt(ParseCompoundStmt(), location);
+            }
+
+            var initStmt = ParseAssignOrExpr();
+            if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _))
+            {
+                var condition = ParseExpression();
+                tokens.MatchPunctuator(PunctuatorType.Semicolon);
+                var postStmt = ParseAssignOrExpr();
+                if (postStmt is DefAssignStmt)
+                {
+                    throw new SyntaxErrorException(
+                        $"At {postStmt.Location}: Cannot declare in post statement of the for loop.");
+                }
+                return new ForStmt(initStmt, condition, postStmt, ParseCompoundStmt(), location);
+            }
+            else
+            {
+                if (initStmt is not SingleStmt)
+                {
+                    throw new SyntaxErrorException(initStmt.Location, $"Cannot use {initStmt} as value");
+                }
+                var condition = (initStmt as SingleStmt)!.Expr;
+                return new ForStmt(condition, ParseCompoundStmt(), location);
+            }
+        }
+
         private CompoundStmt ParseCompoundStmt()
         {
             var compound = ParseCompound();
             tokens.MatchNewline();
-            return new CompoundStmt(compound);
+            return new CompoundStmt(compound, compound.Location);
         }
 
         private Compound ParseCompound()
@@ -142,6 +180,7 @@ namespace GoScript.Frontend.Parse
         private Statement ParseAssignOrExprStmt()
         {
             var statement = ParseAssignOrExpr();
+            statement.EndWithNewLine = true;
             tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
             tokens.MatchNewline();
             return statement;
@@ -149,10 +188,10 @@ namespace GoScript.Frontend.Parse
 
         private Statement ParseAssignOrExpr()
         {
-            if (tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out _)
-                || tokens.TryPeekNewline(out _))
+            if (tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out var emptySemicolon)
+                || tokens.TryPeekNewline(out var emptyNewline))
             {
-                return new EmptyStmt();
+                return new EmptyStmt(emptySemicolon?.Location ?? emptySemicolon!.Location);
             }
 
             var expr = ParseExpression();
@@ -201,11 +240,11 @@ namespace GoScript.Frontend.Parse
             }
             else if (!tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out _))
             {
-                return new SingleStmt(expr, true);
+                return new SingleStmt(expr, true, expr.Location);
             }
             else
             {
-                return new SingleStmt(expr, false);
+                return new SingleStmt(expr, false, expr.Location);
             }
         }
 

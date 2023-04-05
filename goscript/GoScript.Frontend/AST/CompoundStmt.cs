@@ -7,14 +7,12 @@ namespace GoScript.Frontend.AST
     {
         public IReadOnlyList<Statement> Statements { get; private init; }
 
-        public SourceLocation Location { get; private init; }
-
         internal Scope? AttachedScope { get; set; }
 
         public Compound(IReadOnlyList<Statement> statements, SourceLocation location)
+            : base(location)
         {
             this.Statements = statements;
-            this.Location = location;
         }
 
         public override string ToString()
@@ -35,7 +33,8 @@ namespace GoScript.Frontend.AST
     {
         public Compound Compound { get; private init; }
 
-        public CompoundStmt(Compound compound)
+        public CompoundStmt(Compound compound, SourceLocation location)
+            : base(location)
         {
             this.Compound = compound;
         }

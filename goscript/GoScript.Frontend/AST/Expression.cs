@@ -5,11 +5,9 @@ namespace GoScript.Frontend.AST
 {
     public abstract class Expression : ASTNode
     {
-        public SourceLocation Location { get; private init; }
-
         public Expression(SourceLocation location)
+            : base(location)
         {
-            this.Location = location;
         }
 
         public struct AttributesList
