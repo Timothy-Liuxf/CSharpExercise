@@ -337,16 +337,33 @@ using GoScript.Frontend.Lex;
                 i = i + 1
             }
             sum
+            for {
+                sum = 888
+                break
+                sum = 999
+            }
+            sum
+            sum = 0
+            for i := 0; i < 10; i = i + 1 {
+                sum = sum + i
+                if i == 5 {
+                    break
+                } else {
+                    continue
+                }
+                sum = 888
+            }
+            sum
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(' ' + string.Join(' ', tokens));
         var astsParsed = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
         Console.WriteLine(string.Join("", astsParsed));
 
-        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
-        foreach (var ast in asts)
-        {
-            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
-        }
+        // var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        // foreach (var ast in asts)
+        // {
+        //     Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        // }
     }
 }

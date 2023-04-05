@@ -299,6 +299,16 @@ namespace GoScript.Frontend.Translation
             }
         }
 
+        void IVisitor.Visit(BreakStmt breakStmt)
+        {
+            throw new NotImplementedException(nameof(BreakStmt));
+        }
+
+        void IVisitor.Visit(ContinueStmt continueStmt)
+        {
+            throw new NotImplementedException(nameof(ContinueStmt));
+        }
+
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
         {
             var lExpr = logicalOrExpr.LExpr;

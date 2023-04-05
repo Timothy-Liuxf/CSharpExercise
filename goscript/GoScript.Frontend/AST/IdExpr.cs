@@ -1,5 +1,4 @@
 ﻿using GoScript.Frontend.Runtime;
-using GoScript.Frontend.Types;
 using GoScript.Utils;
 
 namespace GoScript.Frontend.AST

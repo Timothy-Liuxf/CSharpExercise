@@ -1,5 +1,4 @@
 ﻿using GoScript.Utils;
-using System.Security.Cryptography;
 
 namespace GoScript.Frontend.AST
 {

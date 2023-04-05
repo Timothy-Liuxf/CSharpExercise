@@ -1,7 +1,7 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Lex;
 using GoScript.Utils;
-using System.Data;
+using System.Globalization;
 
 namespace GoScript.Frontend.Parse
 {
@@ -25,19 +25,23 @@ namespace GoScript.Frontend.Parse
 
         private Statement ParseStatement()
         {
-            if (tokens.TryPeekKeyword(KeywordType.Var, out _))
+            var currToken = tokens.CurrentToken;
+            // if currToken is Keyword, get the type of the keyword
+            if (currToken?.TokenCatagory == TokenType.Keyword)
             {
-                return ParseVarDeclStmt();
-            }
-
-            if (tokens.TryPeekKeyword(KeywordType.If, out _))
-            {
-                return ParseIfStmt();
-            }
-
-            if (tokens.TryPeekKeyword(KeywordType.For, out _))
-            {
-                return ParseForStmt();
+                switch ((currToken as Keyword)!.Type)
+                {
+                    case KeywordType.Var:
+                        return ParseVarDeclStmt();
+                    case KeywordType.If:
+                        return ParseIfStmt();
+                    case KeywordType.For:
+                        return ParseForStmt();
+                    case KeywordType.Break:
+                        return ParseBreakStmt();
+                    case KeywordType.Continue:
+                        return ParseContinueStmt();
+                }
             }
 
             if (tokens.TryPeekPunctuator(PunctuatorType.LBrace, out _))
@@ -158,6 +162,22 @@ namespace GoScript.Frontend.Parse
             }
         }
 
+        private BreakStmt ParseBreakStmt()
+        {
+            var @break = tokens.MatchKeyword(KeywordType.Break);
+            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+            tokens.MatchNewline();
+            return new BreakStmt(@break.Location);
+        }
+
+        private ContinueStmt ParseContinueStmt()
+        {
+            var @continue = tokens.MatchKeyword(KeywordType.Continue);
+            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+            tokens.MatchNewline();
+            return new ContinueStmt(@continue.Location);
+        }
+
         private CompoundStmt ParseCompoundStmt()
         {
             var compound = ParseCompound();
@@ -188,10 +208,13 @@ namespace GoScript.Frontend.Parse
 
         private Statement ParseAssignOrExpr()
         {
-            if (tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out var emptySemicolon)
-                || tokens.TryPeekNewline(out var emptyNewline))
+            if (tokens.TryPeekPunctuator(PunctuatorType.Semicolon, out var emptySemicolon))
             {
-                return new EmptyStmt(emptySemicolon?.Location ?? emptySemicolon!.Location);
+                return new EmptyStmt(emptySemicolon.Location);
+            }
+            if (tokens.TryPeekNewline(out var emptyNewline))
+            {
+                return new EmptyStmt(emptyNewline.Location);
             }
 
             var expr = ParseExpression();

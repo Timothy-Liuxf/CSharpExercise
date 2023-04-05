@@ -5,11 +5,11 @@ Program                 : Statement*
                         ;
 
 Statement               : VarDeclStmt
+                        | CompoundStmt
                         | IfStmt
                         | ForStmt
                         | BreakStmt
                         | ContinueStmt
-                        | CompoundStmt
                         | AssignOrExprStmt
                         ;
 

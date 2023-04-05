@@ -17,6 +17,8 @@
         void Visit(VarDeclStmt varDeclStmt);
         void Visit(IfStmt ifStmt);
         void Visit(ForStmt forStmt);
+        void Visit(BreakStmt breakStmt);
+        void Visit(ContinueStmt continueStmt);
         void Visit(Compound compound);
         void Visit(CompoundStmt compoundStmt);
         void Visit(AssignStmt assignStmt);
