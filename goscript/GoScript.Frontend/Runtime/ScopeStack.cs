@@ -30,6 +30,31 @@ namespace GoScript.Frontend.Runtime
             return rtti is not null;
         }
 
+        public bool Contains(string name)
+        {
+            foreach (var scope in this.scopes.Reverse())
+            {
+                if (scope.Symbols.ContainsKey(name))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public RTTI? LookUpInCurrentScope(string name)
+        {
+            return scopes.Last?.Value.Symbols.TryGetValue(name, out var rtti)
+                    ?? throw new InternalErrorException("The scope stack is unexpextedly empty.")
+                ? rtti : null;
+        }
+
+        public bool TryLookUpInCurrentScope(string name, [MaybeNullWhen(false), NotNullWhen(true)] out RTTI? rtti)
+        {
+            rtti = LookUpInCurrentScope(name);
+            return rtti is not null;
+        }
+
         public bool ContainsInCurrentScope(string name)
         {
             return scopes.Last?.Value.Symbols.ContainsKey(name)

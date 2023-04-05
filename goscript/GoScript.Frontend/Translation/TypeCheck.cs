@@ -160,7 +160,7 @@ namespace GoScript.Frontend.Translation
                 var expr = exprs[i];
                 expr.Accept(this);
 
-                if (this.scopeStack.TryLookUp(varName, out var rtti))
+                if (this.scopeStack.TryLookUpInCurrentScope(varName, out var rtti))
                 {
                     AssignValueHelper(rtti, expr, varName, false);
                 }
@@ -301,12 +301,18 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(BreakStmt breakStmt)
         {
-            throw new NotImplementedException(nameof(BreakStmt));
+            if (!InLoop)
+            {
+                throw new SyntaxErrorException($"At {breakStmt.Location}: Break statement is not in a loop.");
+            }
         }
 
         void IVisitor.Visit(ContinueStmt continueStmt)
         {
-            throw new NotImplementedException(nameof(ContinueStmt));
+            if (!InLoop)
+            {
+                throw new SyntaxErrorException($"At {continueStmt.Location}: Continue statement is not in a loop.");
+            }
         }
 
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)

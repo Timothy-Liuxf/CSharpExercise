@@ -3,12 +3,18 @@ using GoScript.Utils;
 
 namespace GoScript.Frontend
 {
-    public class InternalErrorException : Exception
+    public class GoScriptException : Exception
+    {
+        public GoScriptException() { }
+        public GoScriptException(string message) : base(message) { }
+    }
+
+    public class InternalErrorException : GoScriptException
     {
         public InternalErrorException(string message) : base($"Internal Error: {message}") { }
     }
 
-    public abstract class CodeErrorException : Exception
+    public abstract class CodeErrorException : GoScriptException
     {
         public CodeErrorException(string message) : base(message) { }
     }
@@ -41,4 +47,22 @@ namespace GoScript.Frontend
         public TypeErrorException(GSType expected, GSType actual, SourceLocation location)
             : base($"Type error at {location}: Expected {expected}, found {actual}.") { }
     }
+
+    public class LanguageFeatureException : GoScriptException
+    {
+    }
+
+    public class BreakException : LanguageFeatureException
+    {
+    }
+
+    public class ContinueException : LanguageFeatureException
+    {
+    }
+
+    // public class ReturnException : LanguageFeatureException
+    // {
+    //     public object ReturnValue { get; private init; }
+    //     public ReturnException(object returnValue) => this.ReturnValue = returnValue;
+    // }
 }

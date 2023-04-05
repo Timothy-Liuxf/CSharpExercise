@@ -21,9 +21,17 @@ namespace GoScript.Frontend.Translation
                     ast.Accept(this.typeCheck);
                     ast.Accept(this);
                 }
+                catch (CodeErrorException)
+                {
+                    throw;
+                }
+                catch (InternalErrorException)
+                {
+                    throw;
+                }
                 catch (Exception e)
                 {
-                    throw new InternalErrorException(e.ToString() + e.StackTrace);
+                    throw new InternalErrorException($"\n=====\n{e.ToString() + e.StackTrace}\n=====\n");
                 }
                 yield return (ast as Statement) ?? throw new InternalErrorException($"AST: {ast} is not a statement.");
             }
@@ -174,7 +182,17 @@ namespace GoScript.Frontend.Translation
                         {
                             break;
                         }
-                        statements.Accept(this);
+                        try
+                        {
+                            statements.Accept(this);
+                        }
+                        catch (BreakException)
+                        {
+                            break;
+                        }
+                        catch (ContinueException)
+                        {
+                        }
                         postStmt?.Accept(this);
                     }
                 }
@@ -182,7 +200,17 @@ namespace GoScript.Frontend.Translation
                 {
                     while (true)
                     {
-                        statements.Accept(this);
+                        try
+                        {
+                            statements.Accept(this);
+                        }
+                        catch (BreakException)
+                        {
+                            break;
+                        }
+                        catch (ContinueException)
+                        {
+                        }
                     }
                 }
             }
@@ -194,12 +222,12 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(BreakStmt breakStmt)
         {
-            throw new NotImplementedException(nameof(BreakStmt));
+            throw new BreakException();
         }
 
         void IVisitor.Visit(ContinueStmt continueStmt)
         {
-            throw new NotImplementedException(nameof(ContinueStmt));
+            throw new ContinueException();
         }
 
         void IVisitor.Visit(LogicalOrExpr logicalOrExpr)
