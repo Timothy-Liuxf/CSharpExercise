@@ -295,7 +295,7 @@ namespace GoScript.Frontend.Translation
             }
             finally
             {
-                this.scopeStack.CloseScope();
+                this.scopeStack.DetachScope();
             }
         }
 
@@ -676,7 +676,7 @@ namespace GoScript.Frontend.Translation
             }
             finally
             {
-                this.scopeStack.CloseScope();
+                this.scopeStack.DetachScope();
             }
         }
 

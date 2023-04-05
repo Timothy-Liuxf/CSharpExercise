@@ -85,7 +85,23 @@ namespace GoScript.Frontend.Runtime
             this.scopes.AddLast(scope);
         }
 
-        public void CloseScope()
+        public void DetachScope()
+        {
+            if (this.scopes.Count == 1)
+            {
+                throw new InternalErrorException($"Trying to pop the global scope.");
+            }
+
+            if (this.scopes.Count <= 0)
+            {
+                throw new InternalErrorException($"The count of the scope stack is unexpextedly {this.scopes.Count}.");
+            }
+
+            this.scopes.Last!.Value.ClearValues();
+            this.scopes.RemoveLast();
+        }
+
+        public void DestroyScope()
         {
             if (this.scopes.Count == 1)
             {

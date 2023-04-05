@@ -216,7 +216,7 @@ namespace GoScript.Frontend.Translation
             }
             finally
             {
-                this.scopeStack.CloseScope();
+                this.scopeStack.DestroyScope();
             }
         }
 
@@ -448,7 +448,7 @@ namespace GoScript.Frontend.Translation
             }
             finally
             {
-                this.scopeStack.CloseScope();
+                this.scopeStack.DestroyScope();
             }
         }
 
