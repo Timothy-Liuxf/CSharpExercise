@@ -10,6 +10,7 @@ Statement               : VarDeclStmt
                         | ForStmt
                         | BreakStmt
                         | ContinueStmt
+                        | ReturnStmt
                         | AssignOrExprStmt
                         ;
 
@@ -54,6 +55,9 @@ BreakStmt               : 'break' ';'? NEWLINE
 ContinueStmt            : 'continue' ';'? NEWLINE
                         ;
 
+ReturnStmt              : 'return' Expression
+                        ;
+
 IdentifierList          : Identifier (',' Identifier)*
                         ;
 
@@ -61,9 +65,26 @@ ExpressionList          : Expression (',' Expression)*
                         ;
 
 Type                    : TYPE_KEYWORD
+                        | FuncType
                         ;
 
-Expression              : AdditiveExpr
+FuncType                : 'func' '(' TypeList ')' (Type | '(' TypeList ')')
+                        ;
+
+TypeList                : Type (',' Type)*
+                        ;
+
+Expression              : FuncExpr
+                        | LogicalOrExpr
+                        ;
+
+FuncExpr                : 'func' FuncSignature
+                        ;
+
+FuncSignature           : '(' ParamList? ')' (Type | '(' TypeList ')') Compound
+                        ;
+
+ParamList               : (IDENTIFIER Type? ',')? IDENTIFIER Type
                         ;
 
 LogicalOrExpr           : LogicalOrExpr '||' LogicalAndExpr
@@ -93,8 +114,11 @@ MultiplicativeExpr      : MultiplicativeExpr ('*'|'/'|'%') UnaryExpr
 
 UnaryExpr               : '-' UnaryExpr
                         : '!' UnaryExpr
-                        : PrimaryExpr
+                        : CallExpr
                         ;
+
+CallExpr                : CallExpr '(' ExpressionList ')'
+                        : PrimaryExpr
 
 PrimaryExpr             : IdExpr
                         | INTEGER_LITERAL
