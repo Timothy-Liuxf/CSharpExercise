@@ -21,6 +21,16 @@
             };
         }
 
+        public override bool EqualsImpl(GSType other)
+        {
+            return other.IsBasic && (this.DotNetType == (other as GSBasicType)!.DotNetType);
+        }
+
+        public override int GetHashCodeImpl()
+        {
+            return this.DotNetType.GetHashCode();
+        }
+
         // public static GSBasicType GetCommonType(GSBasicType type1, GSBasicType type2)
         // {
         //     return type1 switch

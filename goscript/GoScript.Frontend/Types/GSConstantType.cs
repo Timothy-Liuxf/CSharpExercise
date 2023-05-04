@@ -3,6 +3,16 @@
     public abstract class GSConstantType : GSType
     {
         public override bool IsConstant => true;
+
+        public override bool EqualsImpl(GSType other)
+        {
+            return this.GetType() == other.GetType();
+        }
+
+        public override int GetHashCodeImpl()
+        {
+            return this.GetType().GetHashCode();
+        }
     }
 
     public sealed class GSIntegerConstant : GSConstantType

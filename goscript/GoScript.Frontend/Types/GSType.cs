@@ -4,14 +4,7 @@
     {
         public static bool operator ==(GSType type1, GSType type2)
         {
-            if (type1.IsBasic)
-            {
-                return (type2.IsBasic) && (((GSBasicType)type1).DotNetType == ((GSBasicType)type2).DotNetType);
-            }
-            else
-            {
-                return type1.GetType() == type2.GetType();
-            }
+            return type1.EqualsImpl(type2);
         }
 
         public static bool operator !=(GSType type1, GSType type2)
@@ -21,13 +14,16 @@
 
         public override bool Equals(object? obj)
         {
-            return (obj is GSType) && (this == (GSType)obj);
+            return (obj is GSType) && this.EqualsImpl((GSType)obj);
         }
+
+        public abstract bool EqualsImpl(GSType other);
 
         public override int GetHashCode()
         {
-            return (this is GSBasicType) ? ((GSBasicType)this).DotNetType.GetHashCode() : 0;
+            return this.GetHashCodeImpl();
         }
+        public abstract int GetHashCodeImpl();
 
         public virtual bool IsBasic => false;
         public virtual bool IsArithmetic => false;
@@ -35,5 +31,6 @@
         public virtual bool IsConstant => false;
         public virtual bool IsIntegerConstant => false;
         public virtual bool IsBoolConstant => false;
+        public virtual bool IsFunc => false;
     }
 }
