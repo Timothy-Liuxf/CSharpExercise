@@ -2,6 +2,7 @@
 using GoScript.Frontend.Lex;
 using GoScript.Frontend.Types;
 using GoScript.Utils;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace GoScript.Frontend.Parse
@@ -71,11 +72,10 @@ namespace GoScript.Frontend.Parse
                 identifiers.Add(tokens.MatchIdentifier().Name);
             }
 
-            Keyword? typeKeyword;
-            if (!tokens.TryMatchTypeKeyword(out typeKeyword)
+            if (!TryParseType(out var type)
                 || tokens.TryMatchPunctuator(PunctuatorType.Assign, out _))
             {
-                if (typeKeyword is null)
+                if (type is null)
                 {
                     tokens.MatchPunctuator(PunctuatorType.Assign);
                 }
@@ -86,21 +86,34 @@ namespace GoScript.Frontend.Parse
                     initExprs.Add(ParseExpression());
                 }
 
-                if (typeKeyword is null)
+                if (type is null)
                 {
                     varDecl = new VarDecl(identifiers, initExprs, location);
                 }
                 else
                 {
-                    varDecl = new VarDecl(identifiers, GSBasicType.ParseBasicType(typeKeyword.Type)!, initExprs, location);
+                    varDecl = new VarDecl(identifiers, type, initExprs, location);
                 }
             }
             else
             {
-                varDecl = new VarDecl(identifiers, GSBasicType.ParseBasicType(typeKeyword!.Type)!, location);
+                varDecl = new VarDecl(identifiers, type, location);
             }
 
             return varDecl;
+        }
+
+        private bool TryParseType([MaybeNullWhen(false), NotNullWhen(true)] out GSType? type)
+        {
+            if (tokens.TryMatchTypeKeyword(out var typeKeyword))
+            {
+                type = GSBasicType.ParseBasicType(typeKeyword.Type)
+                    ?? throw new InternalErrorException(
+                        $"Internal error at {typeKeyword.Location}: cannot parse type keyword {Keyword.GetKeywordString(typeKeyword.Type)}.");
+                return true;
+            }
+            type = null;
+            return false;
         }
 
         private IfStmt ParseIfStmt()
