@@ -1,11 +1,12 @@
-﻿using GoScript.Utils;
+﻿using GoScript.Frontend.Types;
+using GoScript.Utils;
 
 namespace GoScript.Frontend.AST
 {
     public sealed class VarDecl : Statement
     {
         public IReadOnlyList<string> VarNames { get; private init; }
-        public string? InitType { get; private init; }
+        public GSType? InitType { get; private init; }
         public IReadOnlyList<Expression>? InitExprs { get; private init; }
 
         public VarDecl(IReadOnlyList<string> varNames, IReadOnlyList<Expression> initExprs, SourceLocation location)
@@ -15,14 +16,14 @@ namespace GoScript.Frontend.AST
             this.InitExprs = initExprs;
         }
 
-        public VarDecl(IReadOnlyList<string> varNames, string initType, SourceLocation location)
+        public VarDecl(IReadOnlyList<string> varNames, GSType initType, SourceLocation location)
             : base(location)
         {
             this.VarNames = varNames;
             this.InitType = initType;
         }
 
-        public VarDecl(IReadOnlyList<string> varNames, string initType, IReadOnlyList<Expression> initExprs, SourceLocation location)
+        public VarDecl(IReadOnlyList<string> varNames, GSType initType, IReadOnlyList<Expression> initExprs, SourceLocation location)
             : base(location)
         {
             this.VarNames = varNames;

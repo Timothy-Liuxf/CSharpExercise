@@ -39,7 +39,7 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(VarDecl varDecl)
         {
-            if (varDecl.InitExprs == null && varDecl.InitType == null)
+            if (varDecl.InitExprs == null && varDecl.InitType is null)
             {
                 throw new InternalErrorException($"At {varDecl.Location}: InitExprs and InitType shouldn't be null at the same time.");
             }
@@ -62,9 +62,9 @@ namespace GoScript.Frontend.Translation
             for (int i = 0; i < cnt; ++i)
             {
                 var rtti = new RTTI();
-                if (varDecl.InitType != null)
+                if (varDecl.InitType is not null)
                 {
-                    var gsType = GSBasicType.ParseBasicType(varDecl.InitType);
+                    var gsType = varDecl.InitType;
                     if (gsType is not null)
                     {
                         rtti.Type = gsType;
@@ -82,7 +82,7 @@ namespace GoScript.Frontend.Translation
                     var initExpr = varDecl.InitExprs[i];
                     var varName = varDecl.VarNames[i];
                     initExpr.Accept(this);
-                    if (varDecl.InitType == null)
+                    if (varDecl.InitType is null)
                     {
                         DefNewVarWithoutTypeHelper(rtti, initExpr);
                     }

@@ -1,4 +1,6 @@
-﻿namespace GoScript.Frontend.Types
+﻿using GoScript.Frontend.Lex;
+
+namespace GoScript.Frontend.Types
 {
     public abstract class GSBasicType : GSType
     {
@@ -6,17 +8,17 @@
 
         public override bool IsBasic => true;
 
-        public static GSBasicType? ParseBasicType(string type)
+        public static GSBasicType? ParseBasicType(KeywordType typeKeyword)
         {
-            return type switch
+            return typeKeyword switch
             {
-                "int16" => GSInt16.Instance,
-                "int32" => GSInt32.Instance,
-                "int" or "int64" => GSInt64.Instance,
-                "uint16" => GSUInt16.Instance,
-                "uint32" => GSUInt32.Instance,
-                "uint" or "uint64" => GSUInt64.Instance,
-                "bool" => GSBool.Instance,
+                KeywordType.Int16 => GSInt16.Instance,
+                KeywordType.Int32 => GSInt32.Instance,
+                KeywordType.Int or KeywordType.Int64 => GSInt64.Instance,
+                KeywordType.UInt16 => GSUInt16.Instance,
+                KeywordType.UInt32 => GSUInt32.Instance,
+                KeywordType.UInt or KeywordType.UInt64 => GSUInt64.Instance,
+                KeywordType.Bool => GSBool.Instance,
                 _ => null,
             };
         }

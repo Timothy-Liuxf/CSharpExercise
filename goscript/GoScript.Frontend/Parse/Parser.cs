@@ -1,5 +1,6 @@
 ﻿using GoScript.Frontend.AST;
 using GoScript.Frontend.Lex;
+using GoScript.Frontend.Types;
 using GoScript.Utils;
 using System.Globalization;
 
@@ -91,12 +92,12 @@ namespace GoScript.Frontend.Parse
                 }
                 else
                 {
-                    varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword.Type)!, initExprs, location);
+                    varDecl = new VarDecl(identifiers, GSBasicType.ParseBasicType(typeKeyword.Type)!, initExprs, location);
                 }
             }
             else
             {
-                varDecl = new VarDecl(identifiers, Keyword.GetKeywordString(typeKeyword!.Type)!, location);
+                varDecl = new VarDecl(identifiers, GSBasicType.ParseBasicType(typeKeyword!.Type)!, location);
             }
 
             return varDecl;
