@@ -403,3 +403,25 @@ using GoScript.Frontend.Lex;
         }
     }
 }
+
+{
+    Console.WriteLine("===== Test Intepreter 9 =====\n\n");
+    {
+        var prog = """
+            var x int
+            var y func (bool) int
+            var z func (int16)
+            var w func () (uint, bool, uint16)
+            """;
+        var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
+        Console.WriteLine(' ' + string.Join(' ', tokens));
+        var astsParsed = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
+        Console.WriteLine(string.Join("", astsParsed));
+
+        // var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        // foreach (var ast in asts)
+        // {
+        //     Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        // }
+    }
+}

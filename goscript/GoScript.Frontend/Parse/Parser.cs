@@ -112,8 +112,48 @@ namespace GoScript.Frontend.Parse
                         $"Internal error at {typeKeyword.Location}: cannot parse type keyword {Keyword.GetKeywordString(typeKeyword.Type)}.");
                 return true;
             }
+            if (tokens.TryMatchKeyword(KeywordType.Func, out var func))
+            {
+                tokens.MatchPunctuator(PunctuatorType.LParen);
+                var paramTypes = ParseTypeList();
+                tokens.MatchPunctuator(PunctuatorType.RParen);
+
+                if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
+                {
+                    var returnTypes = ParseTypeList();
+                    tokens.MatchPunctuator(PunctuatorType.RParen);
+                    type = new GSFuncType(paramTypes, returnTypes);
+                }
+                else if (TryParseType(out var returnType))
+                {
+                    type = new GSFuncType(paramTypes, new List<GSType> { returnType });
+                }
+                else
+                {
+                    type = new GSFuncType(paramTypes, new List<GSType>());
+                }
+                return true;
+            }
             type = null;
             return false;
+        }
+
+        private IReadOnlyList<GSType> ParseTypeList()
+        {
+            var typeList = new List<GSType>();
+            if (TryParseType(out var type))
+            {
+                typeList.Add(type);
+                while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out var comma))
+                {
+                    if (!TryParseType(out type))
+                    {
+                        throw new SyntaxErrorException(comma.Location, "Expected type after comma \',\'.");
+                    }
+                    typeList.Add(type);
+                }
+            }
+            return typeList;
         }
 
         private IfStmt ParseIfStmt()

@@ -68,7 +68,7 @@ Type                    : TYPE_KEYWORD
                         | FuncType
                         ;
 
-FuncType                : 'func' '(' TypeList ')' (Type | '(' TypeList ')')
+FuncType                : 'func' '(' TypeList ')' ('(' TypeList ')' | Type)?
                         ;
 
 TypeList                : Type (',' Type)*
@@ -81,7 +81,7 @@ Expression              : FuncExpr
 FuncExpr                : 'func' FuncSignature
                         ;
 
-FuncSignature           : '(' ParamList? ')' (Type | '(' TypeList ')') Compound
+FuncSignature           : '(' ParamList? ')' ('(' TypeList ')' | Type)? Compound
                         ;
 
 ParamList               : (IDENTIFIER Type? ',')? IDENTIFIER Type
