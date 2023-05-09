@@ -11,6 +11,7 @@ namespace GoScript.Frontend.Translation
         private ScopeStack scopeStack;
         private readonly IEnumerable<ASTNode> asts;
         private readonly TypeCheck typeCheck;
+        private readonly ReleaseHelper releaseHelper;
 
         public IEnumerable<Statement> Translate()
         {
@@ -42,6 +43,7 @@ namespace GoScript.Frontend.Translation
             this.asts = asts;
             this.scopeStack = new();
             this.typeCheck = new(scopeStack);
+            this.releaseHelper = new();
         }
 
         private static object ConvertArithmeticConstantValue(ulong constantValue, GSArithmeticType targetType)
@@ -68,7 +70,14 @@ namespace GoScript.Frontend.Translation
                 {
                     var initExpr = varDecl.InitExprs[i];
                     initExpr.Accept(this);
-                    AssignValueHelper(rtti, initExpr);
+                    try
+                    {
+                        AssignValueHelper(rtti, initExpr);
+                    }
+                    finally
+                    {
+                        initExpr.Accept(this.releaseHelper);
+                    }
                 }
             }
         }
@@ -77,7 +86,6 @@ namespace GoScript.Frontend.Translation
         {
             var varDecl = varDeclStmt.VarDecl;
             varDecl.Accept(this);
-            varDeclStmt.Attributes.Value = varDecl.Attributes.Value;
         }
 
         void IVisitor.Visit(AssignStmt assignStmt)
@@ -87,15 +95,29 @@ namespace GoScript.Frontend.Translation
             var cnt = assignedExprs.Count;
             for (int i = 0; i < cnt; ++i)
             {
-                var assignedExpr = (assignedExprs[i] as IdExpr)!;
                 var expr = exprs[i];
+                var assignedExpr = (assignedExprs[i] as IdExpr)!;
                 expr.Accept(this);
-                assignedExpr.Accept(this);
-                if (!assignedExpr.RTTI.TryGetTarget(out var rtti))
+                try
                 {
-                    throw new InternalErrorException($"At {assignedExpr.Location}: the RTTI of \"{assignedExpr.Name}\" has not been built.");
+                    assignedExpr.Accept(this);
+                    try
+                    {
+                        if (!assignedExpr.RTTI.TryGetTarget(out var rtti))
+                        {
+                            throw new InternalErrorException($"At {assignedExpr.Location}: the RTTI of \"{assignedExpr.Name}\" has not been built.");
+                        }
+                        AssignValueHelper(rtti, expr);
+                    }
+                    finally
+                    {
+                        assignedExpr.Accept(this.releaseHelper);
+                    }
                 }
-                AssignValueHelper(rtti, expr);
+                finally
+                {
+                    expr.Accept(this.releaseHelper);
+                }
             }
         }
 
@@ -109,9 +131,16 @@ namespace GoScript.Frontend.Translation
                 var assignedVarName = assignedVarNames[i];
                 var initExpr = initExprs[i];
                 initExpr.Accept(this);
-                var rtti = this.scopeStack.LookUp(assignedVarName)
+                try
+                {
+                    var rtti = this.scopeStack.LookUp(assignedVarName)
                     ?? throw new InternalErrorException($"At {defAssignStmt.Location}: the symbol of \"{assignedVarName}\" has not been built.");
-                AssignValueHelper(rtti, initExpr);
+                    AssignValueHelper(rtti, initExpr);
+                }
+                finally
+                {
+                    initExpr.Accept(this.releaseHelper);
+                }
             }
         }
 
@@ -139,22 +168,43 @@ namespace GoScript.Frontend.Translation
             foreach (var (cond, branch, _) in ifStmt.ConditionBranches)
             {
                 cond.Accept(this);
-                if (cond.Attributes.Value is not bool condValue)
+                try
                 {
-                    throw new InternalErrorException($"At {cond.Location}: the value of the condition is not a bool.");
+                    if (cond.Attributes.Value is not bool condValue)
+                    {
+                        throw new InternalErrorException($"At {cond.Location}: the value of the condition is not a bool.");
+                    }
+                    if (condValue)
+                    {
+                        branch.Accept(this);
+                        try
+                        {
+                            ifStmt.Attributes.Value = branch.Attributes.Value;
+                        }
+                        finally
+                        {
+                            branch.Accept(this.releaseHelper);
+                        }
+                        done = true;
+                        break;
+                    }
                 }
-                if (condValue)
+                finally
                 {
-                    branch.Accept(this);
-                    ifStmt.Attributes.Value = branch.Attributes.Value;
-                    done = true;
-                    break;
+                    cond.Accept(this.releaseHelper);
                 }
             }
             if (!done && ifStmt.ElseBranch is not null)
             {
                 ifStmt.ElseBranch.Accept(this);
-                ifStmt.Attributes.Value = ifStmt.ElseBranch.Attributes.Value;
+                try
+                {
+                    ifStmt.Attributes.Value = ifStmt.ElseBranch.Attributes.Value;
+                }
+                finally
+                {
+                    ifStmt.ElseBranch.Accept(this.releaseHelper);
+                }
             }
         }
 
@@ -169,22 +219,31 @@ namespace GoScript.Frontend.Translation
                 var postStmt = forStmt.PostStmt;
                 var statements = forStmt.Statements;
                 initStmt?.Accept(this);
+                initStmt?.Accept(this.releaseHelper);
                 if (condition is not null)
                 {
                     while (true)
                     {
                         condition.Accept(this);
-                        if (condition.Attributes.Value is not bool condValue)
+                        try
                         {
-                            throw new InternalErrorException($"At {condition.Location}: the value of the condition is not a bool.");
+                            if (condition.Attributes.Value is not bool condValue)
+                            {
+                                throw new InternalErrorException($"At {condition.Location}: the value of the condition is not a bool.");
+                            }
+                            if (!condValue)
+                            {
+                                break;
+                            }
                         }
-                        if (!condValue)
+                        finally
                         {
-                            break;
+                            condition.Accept(this.releaseHelper);
                         }
                         try
                         {
                             statements.Accept(this);
+                            statements.Accept(this.releaseHelper);
                         }
                         catch (BreakException)
                         {
@@ -194,6 +253,7 @@ namespace GoScript.Frontend.Translation
                         {
                         }
                         postStmt?.Accept(this);
+                        postStmt?.Accept(this.releaseHelper);
                     }
                 }
                 else
@@ -203,6 +263,7 @@ namespace GoScript.Frontend.Translation
                         try
                         {
                             statements.Accept(this);
+                            statements.Accept(releaseHelper);
                         }
                         catch (BreakException)
                         {
@@ -406,9 +467,16 @@ namespace GoScript.Frontend.Translation
         void IVisitor.Visit(SingleStmt singleStmt)
         {
             singleStmt.Expr.Accept(this);
-            if (singleStmt.Echo)
+            try
             {
-                singleStmt.Attributes.Value = singleStmt.Expr.Attributes.Value;
+                if (singleStmt.Echo)
+                {
+                    singleStmt.Attributes.Value = singleStmt.Expr.Attributes.Value;
+                }
+            }
+            finally
+            {
+                singleStmt.Expr.Accept(this.releaseHelper);
             }
         }
 
@@ -436,15 +504,14 @@ namespace GoScript.Frontend.Translation
             try
             {
                 var statements = compound.Statements;
+                object? lastValue = null;
                 foreach (var statement in statements)
                 {
                     statement.Accept(this);
+                    lastValue = statement.Attributes.Value;
+                    statement.Accept(this.releaseHelper);
                 }
-                if (statements.Count > 0)
-                {
-                    var lastStmt = statements.Last();
-                    compound.Attributes.Value = lastStmt.Attributes.Value;
-                }
+                compound.Attributes.Value = lastValue;
             }
             finally
             {
@@ -456,7 +523,14 @@ namespace GoScript.Frontend.Translation
         {
             var compound = compoundStmt.Compound;
             compound.Accept(this);
-            compoundStmt.Attributes.Value = compound.Attributes.Value;
+            try
+            {
+                compoundStmt.Attributes.Value = compound.Attributes.Value;
+            }
+            finally
+            {
+                compound.Accept(this.releaseHelper);
+            }
         }
     }
 }
