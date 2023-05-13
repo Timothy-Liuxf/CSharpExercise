@@ -60,6 +60,16 @@ namespace GoScript.Frontend
     {
     }
 
+    public class ReturnException : LanguageFeatureException
+    {
+        public IReadOnlyList<object?> ReturnValues { get; private init; }
+
+        public ReturnException(IEnumerable<object?> returnValues)
+        {
+            this.ReturnValues = returnValues.ToList();
+        }
+    }
+
     // public class ReturnException : LanguageFeatureException
     // {
     //     public object ReturnValue { get; private init; }

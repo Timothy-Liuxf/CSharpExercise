@@ -12,6 +12,7 @@ namespace GoScript.Frontend.Translation
     {
         private readonly ScopeStack scopeStack = new();
         private bool InLoop { get; set; } = false;
+        private IReadOnlyList<GSType> CurrentReturnType { get; set; } = new List<GSType> { GSInt32.Instance };
 
         public TypeCheck(ScopeStack scopeStack)
         {
@@ -78,7 +79,7 @@ namespace GoScript.Frontend.Translation
                     }
                     else
                     {
-                        AssignValueHelper(rtti, initExpr, varName.Item1, true);
+                        AssignValueHelper(rtti.Type!, initExpr, varName.Item1, true);
                     }
                 }
             }
@@ -127,7 +128,7 @@ namespace GoScript.Frontend.Translation
                 {
                     throw new InternalErrorException($"At {assignedExpr.Location}: \"{varName}\" has no RTTI.");
                 }
-                AssignValueHelper(rtti, expr, varName, false);
+                AssignValueHelper(rtti.Type!, expr, varName, false);
             }
         }
 
@@ -153,7 +154,7 @@ namespace GoScript.Frontend.Translation
 
                 if (this.scopeStack.TryLookUpInCurrentScope(varName, out var rtti))
                 {
-                    AssignValueHelper(rtti, expr, varName, false);
+                    AssignValueHelper(rtti.Type!, expr, varName, false);
                 }
                 else
                 {
@@ -194,38 +195,38 @@ namespace GoScript.Frontend.Translation
             }
         }
 
-        private void AssignValueHelper(RTTI rtti, Expression expr, string assignee, bool isVarDecl)
+        private void AssignValueHelper(GSType type, Expression expr, string assignee, bool isVarDecl)
         {
             var exprType = expr.Attributes.ExprType!;
             var op = isVarDecl ? "init" : "assign to";
             if (exprType.IsIntegerConstant)
             {
-                if (rtti.Type!.IsArithmetic)
+                if (type.IsArithmetic)
                 {
-                    if (!CheckArithmeticConvertible((ulong)expr.Attributes.Value!, (GSArithmeticType)rtti.Type))
+                    if (!CheckArithmeticConvertible((ulong)expr.Attributes.Value!, (GSArithmeticType)type))
                     {
-                        throw new InvalidOperationException($"At {expr.Location}: The value {expr.Attributes.Value} is out of range of {rtti.Type}.");
+                        throw new InvalidOperationException($"At {expr.Location}: The value {expr.Attributes.Value} is out of range of {type}.");
                     }
                 }
                 else
                 {
                     throw new InvalidOperationException(
-                        $"At {expr.Location}: Cannot use integer constant to {op} {rtti.Type} variable \"{assignee}\".");
+                        $"At {expr.Location}: Cannot use integer constant to {op} \"{assignee}\" with type {type}.");
                 }
             }
             else if (exprType.IsBoolConstant)
             {
-                if (!rtti.Type!.IsBool)
+                if (!type.IsBool)
                 {
                     throw new InvalidOperationException(
-                        $"At {expr.Location}: Cannot use bool constant {expr} to init {rtti.Type} variable \"{assignee}\".");
+                        $"At {expr.Location}: Cannot use bool constant {expr} to init \"{assignee}\" with type {type}.");
                 }
             }
             else
             {
-                if (rtti.Type! != exprType)
+                if (type != exprType)
                 {
-                    throw new InvalidOperationException($"Mismatched type {rtti.Type} and {exprType} at {expr.Location}.");
+                    throw new InvalidOperationException($"Mismatched type {type} and {exprType} at {expr.Location}.");
                 }
             }
         }
@@ -699,7 +700,17 @@ namespace GoScript.Frontend.Translation
             InLoop = false;
             try
             {
-                funcExpr.Body.Accept(this);
+                funcExpr.RuntimeReturnTypes = funcExpr.ReturnTypes.Select((type, _) => type.Item1).ToList();
+                var prevReturnType = CurrentReturnType;
+                CurrentReturnType = funcExpr.RuntimeReturnTypes;
+                try
+                {
+                    funcExpr.Body.Accept(this);
+                }
+                finally
+                {
+                    CurrentReturnType = prevReturnType;
+                }
             }
             finally
             {
@@ -711,6 +722,24 @@ namespace GoScript.Frontend.Translation
             );
             funcExpr.Attributes.Value = new FuncValue(funcExpr);
             funcExpr.IsConstantEvaluated = true;
+        }
+
+        void IVisitor.Visit(ReturnStmt returnStmt)
+        {
+            var returnExpr = returnStmt.ReturnExpr;
+            var currentReturnType = CurrentReturnType;
+            if (returnExpr.Count != currentReturnType.Count)
+            {
+                throw new SyntaxErrorException(returnStmt.Location,
+                    $"The number of return values is not equal to the number of return types.");
+            }
+
+            int cnt = returnExpr.Count;
+            for (int i = 0; i < cnt; ++i)
+            {
+                returnExpr[i].Accept(this);
+                AssignValueHelper(currentReturnType[i], returnExpr[i], "return value", true);
+            }
         }
     }
 }

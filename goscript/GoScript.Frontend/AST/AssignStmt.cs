@@ -4,15 +4,15 @@ namespace GoScript.Frontend.AST
 {
     internal class AssignStmt : Statement
     {
-        public IList<Expression> AssignedExprs { get; private init; }
-        public IList<Expression> Exprs { get; private init; }
+        public IReadOnlyList<Expression> AssignedExprs { get; private init; }
+        public IReadOnlyList<Expression> Exprs { get; private init; }
         public override bool EndWithNewLine { get; set; } = false;
 
-        public AssignStmt(IList<Expression> assignedExprs, IList<Expression> exprs, SourceLocation location)
+        public AssignStmt(IEnumerable<Expression> assignedExprs, IEnumerable<Expression> exprs, SourceLocation location)
             : base(location)
         {
-            this.AssignedExprs = assignedExprs;
-            this.Exprs = exprs;
+            this.AssignedExprs = assignedExprs.ToList();
+            this.Exprs = exprs.ToList();
         }
 
         public override string ToString()

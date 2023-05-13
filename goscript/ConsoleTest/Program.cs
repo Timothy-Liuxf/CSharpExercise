@@ -412,16 +412,19 @@ using GoScript.Frontend.Lex;
             var y func (bool) int
             var z func (int16)
             var w func () (uint, bool, uint16) = func () (uint, bool, uint16) {
+                return 5, false, 6
             }
             f1 := func (x int, y, z func () int) {
                 x + x
                 z
+                return
             }
-            var f2 func (int, bool, bool) int32
-            f2 = func (x int, y, z bool) int32 {
+            var f2 func (int32, bool, bool) int32
+            f2 = func (x int32, y, z bool) int32 {
                 y && z
                 x + x
                 f1 := 5
+                return x
             }
             x
             y

@@ -12,6 +12,7 @@ namespace GoScript.Frontend.Translation
         private readonly IEnumerable<ASTNode> asts;
         private readonly TypeCheck typeCheck;
         private readonly ReleaseHelper releaseHelper;
+        private IReadOnlyList<GSType> CurrentReturnType { get; set; } = new List<GSType> { GSInt32.Instance };
 
         public IEnumerable<Statement> Translate()
         {
@@ -84,7 +85,7 @@ namespace GoScript.Frontend.Translation
                     initExpr.Accept(this);
                     try
                     {
-                        AssignValueHelper(rtti, initExpr);
+                        rtti.Value = ConvertValueTypeHelper(rtti.Type!, initExpr);
                     }
                     finally
                     {
@@ -120,7 +121,7 @@ namespace GoScript.Frontend.Translation
                         {
                             throw new InternalErrorException($"At {assignedExpr.Location}: the RTTI of \"{assignedExpr.Name}\" has not been built.");
                         }
-                        AssignValueHelper(rtti, expr);
+                        rtti.Value = ConvertValueTypeHelper(rtti.Type!, expr);
                     }
                     finally
                     {
@@ -148,7 +149,7 @@ namespace GoScript.Frontend.Translation
                 {
                     var rtti = this.scopeStack.LookUpInCurrentScope(assignedVarName)
                     ?? throw new InternalErrorException($"At {defAssignStmt.Location}: the symbol of \"{assignedVarName}\" has not been built.");
-                    AssignValueHelper(rtti, initExpr);
+                    rtti.Value = ConvertValueTypeHelper(rtti.Type!, initExpr);
                 }
                 finally
                 {
@@ -157,21 +158,21 @@ namespace GoScript.Frontend.Translation
             }
         }
 
-        private void AssignValueHelper(RTTI rtti, Expression expr)
+        private object? ConvertValueTypeHelper(GSType targetType, Expression expr)
         {
             var exprType = expr.Attributes.ExprType!;
             var exprValue = expr.Attributes.Value;
             if (exprType.IsIntegerConstant)
             {
-                rtti.Value = ConvertArithmeticConstantValue((ulong)exprValue!, (GSArithmeticType)rtti.Type!);
+                return ConvertArithmeticConstantValue((ulong)exprValue!, (GSArithmeticType)targetType);
             }
             else if (exprType.IsBoolConstant)
             {
-                rtti.Value = exprValue;
+                return exprValue;
             }
             else
             {
-                rtti.Value = exprValue;
+                return exprValue;
             }
         }
 
@@ -549,6 +550,33 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(FuncExpr funcExpr)
         {
+        }
+
+        void IVisitor.Visit(ReturnStmt returnStmt)
+        {
+            var currentReturnType = CurrentReturnType;
+            var returnExprs = returnStmt.ReturnExpr;
+            if (currentReturnType.Count != returnExprs.Count)
+            {
+                throw new InternalErrorException($"At {returnStmt.Location}: Return type mismatched.");
+            }
+
+            int cnt = currentReturnType.Count;
+            var returnValues = new List<object?>(cnt);
+            for (int i = 0; i < cnt; ++i)
+            {
+                var returnExpr = returnExprs[i];
+                returnExpr.Accept(this);
+                try
+                {
+                    returnValues.Add(ConvertValueTypeHelper(currentReturnType[i], returnExpr));
+                }
+                catch
+                {
+                    returnExpr.Accept(this.releaseHelper);
+                }
+            }
+            throw new ReturnException(returnValues);
         }
     }
 }

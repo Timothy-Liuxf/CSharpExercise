@@ -13,6 +13,8 @@ namespace GoScript.Frontend.AST
 
         public IReadOnlyList<(GSType, SourceLocation)> ReturnTypes { get; private init; }
 
+        public IReadOnlyList<GSType>? RuntimeReturnTypes { get; set; }
+
         public FuncExpr(Compound body, IReadOnlyList<(GSType, string, SourceLocation)> parameters,
             IReadOnlyList<(GSType, SourceLocation)> returnTypes, SourceLocation location)
             : base(location)

@@ -158,5 +158,9 @@ namespace GoScript.Frontend.Translation
         void IVisitor.Visit(FuncExpr funcExpr)
         {
         }
+
+        void IVisitor.Visit(ReturnStmt returnStmt)
+        {
+        }
     }
 }

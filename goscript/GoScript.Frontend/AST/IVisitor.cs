@@ -24,5 +24,6 @@
         void Visit(AssignStmt assignStmt);
         void Visit(DefAssignStmt defAssignStmt);
         void Visit(FuncExpr funcExpr);
+        void Visit(ReturnStmt returnStmt);
     }
 }

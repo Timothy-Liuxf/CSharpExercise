@@ -55,7 +55,7 @@ BreakStmt               : 'break' ';'? NEWLINE
 ContinueStmt            : 'continue' ';'? NEWLINE
                         ;
 
-ReturnStmt              : 'return' Expression
+ReturnStmt              : 'return' ExpressionList ';'? NEWLINE
                         ;
 
 IdentifierList          : Identifier (',' Identifier)*

@@ -43,6 +43,8 @@ namespace GoScript.Frontend.Parse
                         return ParseBreakStmt();
                     case KeywordType.Continue:
                         return ParseContinueStmt();
+                    case KeywordType.Return:
+                        return ParseReturnStmt();
                 }
             }
 
@@ -80,11 +82,7 @@ namespace GoScript.Frontend.Parse
                     tokens.MatchPunctuator(PunctuatorType.Assign);
                 }
 
-                var initExprs = new List<Expression>() { ParseExpression() };
-                while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
-                {
-                    initExprs.Add(ParseExpression());
-                }
+                var initExprs = ParseNonEmptyExprList();
 
                 if (type is null)
                 {
@@ -110,6 +108,16 @@ namespace GoScript.Frontend.Parse
             }
 
             return varDecl;
+        }
+
+        private IReadOnlyList<Expression> ParseNonEmptyExprList()
+        {
+            var exprs = new List<Expression>() { ParseExpression() };
+            while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
+            {
+                exprs.Add(ParseExpression());
+            }
+            return exprs;
         }
 
         private bool TryParseType([MaybeNullWhen(false), NotNullWhen(true)] out (GSType, SourceLocation)? type)
@@ -311,11 +319,7 @@ namespace GoScript.Frontend.Parse
                     assign = tokens.MatchPunctuator(PunctuatorType.DefAssign);
                 }
 
-                var assigneeExprs = new List<Expression> { ParseExpression() };
-                while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
-                {
-                    assigneeExprs.Add(ParseExpression());
-                }
+                var assigneeExprs = ParseNonEmptyExprList();
 
                 if (assign.Type == PunctuatorType.Assign)
                 {
@@ -548,6 +552,21 @@ namespace GoScript.Frontend.Parse
             var body = ParseCompound();
 
             return new FuncExpr(body, @params, returnTypes, func.Location);
+        }
+
+        private ReturnStmt ParseReturnStmt()
+        {
+            var @return = tokens.MatchKeyword(KeywordType.Return);
+            if (tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _)
+                || tokens.TryPeekNewline(out _))
+            {
+                tokens.MatchNewline();
+                return new ReturnStmt(new List<Expression>(), @return.Location);
+            }
+            var returnExpr = ParseNonEmptyExprList();
+            tokens.TryMatchPunctuator(PunctuatorType.Semicolon, out _);
+            tokens.MatchNewline();
+            return new ReturnStmt(returnExpr, @return.Location);
         }
 
         private readonly TokenReader tokens;
