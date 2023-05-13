@@ -408,29 +408,37 @@ using GoScript.Frontend.Lex;
     Console.WriteLine("===== Test Intepreter 9 =====\n\n");
     {
         var prog = """
-            var x int
+            var x func ()
             var y func (bool) int
             var z func (int16)
             var w func () (uint, bool, uint16) = func () (uint, bool, uint16) {
             }
             f1 := func (x int, y, z func () int) {
-                x + y
-                z + w
+                x + x
+                z
             }
-            f2 := func (x int, y, z bool) int32 {
-                x + y
-                z + w
+            var f2 func (int, bool, bool) int32
+            f2 = func (x int, y, z bool) int32 {
+                y && z
+                x + x
+                f1 := 5
             }
+            x
+            y
+            z
+            w
+            f1
+            f2
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(' ' + string.Join(' ', tokens));
         var astsParsed = Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog))));
         Console.WriteLine(string.Join("", astsParsed));
 
-        // var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
-        // foreach (var ast in asts)
-        // {
-        //     Console.WriteLine(ast.Attributes.Value ?? "No echo.");
-        // }
+        var asts = Frontend.Translate(Frontend.Parse(Frontend.Lex(new SourceFile(new StringReader(prog)))));
+        foreach (var ast in asts)
+        {
+            Console.WriteLine(ast.Attributes.Value ?? "No echo.");
+        }
     }
 }

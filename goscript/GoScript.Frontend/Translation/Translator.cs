@@ -57,14 +57,26 @@ namespace GoScript.Frontend.Translation
             var cnt = varDecl.VarNames.Count;
             for (int i = 0; i < cnt; ++i)
             {
-                var varName = varDecl.VarNames[i];
-                var rtti = this.scopeStack.LookUp(varName)
+                var varName = varDecl.VarNames[i].Item1;
+                var rtti = this.scopeStack.LookUpInCurrentScope(varName)
                     ?? throw new InternalErrorException($"At {varDecl.Location}: the symbol of \"{varName}\" has not been built.");
                 var type = rtti.Type!;
 
                 if (varDecl.InitExprs == null)   // This means varDecl.InitType must not be null
                 {
-                    rtti.Value = Convert.ChangeType(0, ((GSBasicType)type).DotNetType);
+                    if (type.IsBasic)
+                    {
+                        rtti.Value = Convert.ChangeType(0, ((GSBasicType)type).DotNetType);
+                    }
+                    else if (type.IsFunc)
+                    {
+                        rtti.Value = new FuncValue(null);
+                    }
+                    else
+                    {
+                        throw new InternalErrorException(
+                            $"At {varDecl.InitType!.Value.Item2}: Unknown type {type}.");
+                    }
                 }
                 else
                 {
@@ -103,7 +115,8 @@ namespace GoScript.Frontend.Translation
                     assignedExpr.Accept(this);
                     try
                     {
-                        if (!assignedExpr.RTTI.TryGetTarget(out var rtti))
+                        var rtti = assignedExpr.RTTI;
+                        if (rtti is null)
                         {
                             throw new InternalErrorException($"At {assignedExpr.Location}: the RTTI of \"{assignedExpr.Name}\" has not been built.");
                         }
@@ -133,7 +146,7 @@ namespace GoScript.Frontend.Translation
                 initExpr.Accept(this);
                 try
                 {
-                    var rtti = this.scopeStack.LookUp(assignedVarName)
+                    var rtti = this.scopeStack.LookUpInCurrentScope(assignedVarName)
                     ?? throw new InternalErrorException($"At {defAssignStmt.Location}: the symbol of \"{assignedVarName}\" has not been built.");
                     AssignValueHelper(rtti, initExpr);
                 }
@@ -482,7 +495,8 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(IdExpr idExpr)
         {
-            if (!idExpr.RTTI.TryGetTarget(out var rtti))
+            var rtti = idExpr.RTTI;
+            if (rtti is null)
             {
                 throw new InternalErrorException($"At {idExpr.Location}: Symbol \"{idExpr.Name}\" has not been built.");
             }
@@ -535,7 +549,6 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(FuncExpr funcExpr)
         {
-            throw new NotImplementedException(nameof(FuncExpr));
         }
     }
 }

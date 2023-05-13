@@ -66,10 +66,10 @@ namespace GoScript.Frontend.Parse
         {
             VarDecl varDecl;
             var location = tokens.MatchKeyword(KeywordType.Var).Location;
-            var identifiers = new List<string>() { tokens.MatchIdentifier().Name };
+            var identifiers = new List<Identifier>() { tokens.MatchIdentifier() };
             while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
             {
-                identifiers.Add(tokens.MatchIdentifier().Name);
+                identifiers.Add(tokens.MatchIdentifier());
             }
 
             if (!TryParseType(out var type)
@@ -88,28 +88,38 @@ namespace GoScript.Frontend.Parse
 
                 if (type is null)
                 {
-                    varDecl = new VarDecl(identifiers, initExprs, location);
+                    varDecl = new VarDecl(
+                        identifiers.Select((identifier, _) => (identifier.Name, identifier.Location)),
+                        initExprs, location
+                    );
                 }
                 else
                 {
-                    varDecl = new VarDecl(identifiers, type, initExprs, location);
+                    varDecl = new VarDecl(
+                        identifiers.Select((identifier, _) => (identifier.Name, identifier.Location)),
+                        type.Value, initExprs, location
+                    );
                 }
             }
             else
             {
-                varDecl = new VarDecl(identifiers, type, location);
+                varDecl = new VarDecl(
+                    identifiers.Select((identifier, _) => (identifier.Name, identifier.Location)),
+                    type.Value, location
+                );
             }
 
             return varDecl;
         }
 
-        private bool TryParseType([MaybeNullWhen(false), NotNullWhen(true)] out GSType? type)
+        private bool TryParseType([MaybeNullWhen(false), NotNullWhen(true)] out (GSType, SourceLocation)? type)
         {
             if (tokens.TryMatchTypeKeyword(out var typeKeyword))
             {
-                type = GSBasicType.ParseBasicType(typeKeyword.Type)
+                type = (GSBasicType.ParseBasicType(typeKeyword.Type)
                     ?? throw new InternalErrorException(
-                        $"Internal error at {typeKeyword.Location}: cannot parse type keyword {Keyword.GetKeywordString(typeKeyword.Type)}.");
+                        $"Internal error at {typeKeyword.Location}: cannot parse type keyword {Keyword.GetKeywordString(typeKeyword.Type)}.")
+                    , typeKeyword.Location);
                 return true;
             }
             if (tokens.TryMatchKeyword(KeywordType.Func, out var func))
@@ -122,15 +132,24 @@ namespace GoScript.Frontend.Parse
                 {
                     var returnTypes = ParseTypeList();
                     tokens.MatchPunctuator(PunctuatorType.RParen);
-                    type = new GSFuncType(paramTypes, returnTypes);
+                    type = (new GSFuncType(
+                            paramType: paramTypes.Select((paramType, _) => paramType.Item1),
+                            returnType: returnTypes.Select((returnType, _) => returnType.Item1)
+                        ), func.Location);
                 }
                 else if (TryParseType(out var returnType))
                 {
-                    type = new GSFuncType(paramTypes, new List<GSType> { returnType });
+                    type = (new GSFuncType(
+                            paramType: paramTypes.Select((paramType, _) => paramType.Item1),
+                            returnType: new List<GSType> { returnType.Value.Item1 }
+                        ), func.Location);
                 }
                 else
                 {
-                    type = new GSFuncType(paramTypes, new List<GSType>());
+                    type = (new GSFuncType(
+                            paramType: paramTypes.Select((paramType, _) => paramType.Item1),
+                            returnType: new List<GSType>()
+                        ), func.Location);
                 }
                 return true;
             }
@@ -138,19 +157,19 @@ namespace GoScript.Frontend.Parse
             return false;
         }
 
-        private IReadOnlyList<GSType> ParseTypeList()
+        private IReadOnlyList<(GSType, SourceLocation)> ParseTypeList()
         {
-            var typeList = new List<GSType>();
+            var typeList = new List<(GSType, SourceLocation)>();
             if (TryParseType(out var type))
             {
-                typeList.Add(type);
+                typeList.Add(type.Value);
                 while (tokens.TryMatchPunctuator(PunctuatorType.Comma, out var comma))
                 {
                     if (!TryParseType(out type))
                     {
                         throw new SyntaxErrorException(comma.Location, "Expected type after comma \',\'.");
                     }
-                    typeList.Add(type);
+                    typeList.Add(type.Value);
                 }
             }
             return typeList;
@@ -466,22 +485,22 @@ namespace GoScript.Frontend.Parse
         private FuncExpr ParseFuncSignature()
         {
             var func = tokens.MatchPunctuator(PunctuatorType.LParen);
-            var @params = new List<(GSType, string)>();
-            var untypedParams = new List<string>();
+            var @params = new List<(GSType, string, SourceLocation)>();
+            var untypedParams = new List<Identifier>();
             while (tokens.TryMatchIdentifier(out var paramName))
             {
                 if (TryParseType(out var paramType))
                 {
                     foreach (var untypedName in untypedParams)
                     {
-                        @params.Add((paramType, untypedName));
+                        @params.Add((paramType.Value.Item1, untypedName.Name, untypedName.Location));
                     }
                     untypedParams.Clear();
-                    @params.Add((paramType, paramName.Name));
+                    @params.Add((paramType.Value.Item1, paramName.Name, paramName.Location));
                 }
                 else
                 {
-                    untypedParams.Add(paramName.Name);
+                    untypedParams.Add(paramName);
                 }
                 if (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
                 {
@@ -495,11 +514,8 @@ namespace GoScript.Frontend.Parse
                     var currentToken = tokens.CurrentToken;
                     if (currentToken is null)
                     {
-                        throw new SyntaxErrorException(new SourceLocation()
-                        {
-                            Column = paramName.Location.Column + 1,
-                            Line = paramName.Location.Line,
-                        }, $"Missing token ',' or ')'.");
+                        throw new SyntaxErrorException(paramType is null ? paramName.Location : paramType.Value.Item2,
+                            $"Missing token ',' or ')'.");
                     }
                     else
                     {
@@ -515,7 +531,7 @@ namespace GoScript.Frontend.Parse
                 throw new SyntaxErrorException(rParen.Location, $"Missing type.");
             }
 
-            IReadOnlyList<GSType> returnTypes;
+            IReadOnlyList<(GSType, SourceLocation)> returnTypes;
             if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
             {
                 returnTypes = ParseTypeList();
@@ -523,11 +539,11 @@ namespace GoScript.Frontend.Parse
             }
             else if (TryParseType(out var returnType))
             {
-                returnTypes = new List<GSType>() { returnType };
+                returnTypes = new List<(GSType, SourceLocation)>() { returnType.Value };
             }
             else
             {
-                returnTypes = new List<GSType>();
+                returnTypes = new List<(GSType, SourceLocation)>();
             }
             var body = ParseCompound();
 

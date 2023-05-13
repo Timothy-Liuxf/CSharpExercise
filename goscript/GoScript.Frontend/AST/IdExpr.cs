@@ -5,7 +5,7 @@ namespace GoScript.Frontend.AST
 {
     public sealed class IdExpr : Expression
     {
-        internal WeakReference<RTTI?> RTTI { get; } = new(null);
+        internal RTTI? RTTI { get; set; }
 
         public string Name { get; private init; }
 

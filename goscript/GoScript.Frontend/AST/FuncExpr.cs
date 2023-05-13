@@ -9,12 +9,12 @@ namespace GoScript.Frontend.AST
     {
         public Compound Body { get; private init; }
 
-        public IReadOnlyList<(GSType, string)> Params { get; private init; }
+        public IReadOnlyList<(GSType, string, SourceLocation)> Params { get; private init; }
 
-        public IReadOnlyList<GSType> ReturnTypes { get; private init; }
+        public IReadOnlyList<(GSType, SourceLocation)> ReturnTypes { get; private init; }
 
-        public FuncExpr(Compound body, IReadOnlyList<(GSType, string)> parameters,
-            IReadOnlyList<GSType> returnTypes, SourceLocation location)
+        public FuncExpr(Compound body, IReadOnlyList<(GSType, string, SourceLocation)> parameters,
+            IReadOnlyList<(GSType, SourceLocation)> returnTypes, SourceLocation location)
             : base(location)
         {
             this.Body = body;

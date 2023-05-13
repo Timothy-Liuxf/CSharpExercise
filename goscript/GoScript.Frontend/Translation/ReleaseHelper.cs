@@ -157,7 +157,6 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(FuncExpr funcExpr)
         {
-            throw new NotImplementedException(nameof(FuncExpr));
         }
     }
 }

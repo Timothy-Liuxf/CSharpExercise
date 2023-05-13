@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using GoScript.Utils;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace GoScript.Frontend.Types
 {
@@ -35,7 +32,8 @@ namespace GoScript.Frontend.Types
             return hash;
         }
 
-        public GSFuncType(IReadOnlyList<GSType> paramType, IReadOnlyList<GSType> returnType)
+        public GSFuncType(IEnumerable<GSType> paramType,
+            IEnumerable<GSType> returnType)
         {
             // Create new lists
             this.ParamType = paramType.ToList();
@@ -47,12 +45,7 @@ namespace GoScript.Frontend.Types
             var result = new StringBuilder("func (");
             if (this.ParamType.Count > 0)
             {
-                result.Append(this.ParamType[0]);
-                for (int i = 1; i < this.ParamType.Count; i++)
-                {
-                    result.Append(", ");
-                    result.Append(this.ParamType[i]);
-                }
+                result.Append(string.Join(", ", this.ParamType));
             }
             result.Append(")");
 
@@ -65,14 +58,7 @@ namespace GoScript.Frontend.Types
                 }
                 else
                 {
-                    result.Append("(");
-                    result.Append(this.ReturnType[0]);
-                    for (int i = 1; i < this.ReturnType.Count; i++)
-                    {
-                        result.Append(", ");
-                        result.Append(this.ReturnType[i]);
-                    }
-                    result.Append(")");
+                    result.Append("(" + string.Join(", ", this.ReturnType) + ")");
                 }
             }
             return result.ToString();

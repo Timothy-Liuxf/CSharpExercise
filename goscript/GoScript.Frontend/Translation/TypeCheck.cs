@@ -1,10 +1,7 @@
 ﻿using GoScript.Frontend.AST;
-using GoScript.Frontend.Lex;
 using GoScript.Frontend.Runtime;
 using GoScript.Frontend.Types;
-using GoScript.Utils;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 
 namespace GoScript.Frontend.Translation
 {
@@ -51,7 +48,7 @@ namespace GoScript.Frontend.Translation
 
             foreach (var varname in varDecl.VarNames)
             {
-                if (this.scopeStack.ContainsInCurrentScope(varname))
+                if (this.scopeStack.ContainsInCurrentScope(varname.Item1))
                 {
                     throw new ConflictException($"Conflict at {varDecl.Location}: the name \"{varname}\" has already defined.");
                 }
@@ -62,17 +59,10 @@ namespace GoScript.Frontend.Translation
             for (int i = 0; i < cnt; ++i)
             {
                 var rtti = new RTTI();
-                if (varDecl.InitType is not null)
+                var initType = varDecl.InitType;
+                if (initType is not null)
                 {
-                    var gsType = varDecl.InitType;
-                    if (gsType is not null)
-                    {
-                        rtti.Type = gsType;
-                    }
-                    else
-                    {
-                        throw new SymbolNotFoundException($"At {varDecl.Location}: \"{varDecl.InitType}\" is not a valid type.");
-                    }
+                    rtti.Type = initType.Value.Item1;
                 }
                 rttis.Add(rtti);
 
@@ -88,14 +78,14 @@ namespace GoScript.Frontend.Translation
                     }
                     else
                     {
-                        AssignValueHelper(rtti, initExpr, varName, true);
+                        AssignValueHelper(rtti, initExpr, varName.Item1, true);
                     }
                 }
             }
 
             for (int i = 0; i < cnt; ++i)
             {
-                this.scopeStack.Add(varDecl.VarNames[i], rttis[i]);
+                this.scopeStack.Add(varDecl.VarNames[i].Item1, rttis[i]);
             }
         }
 
@@ -132,7 +122,8 @@ namespace GoScript.Frontend.Translation
                 assignedExpr.Accept(this);
 
                 var varName = assignedExpr.Name;
-                if (!assignedExpr.RTTI.TryGetTarget(out var rtti))
+                var rtti = assignedExpr.RTTI;
+                if (rtti is null)
                 {
                     throw new InternalErrorException($"At {assignedExpr.Location}: \"{varName}\" has no RTTI.");
                 }
@@ -639,7 +630,7 @@ namespace GoScript.Frontend.Translation
             }
 
             idExpr.Attributes.ExprType = rtti.Type;
-            idExpr.RTTI.SetTarget(rtti);
+            idExpr.RTTI = rtti;
         }
 
         void IVisitor.Visit(IntegerConstantExpr integerConstantExpr)
@@ -663,6 +654,20 @@ namespace GoScript.Frontend.Translation
             this.scopeStack.AttachScope(scope);
             try
             {
+                if (compound.PreDeclSymbols is not null)
+                {
+                    foreach (var (type, name, location) in compound.PreDeclSymbols)
+                    {
+                        var rtti = new RTTI();
+                        rtti.Type = type;
+                        if (this.scopeStack.ContainsInCurrentScope(name))
+                        {
+                            throw new ConflictException($"At {location}: The symbol \"{name}\" is already defined.");
+                        }
+                        this.scopeStack.Add(name, rtti);
+                    }
+                }
+
                 var statements = compound.Statements;
                 foreach (var statement in statements)
                 {
@@ -689,7 +694,23 @@ namespace GoScript.Frontend.Translation
 
         void IVisitor.Visit(FuncExpr funcExpr)
         {
-            throw new NotImplementedException(nameof(FuncExpr));
+            funcExpr.Body.PreDeclSymbols = funcExpr.Params;
+            var prevInLoop = InLoop;
+            InLoop = false;
+            try
+            {
+                funcExpr.Body.Accept(this);
+            }
+            finally
+            {
+                InLoop = prevInLoop;
+            }
+            funcExpr.Attributes.ExprType = new GSFuncType(
+                paramType: funcExpr.Params.Select((@params, _) => @params.Item1),
+                returnType: funcExpr.ReturnTypes.Select((returnType, _) => returnType.Item1)
+            );
+            funcExpr.Attributes.Value = new FuncValue(funcExpr);
+            funcExpr.IsConstantEvaluated = true;
         }
     }
 }

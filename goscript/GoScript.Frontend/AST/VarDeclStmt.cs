@@ -5,28 +5,28 @@ namespace GoScript.Frontend.AST
 {
     public sealed class VarDecl : Statement
     {
-        public IReadOnlyList<string> VarNames { get; private init; }
-        public GSType? InitType { get; private init; }
+        public IReadOnlyList<(string, SourceLocation)> VarNames { get; private init; }
+        public (GSType, SourceLocation)? InitType { get; private init; }
         public IReadOnlyList<Expression>? InitExprs { get; private init; }
 
-        public VarDecl(IReadOnlyList<string> varNames, IReadOnlyList<Expression> initExprs, SourceLocation location)
+        public VarDecl(IEnumerable<(string, SourceLocation)> varNames, IEnumerable<Expression> initExprs, SourceLocation location)
             : base(location)
         {
-            this.VarNames = varNames;
-            this.InitExprs = initExprs;
+            this.VarNames = varNames.ToList();
+            this.InitExprs = initExprs.ToList();
         }
 
-        public VarDecl(IReadOnlyList<string> varNames, GSType initType, SourceLocation location)
+        public VarDecl(IEnumerable<(string, SourceLocation)> varNames, (GSType, SourceLocation) initType, SourceLocation location)
             : base(location)
         {
-            this.VarNames = varNames;
+            this.VarNames = varNames.ToList();
             this.InitType = initType;
         }
 
-        public VarDecl(IReadOnlyList<string> varNames, GSType initType, IReadOnlyList<Expression> initExprs, SourceLocation location)
+        public VarDecl(IEnumerable<(string, SourceLocation)> varNames, (GSType, SourceLocation) initType, IReadOnlyList<Expression> initExprs, SourceLocation location)
             : base(location)
         {
-            this.VarNames = varNames;
+            this.VarNames = varNames.ToList();
             this.InitType = initType;
             this.InitExprs = initExprs;
         }

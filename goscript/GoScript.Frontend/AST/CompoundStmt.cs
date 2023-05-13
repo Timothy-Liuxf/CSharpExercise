@@ -1,6 +1,6 @@
 ﻿using GoScript.Frontend.Runtime;
+using GoScript.Frontend.Types;
 using GoScript.Utils;
-using System.CodeDom.Compiler;
 
 namespace GoScript.Frontend.AST
 {
@@ -9,6 +9,8 @@ namespace GoScript.Frontend.AST
         public const string Indent = "    ";
 
         public IReadOnlyList<Statement> Statements { get; private init; }
+
+        internal IReadOnlyList<(GSType, string, SourceLocation)>? PreDeclSymbols { get; set; }
 
         internal Scope? AttachedScope { get; set; }
 
