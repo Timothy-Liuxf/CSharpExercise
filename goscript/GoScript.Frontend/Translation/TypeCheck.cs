@@ -686,5 +686,10 @@ namespace GoScript.Frontend.Translation
             compound.Accept(this);
             compoundStmt.Attributes.StmtType = compound.Attributes.StmtType;
         }
+
+        void IVisitor.Visit(FuncExpr funcExpr)
+        {
+            throw new NotImplementedException(nameof(FuncExpr));
+        }
     }
 }

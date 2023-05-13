@@ -327,6 +327,10 @@ namespace GoScript.Frontend.Parse
 
         private Expression ParseExpression()
         {
+            if (tokens.TryPeekKeyword(KeywordType.Func, out _))
+            {
+                return ParseFuncExpr();
+            }
             return ParseLogicalOrExpr();
         }
 
@@ -451,6 +455,83 @@ namespace GoScript.Frontend.Parse
                 return expr;
             }
             throw new NotImplementedException($"ParsePrimaryExpr at {tokens.CurrentToken?.Location.ToString() ?? "EOF"}.");
+        }
+
+        private FuncExpr ParseFuncExpr()
+        {
+            tokens.MatchKeyword(KeywordType.Func);
+            return ParseFuncSignature();
+        }
+
+        private FuncExpr ParseFuncSignature()
+        {
+            var func = tokens.MatchPunctuator(PunctuatorType.LParen);
+            var @params = new List<(GSType, string)>();
+            var untypedParams = new List<string>();
+            while (tokens.TryMatchIdentifier(out var paramName))
+            {
+                if (TryParseType(out var paramType))
+                {
+                    foreach (var untypedName in untypedParams)
+                    {
+                        @params.Add((paramType, untypedName));
+                    }
+                    untypedParams.Clear();
+                    @params.Add((paramType, paramName.Name));
+                }
+                else
+                {
+                    untypedParams.Add(paramName.Name);
+                }
+                if (tokens.TryMatchPunctuator(PunctuatorType.Comma, out _))
+                {
+                }
+                else if (tokens.TryPeekPunctuator(PunctuatorType.RParen, out _))
+                {
+                    break;
+                }
+                else
+                {
+                    var currentToken = tokens.CurrentToken;
+                    if (currentToken is null)
+                    {
+                        throw new SyntaxErrorException(new SourceLocation()
+                        {
+                            Column = paramName.Location.Column + 1,
+                            Line = paramName.Location.Line,
+                        }, $"Missing token ',' or ')'.");
+                    }
+                    else
+                    {
+                        throw new SyntaxErrorException(currentToken.Location,
+                            $"Expected token ',' or ')', found {currentToken}.");
+                    }
+                }
+            }
+
+            var rParen = tokens.MatchPunctuator(PunctuatorType.RParen);
+            if (untypedParams.Count > 0)
+            {
+                throw new SyntaxErrorException(rParen.Location, $"Missing type.");
+            }
+
+            IReadOnlyList<GSType> returnTypes;
+            if (tokens.TryMatchPunctuator(PunctuatorType.LParen, out _))
+            {
+                returnTypes = ParseTypeList();
+                tokens.MatchPunctuator(PunctuatorType.RParen);
+            }
+            else if (TryParseType(out var returnType))
+            {
+                returnTypes = new List<GSType>() { returnType };
+            }
+            else
+            {
+                returnTypes = new List<GSType>();
+            }
+            var body = ParseCompound();
+
+            return new FuncExpr(body, @params, returnTypes, func.Location);
         }
 
         private readonly TokenReader tokens;

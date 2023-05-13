@@ -154,5 +154,10 @@ namespace GoScript.Frontend.Translation
             compoundStmt.Compound.Accept(this);
 
         }
+
+        void IVisitor.Visit(FuncExpr funcExpr)
+        {
+            throw new NotImplementedException(nameof(FuncExpr));
+        }
     }
 }

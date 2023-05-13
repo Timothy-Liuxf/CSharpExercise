@@ -532,5 +532,10 @@ namespace GoScript.Frontend.Translation
                 compound.Accept(this.releaseHelper);
             }
         }
+
+        void IVisitor.Visit(FuncExpr funcExpr)
+        {
+            throw new NotImplementedException(nameof(FuncExpr));
+        }
     }
 }

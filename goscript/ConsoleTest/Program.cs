@@ -411,7 +411,16 @@ using GoScript.Frontend.Lex;
             var x int
             var y func (bool) int
             var z func (int16)
-            var w func () (uint, bool, uint16)
+            var w func () (uint, bool, uint16) = func () (uint, bool, uint16) {
+            }
+            f1 := func (x int, y, z func () int) {
+                x + y
+                z + w
+            }
+            f2 := func (x int, y, z bool) int32 {
+                x + y
+                z + w
+            }
             """;
         var tokens = Frontend.Lex(new SourceFile(new StringReader(prog)));
         Console.WriteLine(' ' + string.Join(' ', tokens));

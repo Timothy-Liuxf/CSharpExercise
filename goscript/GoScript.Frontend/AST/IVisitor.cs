@@ -23,5 +23,6 @@
         void Visit(CompoundStmt compoundStmt);
         void Visit(AssignStmt assignStmt);
         void Visit(DefAssignStmt defAssignStmt);
+        void Visit(FuncExpr funcExpr);
     }
 }
